@@ -1,5 +1,5 @@
-import { Paper, Typography, Grid2 } from "@mui/material";
-import { useDroppable } from "@dnd-kit/core"; // useDroppable for defining drop zones
+import { Paper, Typography, Box, Grid2 } from "@mui/material";
+import { useDroppable } from "@dnd-kit/core";
 import LeadCard from "./lead-card";
 
 interface LeadColumnProps {
@@ -16,23 +16,25 @@ export default function LeadColumn({
   selectedLeads,
 }: LeadColumnProps) {
   const { setNodeRef } = useDroppable({
-    id: stage, // Use the stage ID as the droppable area identifier
+    id: stage,
   });
 
   return (
-    <Grid2 size={{xs:12, sm:6, md:4,lg:3}} >
-      <Paper ref={setNodeRef} sx={{ p: 2, minHeight: 300, overflowY: "auto" }}>
+    <Grid2 sx={{ flex: "0 0 auto", textAlign: "center" }}>
+      <Paper ref={setNodeRef} sx={{ minWidth: 300, p: 2 }}>
         <Typography variant="h6">{stage}</Typography>
-        {leads
-          .filter((lead) => lead.stage === stage)
-          .map((lead) => (
-            <LeadCard
-              key={lead.id}
-              lead={lead}
-              toggleSelection={toggleSelection}
-              isSelected={selectedLeads.includes(lead.id)}
-            />
-          ))}
+        <Box sx={{ overflowY: "auto", maxHeight: "80vh" }}>
+          {leads
+            .filter((lead) => lead.stage === stage)
+            .map((lead) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                toggleSelection={toggleSelection}
+                isSelected={selectedLeads.includes(lead.id)}
+              />
+            ))}
+        </Box>
       </Paper>
     </Grid2>
   );

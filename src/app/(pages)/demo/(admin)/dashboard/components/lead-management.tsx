@@ -7,33 +7,41 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Tabs, Tab, Paper, Grid2, TextField, Button } from "@mui/material";
+import { Tabs, Tab, Paper, TextField, Button, Grid2 } from "@mui/material";
 import { leadCategories, sampleLeads } from "./data";
 import LeadColumn from "./lead-column";
+import LeadCard from "./lead-card";
+import { Scrollbar } from "@/app/component/scrollbar";
 
 export default function LeadManagement() {
   const [selectedCategory, setSelectedCategory] = useState("House Tour Leads");
   const [leads, setLeads] = useState(sampleLeads);
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+  const [activeLead, setActiveLead] = useState<any>(null);
 
-  // Initialize sensors for drag-and-drop
-  const sensors = useSensors(useSensor(PointerSensor));
+  // Drag-and-drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   // Handles lead movement between stages
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    setLeads((prevLeads) => {
-      return prevLeads.map((lead) =>
+    setLeads((prevLeads) =>
+      prevLeads.map((lead) =>
         lead.id === active.id ? { ...lead, stage: over.id } : lead
-      );
-    });
+      )
+    );
+
+    setActiveLead(null);
   };
 
   const toggleLeadSelection = (leadId: string) => {
@@ -98,29 +106,40 @@ export default function LeadManagement() {
       {/* Kanban Board */}
       <DndContext
         collisionDetection={closestCorners}
+        onDragStart={(event) => setActiveLead(event.active.id)}
         onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveLead(null)}
         sensors={sensors}
       >
-        <Grid2
-          container
-          spacing={2}
-          sx={{ overflowX: "auto", flexWrap: "nowrap" }}
-        >
-          <SortableContext
-            items={leads.map((lead) => lead.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {leadCategories[selectedCategory].map((stage) => (
-              <LeadColumn
-                key={stage}
-                stage={stage}
-                leads={leads}
-                toggleSelection={toggleLeadSelection}
-                selectedLeads={selectedLeads}
-              />
-            ))}
-          </SortableContext>
-        </Grid2>
+        <Scrollbar style={{ width: "100%", overflowX: "auto" }}>
+          <Grid2 container wrap="nowrap" spacing={2}>
+            <SortableContext
+              items={leads.map((lead) => lead.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {leadCategories[selectedCategory].map((stage) => (
+                <LeadColumn
+                  key={stage}
+                  stage={stage}
+                  leads={leads}
+                  toggleSelection={toggleLeadSelection}
+                  selectedLeads={selectedLeads}
+                />
+              ))}
+            </SortableContext>
+          </Grid2>
+        </Scrollbar>
+
+        {/* Drag Overlay for smooth dragging */}
+        <DragOverlay>
+          {activeLead ? (
+            <LeadCard
+              lead={leads.find((lead) => lead.id === activeLead)}
+              toggleSelection={() => {}}
+              isSelected={false}
+            />
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </Paper>
   );

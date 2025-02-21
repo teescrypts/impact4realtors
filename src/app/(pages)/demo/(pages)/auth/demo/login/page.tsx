@@ -1,8 +1,11 @@
-import HomeSection from "../components/sections/home-section";
+import React from "react";
 import { Metadata } from "next/types";
+import { Container, Box, Typography } from "@mui/material";
+import Motion from "../../../components/motion";
+import DemoLogin from "../../../components/demo-login";
 
 export const metadata: Metadata = {
-  title: "Home | Innovative Real Estate Solutions",
+  title: "Sign up | Innovative Real Estate Solutions",
   description:
     "Explore our live demo website showcasing cutting-edge tools for independent realtors. Our platform offers creative solutions for listing, buying, and renting properties—designed to elevate your real estate business.",
   keywords:
@@ -35,6 +38,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <HomeSection />;
+async function Page() {
+  return (
+    <Container
+      maxWidth="sm"
+      sx={{ mt: 8, mb: 8, fontFamily: "Poppins, sans-serif" }}
+    >
+      <Motion>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Typography variant="h4" fontWeight="bold">
+            Create Your Account
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Sign up for a demo account using any email. The account will be
+            deactivated after 2 hours.
+          </Typography>
+        </Box>
+      </Motion>
+      <DemoLogin />
+    </Container>
+  );
 }
+
+export default Page;

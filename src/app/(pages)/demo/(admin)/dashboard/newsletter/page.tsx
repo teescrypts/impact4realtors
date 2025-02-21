@@ -1,8 +1,10 @@
-import HomeSection from "../components/sections/home-section";
+import React from "react";
+import NewsletterPage from "../components/newsletter-page";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import { Metadata } from "next/types";
 
 export const metadata: Metadata = {
-  title: "Home | Innovative Real Estate Solutions",
+  title: "Newsletter | Innovative Real Estate Solutions",
   description:
     "Explore our live demo website showcasing cutting-edge tools for independent realtors. Our platform offers creative solutions for listing, buying, and renting properties—designed to elevate your real estate business.",
   keywords:
@@ -35,6 +37,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <HomeSection />;
+function Page() {
+  return (
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        py: 8,
+      }}
+    >
+      <Container maxWidth={"xl"}>
+        <Stack spacing={2}>
+          <Stack sx={{ mb: 2 }}>
+            <Typography variant="h4"> Send Newsletter</Typography>
+          </Stack>
+          <NewsletterPage />
+        </Stack>
+      </Container>
+    </Box>
+  );
 }
+
+export default Page;

@@ -1,8 +1,11 @@
-import HomeSection from "../components/sections/home-section";
+import React from "react";
+import AppointmentManagement from "../components/appointment-mgt";
+import { Box, Button, Container, Stack, Typography } from "@mui/material";
+import Link from "next/link";
 import { Metadata } from "next/types";
 
 export const metadata: Metadata = {
-  title: "Home | Innovative Real Estate Solutions",
+  title: "Appointment | Innovative Real Estate Solutions",
   description:
     "Explore our live demo website showcasing cutting-edge tools for independent realtors. Our platform offers creative solutions for listing, buying, and renting properties—designed to elevate your real estate business.",
   keywords:
@@ -35,6 +38,34 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <HomeSection />;
+function Page() {
+  return (
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        py: 8,
+      }}
+    >
+      <Container maxWidth={"xl"}>
+        <Stack spacing={2}>
+          <Stack direction="row" justifyContent="space-between" spacing={4}>
+            <div>
+              <Typography variant="h4">Appointment</Typography>
+            </div>
+            <div>
+              <Stack direction="row" spacing={4}>
+                <Link href={"/demo/dashboard/appointment/availability"}>
+                  <Button variant="contained">Availablity</Button>
+                </Link>
+              </Stack>
+            </div>
+          </Stack>
+          <AppointmentManagement />
+        </Stack>
+      </Container>
+    </Box>
+  );
 }
+
+export default Page;

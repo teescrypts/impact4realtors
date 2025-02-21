@@ -1,8 +1,18 @@
-import HomeSection from "../components/sections/home-section";
+import { RouterLink } from "@/app/component/router-link";
+import {
+  Box,
+  Container,
+  Stack,
+  Typography,
+  Breadcrumbs,
+  Link,
+} from "@mui/material";
+import React from "react";
+import AddBlog from "../../components/add-blog";
 import { Metadata } from "next/types";
 
 export const metadata: Metadata = {
-  title: "Home | Innovative Real Estate Solutions",
+  title: "Publish Blog | Innovative Real Estate Solutions",
   description:
     "Explore our live demo website showcasing cutting-edge tools for independent realtors. Our platform offers creative solutions for listing, buying, and renting properties—designed to elevate your real estate business.",
   keywords:
@@ -35,6 +45,37 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <HomeSection />;
+function Page() {
+  return (
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        py: 8,
+      }}
+    >
+      <Container maxWidth="xl">
+        <Stack spacing={1}>
+          <Typography variant="h3">Publish Blog</Typography>
+          <Stack sx={{ mb: 2 }}>
+            <Breadcrumbs separator="›" aria-label="breadcrumb">
+              <Link
+                underline="hover"
+                color="inherit"
+                sx={{ cursor: "pointer" }}
+                component={RouterLink}
+                href={"/demo/dashboard/listing"}
+              >
+                Listing
+              </Link>
+              <Typography color="text.primary">Add New Listing</Typography>
+            </Breadcrumbs>
+          </Stack>
+        </Stack>
+        <AddBlog draftImg={"draftImg"} />
+      </Container>
+    </Box>
+  );
 }
+
+export default Page;

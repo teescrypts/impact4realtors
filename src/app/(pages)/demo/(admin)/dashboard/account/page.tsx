@@ -1,8 +1,9 @@
-import HomeSection from "../components/sections/home-section";
+import React from "react";
+import AccountSettings from "../components/account-settings";
 import { Metadata } from "next/types";
 
 export const metadata: Metadata = {
-  title: "Home | Innovative Real Estate Solutions",
+  title: "Account settings | Innovative Real Estate Solutions",
   description:
     "Explore our live demo website showcasing cutting-edge tools for independent realtors. Our platform offers creative solutions for listing, buying, and renting properties—designed to elevate your real estate business.",
   keywords:
@@ -35,6 +36,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <HomeSection />;
+function Page() {
+  return (
+    <div>
+      <AccountSettings />
+    </div>
+  );
 }
+
+export default Page;

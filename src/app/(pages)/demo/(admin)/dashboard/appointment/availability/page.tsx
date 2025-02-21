@@ -1,8 +1,9 @@
-import HomeSection from "../components/sections/home-section";
+import React from "react";
+import Availability from "../../components/availability";
 import { Metadata } from "next/types";
 
 export const metadata: Metadata = {
-  title: "Home | Innovative Real Estate Solutions",
+  title: "Abailability | Innovative Real Estate Solutions",
   description:
     "Explore our live demo website showcasing cutting-edge tools for independent realtors. Our platform offers creative solutions for listing, buying, and renting properties—designed to elevate your real estate business.",
   keywords:
@@ -35,6 +36,58 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <HomeSection />;
+export interface TimeSlot {
+  from: string;
+  to: string;
 }
+
+export interface OpeningHoursType {
+  id: string;
+  owner: string;
+  monday: TimeSlot[];
+  tuesday: TimeSlot[];
+  wednesday: TimeSlot[];
+  thursday: TimeSlot[];
+  friday: TimeSlot[];
+  saturday: TimeSlot[];
+  sunday: TimeSlot[];
+  availability: "available" | "unavailable";
+}
+
+export const dummyOpeningHours: OpeningHoursType = {
+  id: "1",
+  owner: "John Doe",
+  monday: [
+    { from: "09:00", to: "12:00" },
+    { from: "13:00", to: "18:00" },
+  ],
+  tuesday: [
+    { from: "09:00", to: "12:00" },
+    { from: "13:00", to: "18:00" },
+  ],
+  wednesday: [
+    { from: "09:00", to: "12:00" },
+    { from: "13:00", to: "18:00" },
+  ],
+  thursday: [
+    { from: "09:00", to: "12:00" },
+    { from: "13:00", to: "18:00" },
+  ],
+  friday: [
+    { from: "09:00", to: "12:00" },
+    { from: "13:00", to: "17:00" },
+  ],
+  saturday: [{ from: "10:00", to: "14:00" }],
+  sunday: [],
+  availability: "available",
+};
+
+function Page() {
+  return (
+    <div>
+      <Availability openingHours={dummyOpeningHours} />
+    </div>
+  );
+}
+
+export default Page;
