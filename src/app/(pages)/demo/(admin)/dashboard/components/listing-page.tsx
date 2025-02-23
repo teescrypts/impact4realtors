@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   Box,
   Typography,
-  Grid,
+  Grid2,
   IconButton,
   Button,
   Menu,
@@ -69,7 +69,7 @@ export default function ListingsPage() {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h6" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold">
           Property Listings
         </Typography>
         <Link href={"/demo/dashboard/listing/add"}>
@@ -101,9 +101,9 @@ export default function ListingsPage() {
         </FormControl>
       </Box>
 
-      <Grid container spacing={2}>
+      <Grid2 container spacing={2}>
         {listings.map((listing) => (
-          <Grid item xs={12} sm={6} md={4} key={listing.id}>
+          <Grid2 size={{xs:12, sm:6, md:4}} key={listing.id}>
             <Card>
               <CardMedia
                 component="img"
@@ -140,9 +140,9 @@ export default function ListingsPage() {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Grid2>
         ))}
-      </Grid>
+      </Grid2>
 
       <Box display="flex" justifyContent="center" mt={3}>
         <Pagination

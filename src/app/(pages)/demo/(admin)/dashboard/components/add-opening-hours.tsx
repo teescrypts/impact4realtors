@@ -1,5 +1,7 @@
 import { addHour } from "@/app/actions/server-actions";
 import { SubmitButton } from "@/app/component/submit-buttton";
+import notify from "@/app/utils/toast";
+import { ActionStateType } from "@/types";
 import {
   Box,
   FormControl,
@@ -8,11 +10,10 @@ import {
   MenuItem,
   Stack,
   Typography,
-  Button,
 } from "@mui/material";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
-import React, { useActionState, useState } from "react";
+import React, { useActionState, useEffect, useState } from "react";
 
 const daysOfWeek = [
   { name: "monday", label: "Monday" },
@@ -24,13 +25,24 @@ const daysOfWeek = [
   { name: "sunday", label: "Sunday" },
 ];
 
-const initialState = null;
+const initialState: ActionStateType = null;
 
 function AddOpeningHours({ onClose }: { onClose: () => void }) {
   const [message, setMessage] = useState("");
   const [day, setDay] = useState("");
 
   const [state, formAction] = useActionState(addHour, initialState);
+
+  useEffect(() => {
+    if (state) {
+      if ("ok" in state && state.ok) {
+        notify(state.message);
+        onClose()
+      } else if ("error" in state) {
+        setMessage(state.error);
+      }
+    }
+  }, [state]);
 
   return (
     <form action={formAction}>

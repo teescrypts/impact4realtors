@@ -1,6 +1,8 @@
 import React from "react";
 import Availability from "../../components/availability";
 import { Metadata } from "next/types";
+import { cookies } from "next/headers";
+import apiRequest from "@/app/lib/api-request";
 
 export const metadata: Metadata = {
   title: "Abailability | Innovative Real Estate Solutions",
@@ -57,6 +59,7 @@ export interface OpeningHoursType {
 export const dummyOpeningHours: OpeningHoursType = {
   id: "1",
   owner: "John Doe",
+  availability: "available",
   monday: [
     { from: "09:00", to: "12:00" },
     { from: "13:00", to: "18:00" },
@@ -79,13 +82,26 @@ export const dummyOpeningHours: OpeningHoursType = {
   ],
   saturday: [{ from: "10:00", to: "14:00" }],
   sunday: [],
-  availability: "available",
 };
 
-function Page() {
+async function Page() {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const response = await apiRequest<{
+    message: string;
+    data: { openingHour: OpeningHoursType };
+  }>("admin/openings", {
+    token,
+    tag: "fetchOpenings",
+  });
+
+  const openingHours = response.data.openingHour;
+
   return (
     <div>
-      <Availability openingHours={dummyOpeningHours} />
+      <Availability openingHours={openingHours} />
     </div>
   );
 }

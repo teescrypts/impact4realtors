@@ -14,15 +14,28 @@ import {
   Typography,
   Grid2,
   Autocomplete,
+  CircularProgress,
 } from "@mui/material";
 import { Country, IState, ICity, City, State } from "country-state-city";
 import FileDropzone from "@/app/component/file-dropzone";
+import {
+  deleteImage,
+  deleteImages,
+  uploadImage,
+} from "@/app/actions/server-actions";
+import { DraftImgType } from "../listing/add/page";
+import notify from "@/app/utils/toast";
+import imageCompression from "browser-image-compression";
 
 interface FileType extends File {
   path?: string;
 }
 
-export default function AddListingPage() {
+export default function AddListingPage({
+  draftImages,
+}: {
+  draftImages: DraftImgType[];
+}) {
   const [features, setFeatures] = useState<string[]>([]);
   const [featureInput, setFeatureInput] = useState("");
 
@@ -34,7 +47,8 @@ export default function AddListingPage() {
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
 
-  const draftImages: { url: string; imageId: string; fileName: string }[] = [];
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgErr, setImgErr] = useState("");
 
   useEffect(() => {
     if (selectedCountry) {
@@ -50,11 +64,40 @@ export default function AddListingPage() {
     }
   }, [selectedCountry, selectedState]);
 
-  const handleFilesDrop = useCallback(async (newFiles: FileType[]) => {}, []);
+  const handleFilesDrop = useCallback(async (newFiles: FileType[]) => {
+    setImgLoading(true);
 
-  const handleFileRemove = useCallback(async (id: string) => {}, []);
+    for (let i = 0; i < newFiles.length; i++) {
+      if (newFiles[i]) {
+        const formData = new FormData();
+        formData.append("file", newFiles[i]);
+        formData.append("type", "listing");
 
-  const handleFilesRemoveAll = useCallback(async () => {}, []);
+        const result = await uploadImage(formData);
+
+        if (result.error) {
+          setImgLoading(false);
+          setImgErr(result.error);
+        }
+      }
+    }
+
+    setImgLoading(false);
+  }, []);
+
+  const handleFileRemove = useCallback(async (id: string) => {
+    const result = await deleteImage(id);
+
+    if (result?.error) setImgErr(result.error);
+    if (result?.message) notify(result.message);
+  }, []);
+
+  const handleFilesRemoveAll = useCallback(async () => {
+    const result = await deleteImages();
+
+    if (result?.error) setImgErr(result.error);
+    if (result?.message) notify(result.message);
+  }, []);
 
   const handleAddFeature = () => {
     if (featureInput.trim() && !features.includes(featureInput)) {
@@ -123,6 +166,7 @@ export default function AddListingPage() {
             </Select>
           </FormControl>
         </Grid2>
+
         <Grid2 size={{ xs: 12 }}>
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
@@ -147,6 +191,7 @@ export default function AddListingPage() {
             fullWidth
           />
         </Grid2>
+
         <Grid2 size={{ xs: 12 }}>
           <TextField
             variant="outlined"
@@ -265,6 +310,17 @@ export default function AddListingPage() {
         </Grid2>
 
         <Grid2 size={{ xs: 12 }}>
+          {features.length > 0 && (
+            <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap" }}>
+              {features.map((feature, index) => (
+                <Chip
+                  key={index}
+                  label={feature}
+                  onDelete={() => handleRemoveFeature(feature)}
+                />
+              ))}
+            </Stack>
+          )}
           <TextField
             variant="outlined"
             fullWidth
@@ -276,19 +332,18 @@ export default function AddListingPage() {
           <Button variant="contained" sx={{ mt: 1 }} onClick={handleAddFeature}>
             Add Feature
           </Button>
-          <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap" }}>
-            {features.map((feature, index) => (
-              <Chip
-                key={index}
-                label={feature}
-                onDelete={() => handleRemoveFeature(feature)}
-              />
-            ))}
-          </Stack>
         </Grid2>
 
         <Grid2 size={{ xs: 12 }}>
           <Typography variant="subtitle1">Images</Typography>
+        </Grid2>
+
+        <Grid2 size={{ xs: 12 }}>{imgLoading && <CircularProgress />}</Grid2>
+
+        <Grid2 size={{ xs: 12 }}>
+          <Typography variant="subtitle2" color="error">
+            {imgErr}
+          </Typography>
         </Grid2>
 
         <Grid2 size={{ xs: 12 }}>

@@ -46,13 +46,24 @@ async function apiRequest<T, D = undefined>(
     const response = await fetch(`${apiBaseUrl}/api/${endpoint}`, options);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errResult: { message?: string; status: number } =
+        await response.json();
+
+      if (errResult?.message) {
+        throw new Error(`${errResult.message}`);
+      } else {
+        throw new Error(`Http error status: ${errResult.status}`);
+      }
     }
 
     const result: T = await response.json();
     return result;
-  } catch (error: any) {
-    throw new Error(`API request error: ${error.message}`);
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(`${e.message}`);
+    } else {
+      throw new Error(`API request error`);
+    }
   }
 }
 

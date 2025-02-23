@@ -48,9 +48,6 @@ function Page() {
       }}
     >
       <Container maxWidth={"xl"}>
-        <Stack sx={{ mb: 2 }}>
-          <Typography variant="h4">Listing</Typography>
-        </Stack>
         <ListingsPage />
       </Container>
     </Box>

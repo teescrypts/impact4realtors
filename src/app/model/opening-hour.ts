@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from "mongoose";
+import mongoose, { Document, Schema, Model, models, model } from "mongoose";
 
 interface ITimeSlot {
   from: string;
@@ -10,10 +10,8 @@ const timeSlotSchema = new Schema<ITimeSlot>({
   to: { type: String, required: true },
 });
 
-interface IOpeningHour extends Document {
+export interface IOpeningHour extends Document {
   admin: mongoose.Types.ObjectId;
-  branch: mongoose.Types.ObjectId;
-  owner: mongoose.Types.ObjectId;
   monday: ITimeSlot[];
   tuesday: ITimeSlot[];
   wednesday: ITimeSlot[];
@@ -25,9 +23,7 @@ interface IOpeningHour extends Document {
 }
 
 const openingHoursSchema = new Schema<IOpeningHour>({
-  admin: { type: Schema.Types.ObjectId, required: true, ref: "User" },
-  branch: { type: Schema.Types.ObjectId, required: true, ref: "Branch" },
-  owner: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+  admin: { type: Schema.Types.ObjectId, required: true, ref: "Admin" },
   monday: { type: [timeSlotSchema], default: [] },
   tuesday: { type: [timeSlotSchema], default: [] },
   wednesday: { type: [timeSlotSchema], default: [] },
@@ -43,9 +39,7 @@ const openingHoursSchema = new Schema<IOpeningHour>({
   },
 });
 
-const OpeningHour: Model<IOpeningHour> = mongoose.model<IOpeningHour>(
-  "OpeningHour",
-  openingHoursSchema
-);
+const OpeningHour: Model<IOpeningHour> =
+  models.OpeningHour || model<IOpeningHour>("OpeningHour", openingHoursSchema);
 
 export default OpeningHour;

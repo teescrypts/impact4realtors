@@ -6,6 +6,7 @@ import PropertyListItem from "@/app/component/property-list-item";
 import Add from "@/app/icons/untitled-ui/duocolor/add";
 import {
   Box,
+  Breadcrumbs,
   Button,
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import {
   Divider,
   FormControlLabel,
   Grid2,
+  Link,
   Stack,
   SvgIcon,
   Switch,
@@ -25,10 +27,15 @@ import { useState } from "react";
 import AddOpeningHours from "./add-opening-hours";
 import { convertToAmPmFormat } from "@/app/utils/convert-to-am-pm";
 import { OpeningHoursType } from "../appointment/availability/page";
+import {
+  deleteTimeSlot,
+  updateAvailability,
+} from "@/app/actions/server-actions";
+import notify from "@/app/utils/toast";
+import { RouterLink } from "@/app/component/router-link";
 
 function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
   const [message, setMessage] = useState("");
-  const [updMsg, setUpdMsg] = useState("");
 
   const mdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("md"));
   const align = mdUp ? "horizontal" : "vertical";
@@ -51,6 +58,22 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <div>
                 <Typography variant="h4">Availability</Typography>
+                <Stack sx={{ mb: 2 }}>
+                  <Breadcrumbs separator="›" aria-label="breadcrumb">
+                    <Link
+                      underline="hover"
+                      color="inherit"
+                      sx={{ cursor: "pointer" }}
+                      component={RouterLink}
+                      href={"/demo/dashboard/appointment"}
+                    >
+                      Appointments
+                    </Link>
+                    <Typography color="text.primary">
+                      Manage availability
+                    </Typography>
+                  </Breadcrumbs>
+                </Stack>
               </div>
               <div>
                 <Stack direction="row" spacing={4}>
@@ -63,6 +86,16 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                             ? true
                             : false
                         }
+                        onChange={async () => {
+                          const result = await updateAvailability(
+                            openingHours.availability === "available"
+                              ? "unavailable"
+                              : "available"
+                          );
+
+                          if (result?.error) setMessage(result.error);
+                          if (result?.message) notify(result.message);
+                        }}
                       />
                     }
                   />
@@ -107,6 +140,18 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                                   label={`${convertToAmPmFormat(
                                     timeRanges.from
                                   )} - ${convertToAmPmFormat(timeRanges.to)}`}
+                                  onDelete={async () => {
+                                    const result = await deleteTimeSlot(
+                                      "monday",
+                                      {
+                                        from: timeRanges.from,
+                                        to: timeRanges.to,
+                                      }
+                                    );
+
+                                    if (result.error) setMessage(result.error);
+                                    if (result.message) notify(result.message);
+                                  }}
                                 />
                               </Grid2>
                             );
@@ -137,6 +182,18 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                                   label={`${convertToAmPmFormat(
                                     timeRanges.from
                                   )} - ${convertToAmPmFormat(timeRanges.to)}`}
+                                  onDelete={async () => {
+                                    const result = await deleteTimeSlot(
+                                      "tuesday",
+                                      {
+                                        from: timeRanges.from,
+                                        to: timeRanges.to,
+                                      }
+                                    );
+
+                                    if (result.error) setMessage(result.error);
+                                    if (result.message) notify(result.message);
+                                  }}
                                 />
                               </Grid2>
                             );
@@ -167,6 +224,18 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                                   label={`${convertToAmPmFormat(
                                     timeRanges.from
                                   )} - ${convertToAmPmFormat(timeRanges.to)}`}
+                                  onDelete={async () => {
+                                    const result = await deleteTimeSlot(
+                                      "wednesday",
+                                      {
+                                        from: timeRanges.from,
+                                        to: timeRanges.to,
+                                      }
+                                    );
+
+                                    if (result.error) setMessage(result.error);
+                                    if (result.message) notify(result.message);
+                                  }}
                                 />
                               </Grid2>
                             );
@@ -197,6 +266,18 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                                   label={`${convertToAmPmFormat(
                                     timeRanges.from
                                   )} - ${convertToAmPmFormat(timeRanges.to)}`}
+                                  onDelete={async () => {
+                                    const result = await deleteTimeSlot(
+                                      "thursday",
+                                      {
+                                        from: timeRanges.from,
+                                        to: timeRanges.to,
+                                      }
+                                    );
+
+                                    if (result.error) setMessage(result.error);
+                                    if (result.message) notify(result.message);
+                                  }}
                                 />
                               </Grid2>
                             );
@@ -227,6 +308,18 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                                   label={`${convertToAmPmFormat(
                                     timeRanges.from
                                   )} - ${convertToAmPmFormat(timeRanges.to)}`}
+                                  onDelete={async () => {
+                                    const result = await deleteTimeSlot(
+                                      "friday",
+                                      {
+                                        from: timeRanges.from,
+                                        to: timeRanges.to,
+                                      }
+                                    );
+
+                                    if (result.error) setMessage(result.error);
+                                    if (result.message) notify(result.message);
+                                  }}
                                 />
                               </Grid2>
                             );
@@ -257,6 +350,18 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                                   label={`${convertToAmPmFormat(
                                     timeRanges.from
                                   )} - ${convertToAmPmFormat(timeRanges.to)}`}
+                                  onDelete={async () => {
+                                    const result = await deleteTimeSlot(
+                                      "saturday",
+                                      {
+                                        from: timeRanges.from,
+                                        to: timeRanges.to,
+                                      }
+                                    );
+
+                                    if (result.error) setMessage(result.error);
+                                    if (result.message) notify(result.message);
+                                  }}
                                 />
                               </Grid2>
                             );
@@ -287,6 +392,18 @@ function Availability({ openingHours }: { openingHours: OpeningHoursType }) {
                                   label={`${convertToAmPmFormat(
                                     timeRanges.from
                                   )} - ${convertToAmPmFormat(timeRanges.to)}`}
+                                  onDelete={async () => {
+                                    const result = await deleteTimeSlot(
+                                      "sunday",
+                                      {
+                                        from: timeRanges.from,
+                                        to: timeRanges.to,
+                                      }
+                                    );
+
+                                    if (result.error) setMessage(result.error);
+                                    if (result.message) notify(result.message);
+                                  }}
                                 />
                               </Grid2>
                             );

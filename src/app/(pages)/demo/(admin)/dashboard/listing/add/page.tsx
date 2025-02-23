@@ -10,6 +10,8 @@ import AddListingPage from "../../components/add-listing-page";
 import { RouterLink } from "@/app/component/router-link";
 
 import { Metadata } from "next/types";
+import { cookies } from "next/headers";
+import apiRequest from "@/app/lib/api-request";
 
 export const metadata: Metadata = {
   title: "Add New Listing | Innovative Real Estate Solutions",
@@ -45,7 +47,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AddListing() {
+export type DraftImgType = { url: string; imageId: string; fileName: string };
+
+export default async function AddListing() {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const response = await apiRequest<{
+    message: string;
+    data: { draftImages: DraftImgType[] };
+  }>(`admin/image?type=${"listing"}`, {
+    token,
+    tag: "fetchistingDraftImgs",
+  });
+
+  const draftImages = response.data.draftImages;
+
   return (
     <Box
       component="main"
@@ -74,7 +92,7 @@ export default function AddListing() {
           </Breadcrumbs>
         </Stack>
 
-        <AddListingPage />
+        <AddListingPage draftImages={draftImages} />
       </Container>
     </Box>
   );
