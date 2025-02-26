@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import {
@@ -48,7 +48,6 @@ export default function FAQsSection() {
         py: 8,
         px: 3,
         textAlign: "center",
-        background: "linear-gradient(135deg, #f8f9fa, #e9ecef)",
       }}
     >
       <Typography variant="h4" fontWeight="bold" mb={4} color="primary">

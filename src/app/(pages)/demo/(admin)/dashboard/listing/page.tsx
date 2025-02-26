@@ -1,8 +1,12 @@
 import React from "react";
 import ListingsPage from "../components/listing-page";
-import { Box, Container, Stack, Typography } from "@mui/material";
+import { Box, Container } from "@mui/material";
 
 import { Metadata } from "next/types";
+import apiRequest from "@/app/lib/api-request";
+import { cookies } from "next/headers";
+import { PropertyType } from "@/types";
+import { revalidateTag } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Listing | Innovative Real Estate Solutions",
@@ -38,7 +42,37 @@ export const metadata: Metadata = {
   },
 };
 
-function Page() {
+async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const query = (await searchParams)?.query || "";
+  const status = (await searchParams)?.status || "";
+  const page = (await searchParams)?.page || "";
+
+  const response = await apiRequest<{
+    messgae: string;
+    data: {
+      properties: PropertyType[];
+      pagination: {
+        totalCount: number;
+        totalPages: number;
+        currentPage: number;
+      };
+    };
+  }>(`admin/listing?query=${query}&status=${status}&page=${page}`, {
+    token,
+    tag: "fetchAdminProperties",
+  });
+
+  const properties = response.data.properties;
+  const pagination = response.data.pagination;
+
   return (
     <Box
       component="main"
@@ -48,7 +82,10 @@ function Page() {
       }}
     >
       <Container maxWidth={"xl"}>
-        <ListingsPage />
+        <ListingsPage
+          properties={properties}
+          pagination={pagination}
+        />
       </Container>
     </Box>
   );

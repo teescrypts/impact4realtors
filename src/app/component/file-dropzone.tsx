@@ -113,17 +113,6 @@ function FileDropzone({
         <Box sx={{ mt: 2 }}>
           <List>
             {files.map((file) => {
-              // const extension = file.name.split(".").pop();
-              // const isImage = [
-              //   "jpg",
-              //   "jpeg",
-              //   "png",
-              //   "gif",
-              //   "bmp",
-              //   "webp",
-              // ].includes(extension!.toLowerCase());
-              // const imageUrl = URL.createObjectURL(file);
-
               return (
                 <ListItem
                   key={file.imageId}
@@ -163,8 +152,7 @@ function FileDropzone({
                   {/* )} */}
                   <ListItemText
                     primary={file.fileName}
-                    primaryTypographyProps={{ variant: "subtitle2" }}
-                    // secondary={bytesToSize(file.size)}
+                    slotProps={{ primary: { variant: "subtitle2" } }}
                   />
                   <Tooltip title="Remove">
                     <IconButton

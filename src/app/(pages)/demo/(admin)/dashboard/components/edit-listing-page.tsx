@@ -19,13 +19,12 @@ import { Country, IState, ICity, City, State } from "country-state-city";
 import FileDropzone from "@/app/component/file-dropzone";
 import {
   deleteImage,
-  deleteImages,
-  listProperty,
+  updateProperty,
   uploadImage,
 } from "@/app/actions/server-actions";
 import { DraftImgType } from "../listing/add/page";
 import notify from "@/app/utils/toast";
-import { ActionStateType } from "@/types";
+import { ActionStateType, PropertyType } from "@/types";
 import { SubmitButton } from "@/app/component/submit-buttton";
 import { useRouter } from "nextjs-toploader/app";
 
@@ -35,17 +34,26 @@ interface FileType extends File {
 
 const initialState: ActionStateType = null;
 
-export default function AddListingPage({
+export default function EditListingPage({
+  property,
   draftImages,
 }: {
+  property: PropertyType;
   draftImages: DraftImgType[];
 }) {
-  const [features, setFeatures] = useState<string[]>([]);
+  const [features, setFeatures] = useState<string[]>(property.features);
   const [featureInput, setFeatureInput] = useState("");
+  const [images, setImages] = useState<DraftImgType[]>([]);
 
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(
+    property.location.countryCode
+  );
+  const [selectedState, setSelectedState] = useState<string | null>(
+    property.location.stateCode
+  );
+  const [selectedCity, setSelectedCity] = useState<string | null>(
+    property.location.cityName
+  );
 
   const [countries] = useState(Country.getAllCountries());
   const [states, setStates] = useState<IState[]>([]);
@@ -53,6 +61,11 @@ export default function AddListingPage({
 
   const [imgLoading, setImgLoading] = useState(false);
   const [imgErr, setImgErr] = useState("");
+
+  useEffect(() => {
+    const combinedImages = [...property.images, ...draftImages];
+    setImages(combinedImages);
+  }, [draftImages, property]);
 
   useEffect(() => {
     if (selectedCountry) {
@@ -90,14 +103,7 @@ export default function AddListingPage({
   }, []);
 
   const handleFileRemove = useCallback(async (id: string) => {
-    const result = await deleteImage(id);
-
-    if (result?.error) setImgErr(result.error);
-    if (result?.message) notify(result.message);
-  }, []);
-
-  const handleFilesRemoveAll = useCallback(async () => {
-    const result = await deleteImages();
+    const result = await deleteImage(id, property._id);
 
     if (result?.error) setImgErr(result.error);
     if (result?.message) notify(result.message);
@@ -117,8 +123,11 @@ export default function AddListingPage({
   const router = useRouter();
   const [message, setMessage] = useState("");
 
-  const listPropertyAction = listProperty.bind(null, features, draftImages);
-  const [state, formAction] = useActionState(listPropertyAction, initialState);
+  const updatePropertyAction = updateProperty.bind(null, features, images);
+  const [state, formAction] = useActionState(
+    updatePropertyAction,
+    initialState
+  );
 
   useEffect(() => {
     if (state) {
@@ -126,6 +135,8 @@ export default function AddListingPage({
       if (state?.error) setMessage(state?.error);
     }
   }, [state]);
+
+  console.log(images);
 
   return (
     <Box>
@@ -135,6 +146,7 @@ export default function AddListingPage({
             <Typography variant="subtitle1">Basic Details</Typography>
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6 }}>
+            <input defaultValue={property._id} hidden name="id" />
             <TextField
               fullWidth
               label="Property Title"
@@ -142,6 +154,7 @@ export default function AddListingPage({
               name="propertyTitle"
               required
               type="text"
+              defaultValue={property.propertyTitle}
             />
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6 }}>
@@ -152,6 +165,7 @@ export default function AddListingPage({
               name="price"
               required
               type="number"
+              defaultValue={property.price}
             />
           </Grid2>
 
@@ -163,6 +177,7 @@ export default function AddListingPage({
               name="bedrooms"
               type="number"
               required
+              defaultValue={property.bedrooms}
             />
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6 }}>
@@ -173,6 +188,7 @@ export default function AddListingPage({
               name="bathrooms"
               type="number"
               required
+              defaultValue={property.bathrooms}
             />
           </Grid2>
           <Grid2 size={{ xs: 12 }}>
@@ -183,6 +199,7 @@ export default function AddListingPage({
               name="squareMeters"
               type="number"
               required
+              defaultValue={property.squareMeters}
             />
           </Grid2>
 
@@ -196,6 +213,7 @@ export default function AddListingPage({
               type="text"
               name="description"
               required
+              defaultValue={property.description}
             />
           </Grid2>
 
@@ -209,7 +227,7 @@ export default function AddListingPage({
                 variant="outlined"
                 label="Category"
                 name="category"
-                defaultValue=""
+                defaultValue={property.category}
               >
                 <MenuItem value="For Sale">For Sale</MenuItem>
                 <MenuItem value="For Rent">For Rent</MenuItem>
@@ -224,7 +242,7 @@ export default function AddListingPage({
                 label="Property Type"
                 variant="outlined"
                 name="propertyType"
-                defaultValue=""
+                defaultValue={property.propertyType}
               >
                 <MenuItem value="House">House</MenuItem>
                 <MenuItem value="Apartment">Apartment</MenuItem>
@@ -240,7 +258,7 @@ export default function AddListingPage({
                 variant="outlined"
                 label="Status"
                 name="status"
-                defaultValue=""
+                defaultValue={property.status}
               >
                 <MenuItem value="Active">Active</MenuItem>
                 <MenuItem value="Pending">Pending</MenuItem>
@@ -260,6 +278,7 @@ export default function AddListingPage({
               name="line1"
               label="Address Line 1"
               fullWidth
+              defaultValue={property.location.addressLine1}
             />
           </Grid2>
 
@@ -269,6 +288,7 @@ export default function AddListingPage({
               name="line2"
               label="Address Line 2"
               fullWidth
+              defaultValue={property.location.addressLine2}
             />
           </Grid2>
 
@@ -374,6 +394,7 @@ export default function AddListingPage({
               label="Postal Code"
               required
               fullWidth
+              defaultValue={property.location.postalCode}
             />
           </Grid2>
 
@@ -427,10 +448,10 @@ export default function AddListingPage({
             <FileDropzone
               accept={{ "image/*": [] }}
               caption="(SVG, JPG, or PNG. Ensure product is well centeered in the photo)"
-              files={draftImages}
+              files={images}
               onDrop={handleFilesDrop}
               onRemove={handleFileRemove}
-              onRemoveAll={handleFilesRemoveAll}
+              isEdit={true}
             />
           </Grid2>
 
@@ -441,7 +462,7 @@ export default function AddListingPage({
           )}
 
           <Grid2 size={{ xs: 12 }}>
-            <SubmitButton title="List Property" isFullWidth={true} />
+            <SubmitButton title="Save Edit" isFullWidth={true} />
           </Grid2>
         </Grid2>
       </form>

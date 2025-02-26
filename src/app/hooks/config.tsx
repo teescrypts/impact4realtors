@@ -78,16 +78,16 @@ export const useSections = (): MenuSection[] => {
               </SvgIcon>
             ),
           },
-          {
-            title: "Newsletter",
-            value: "newsletter",
-            path: paths.newsletter,
-            icon: (
-              <SvgIcon fontSize="small">
-                <StackedEmail />
-              </SvgIcon>
-            ),
-          },
+          // {
+          //   title: "Newsletter",
+          //   value: "newsletter",
+          //   path: paths.newsletter,
+          //   icon: (
+          //     <SvgIcon fontSize="small">
+          //       <StackedEmail />
+          //     </SvgIcon>
+          //   ),
+          // },
           {
             title: "Account",
             value: "account",

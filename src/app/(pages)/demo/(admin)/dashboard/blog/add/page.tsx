@@ -10,6 +10,9 @@ import {
 import React from "react";
 import AddBlog from "../../components/add-blog";
 import { Metadata } from "next/types";
+import { cookies } from "next/headers";
+import apiRequest from "@/app/lib/api-request";
+import { DraftImgType } from "../../listing/add/page";
 
 export const metadata: Metadata = {
   title: "Publish Blog | Innovative Real Estate Solutions",
@@ -45,7 +48,21 @@ export const metadata: Metadata = {
   },
 };
 
-function Page() {
+async function Page() {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const response = await apiRequest<{
+    message: string;
+    data: { draftImg: DraftImgType | string };
+  }>("admin/blog/image/draft", {
+    token,
+    tag: "fetchBlogDraftImg",
+  });
+
+  const draftImg = response.data.draftImg;
+
   return (
     <Box
       component="main"
@@ -64,15 +81,15 @@ function Page() {
                 color="inherit"
                 sx={{ cursor: "pointer" }}
                 component={RouterLink}
-                href={"/demo/dashboard/listing"}
+                href={"/demo/dashboard/blog"}
               >
-                Listing
+                Blog
               </Link>
-              <Typography color="text.primary">Add New Listing</Typography>
+              <Typography color="text.primary">Add New Blog</Typography>
             </Breadcrumbs>
           </Stack>
         </Stack>
-        <AddBlog draftImg={"draftImg"} />
+        <AddBlog draftImg={draftImg} />
       </Container>
     </Box>
   );

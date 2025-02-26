@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface IProperty extends Document {
+  admin: mongoose.Types.ObjectId;
   propertyTitle: string;
   price: number;
   bedrooms: number;
@@ -28,6 +29,7 @@ interface IProperty extends Document {
 
 const PropertySchema = new Schema<IProperty>(
   {
+    admin: { type: Schema.Types.ObjectId, required: true, ref: "Admin" },
     propertyTitle: { type: String, required: true },
     price: { type: Number, required: true },
     bedrooms: { type: Number, required: true },

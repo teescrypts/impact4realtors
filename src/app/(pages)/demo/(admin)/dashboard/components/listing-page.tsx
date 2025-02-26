@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
-  Grid2,
   IconButton,
   Button,
-  Menu,
-  MenuItem,
   Card,
   CardMedia,
   CardContent,
@@ -18,48 +15,124 @@ import {
   FormControl,
   InputLabel,
   Pagination,
+  CircularProgress,
+  SelectChangeEvent,
+  Grid2,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import ExpendMore from "@/app/icons/untitled-ui/duocolor/expand-more";
 import Link from "next/link";
+import { PropertyType } from "@/types";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  deleteProperty,
+  updatePropertyStatus,
+} from "@/app/actions/server-actions";
+import notify from "@/app/utils/toast";
 
-const listings = [
-  {
-    id: "1",
-    title: "Luxury Apartment in Downtown",
-    price: "$500,000",
-    location: "New York, NY",
-    image: "/images/apartment1.jpg",
-    status: "Active",
-  },
-  {
-    id: "2",
-    title: "Cozy Suburban Home",
-    price: "$350,000",
-    location: "Los Angeles, CA",
-    image: "/images/house1.jpg",
-    status: "Pending",
-  },
-];
+export default function ListingsPage({
+  properties,
+  pagination,
+}: {
+  properties: PropertyType[];
+  pagination: {
+    totalCount: number;
+    totalPages: number;
+    currentPage: number;
+  };
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-export default function ListingsPage() {
+  // States for search, filter, and pagination
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedListing, setSelectedListing] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("");
-  const [page, setPage] = useState(1);
+  const [selectedListingStatus, setSelectedListingStatus] = useState("");
+  const [search, setSearch] = useState(searchParams.get("query") || "");
+  const [filter, setFilter] = useState(searchParams.get("status") || "");
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
+  const [loading, setLoading] = useState(false);
+
+  // Handle search input with debounce
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      setLoading(true);
+      setPage(1); // Reset to page 1 when searching
+      router.push(`?query=${search}&status=${filter}&page=1`, {
+        scroll: false,
+      });
+      setLoading(false);
+    }, 1000); // Delay API call by 500ms
+
+    return () => clearTimeout(delaySearch);
+  }, [search]);
+
+  // Handle filter change
+  const handleFilterChange = (e: SelectChangeEvent<string>) => {
+    setLoading(true);
+    setFilter(e.target.value as string);
+    setPage(1); // Reset to page 1 when filtering
+    router.push(`?query=${search}&status=${e.target.value}&page=1`, {
+      scroll: false,
+    });
+    setLoading(false);
+  };
+
+  // Handle pagination change
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setLoading(true);
+    setPage(value);
+    router.push(`?query=${search}&status=${filter}&page=${value}`, {
+      scroll: false,
+    });
+    setLoading(false);
+  };
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    id: string
+    id: string,
+    status: string
   ) => {
     setAnchorEl(event.currentTarget);
     setSelectedListing(id);
+    setSelectedListingStatus(status);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedListing(null);
   };
+
+  const [message, setMesaage] = useState("");
+
+  const handleUpdateProperty = useCallback(
+    async (status: string) => {
+      if (selectedListing && selectedListingStatus) {
+        const result = await updatePropertyStatus(selectedListing, status);
+
+        if (result?.error) setMesaage(result.error);
+        if (result?.message) notify(result.message);
+
+        handleMenuClose();
+      }
+    },
+    [selectedListing]
+  );
+
+  const handleDeleteProperty = useCallback(async () => {
+    if (selectedListing) {
+      const result = await deleteProperty(selectedListing);
+
+      if (result?.error) setMesaage(result.error);
+      if (result?.message) notify(result.message);
+
+      handleMenuClose();
+    }
+  }, [selectedListing]);
 
   return (
     <Box>
@@ -79,6 +152,7 @@ export default function ListingsPage() {
         </Link>
       </Box>
 
+      {/* Search and Filter Section */}
       <Box display="flex" gap={2} mb={2}>
         <TextField
           label="Search Listings"
@@ -89,66 +163,80 @@ export default function ListingsPage() {
         />
         <FormControl variant="outlined" sx={{ minWidth: 200 }}>
           <InputLabel>Status</InputLabel>
-          <Select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            label="Status"
-          >
+          <Select value={filter} onChange={handleFilterChange} label="Status">
             <SelectItem value="">All</SelectItem>
             <SelectItem value="Active">Active</SelectItem>
             <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Sold">Sold</SelectItem>
           </Select>
         </FormControl>
       </Box>
 
-      <Grid2 container spacing={2}>
-        {listings.map((listing) => (
-          <Grid2 size={{xs:12, sm:6, md:4}} key={listing.id}>
-            <Card>
-              <CardMedia
-                component="img"
-                height="200"
-                image={listing.image}
-                alt={listing.title}
-              />
-              <CardContent>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold">
-                      {listing.title}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {listing.location} - {listing.price}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      color={listing.status === "Active" ? "green" : "orange"}
-                    >
-                      {listing.status}
-                    </Typography>
-                  </Box>
-                  <IconButton
-                    onClick={(event) => handleMenuClick(event, listing.id)}
+      {/* Property Listings */}
+      {loading ? (
+        <Box display="flex" justifyContent="center" my={4}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid2 container spacing={2}>
+          {properties.map((property) => (
+            <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={property._id}>
+              <Card>
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={property.images[0].url}
+                  alt={property.propertyTitle}
+                />
+                <CardContent>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
                   >
-                    <ExpendMore />
-                  </IconButton>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid2>
-        ))}
-      </Grid2>
+                    <Box>
+                      <Typography variant="h6" fontWeight="bold">
+                        {property.propertyTitle}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {`${property.location.stateName}, ${property.location.stateCode}`}{" "}
+                        - {property.price}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        color={
+                          property.status === "Active" ? "green" : "orange"
+                        }
+                      >
+                        {property.status}
+                      </Typography>
+                    </Box>
+                    <IconButton
+                      onClick={(event) =>
+                        handleMenuClick(event, property._id!, property.status)
+                      }
+                    >
+                      <ExpendMore />
+                    </IconButton>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid2>
+          ))}
+        </Grid2>
+      )}
 
+      <Typography variant="subtitle2" color="error" textAlign={"center"}>
+        {message}
+      </Typography>
+
+      {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={3}>
         <Pagination
-          count={5}
+          count={pagination.totalPages}
           page={page}
-          onChange={(e, value) => setPage(value)}
+          onChange={handlePageChange}
           color="primary"
         />
       </Box>
@@ -164,8 +252,19 @@ export default function ListingsPage() {
             Edit Listing
           </Link>
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>Mark as Sold</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Remove Listing</MenuItem>
+        {selectedListingStatus === "Active" ? (
+          <MenuItem onClick={() => handleUpdateProperty("Sold")}>
+            Mark as Sold
+          </MenuItem>
+        ) : (
+          <MenuItem onClick={() => handleUpdateProperty("Active")}>
+            Relist Property
+          </MenuItem>
+        )}
+
+        <MenuItem sx={{ color: "red" }} onClick={handleDeleteProperty}>
+          Remove Listing
+        </MenuItem>
       </Menu>
     </Box>
   );

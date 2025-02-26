@@ -27,7 +27,8 @@ function CustomTheme({
     colorPreset,
     contrast: "normal",
     responsiveFontSizes: true,
-    paletteMode: prefersDarkMode ? "dark" : "light",
+    paletteMode: "dark"
+    // paletteMode: prefersDarkMode ? "dark" : "light",
   };
 
   const theme = createTheme(config);

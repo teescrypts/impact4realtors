@@ -8,12 +8,8 @@ export interface BlogType {
   shortDescription: string;
   author: string;
   content: string;
-  coverImage: { url: string; fileName: string; imageId: string };
-  engagements: {
-    likes: number;
-    comments: number;
-    shares: number;
-  };
+  status: "draft" | "published";
+  cover: { url: string; fileName: string; imageId: string };
   createdAt: string;
   updatedAt: string;
 }

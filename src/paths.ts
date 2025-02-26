@@ -4,6 +4,6 @@ export const paths = {
   appointment: "/demo/dashboard/appointment",
   listing: "/demo/dashboard/listing",
   blog: "/demo/dashboard/blog",
-  newsletter: "/demo/dashboard/newsletter",
+  // newsletter: "/demo/dashboard/newsletter",
   account: "/demo/dashboard/account",
 };

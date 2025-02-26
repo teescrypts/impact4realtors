@@ -11,19 +11,24 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useActionState, useCallback, useEffect, useState } from "react";
+import React, {
+  useActionState,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import FileDropzone from "@/app/component/file-dropzone";
 import { QuillEditor } from "@/app/component/quil-editor";
 import Image from "next/image";
 import {
-  deleteImage,
-  uploadBlog,
+  deleteBlogImage,
+  updateBlog,
   uploadImage,
 } from "@/app/actions/server-actions";
 import notify from "@/app/utils/toast";
-import { ActionStateType } from "@/types";
+import { ActionStateType, BlogType } from "@/types";
 import { SubmitButton } from "@/app/component/submit-buttton";
-import { useRouter } from "nextjs-toploader/app";
 
 export interface BlogDraftImageType {
   url: string;
@@ -33,21 +38,27 @@ export interface BlogDraftImageType {
 
 const initialState: ActionStateType = null;
 
-function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
+function EditBlog({
+  draftImg,
+  blog,
+}: {
+  draftImg: BlogDraftImageType | string;
+  blog: BlogType;
+}) {
   const [cover, setCover] = useState<{
     url: string;
     imageId: string;
     fileName: string;
   } | null>(null);
 
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(blog.content);
 
   const [imgMsg, setImgMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (typeof draftImg === "string") {
-      setCover(null);
+      setCover(blog.cover);
     } else {
       setCover({
         url: `${draftImg.url}?name=${draftImg.fileName}`,
@@ -55,11 +66,11 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
         fileName: draftImg.fileName,
       });
     }
-  }, [draftImg]);
+  }, [draftImg, blog]);
 
   const handleCoverDrop = useCallback(
     async ([file]: File[]) => {
-      if (typeof draftImg === "string") {
+      if (!cover) {
         setLoading(true);
         if (file) {
           const formData = new FormData();
@@ -81,12 +92,12 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
 
       setLoading(false);
     },
-    [draftImg]
+    [draftImg, cover]
   );
 
   const handleCoverRemove = useCallback(
     async (id: string) => {
-      const result = await deleteImage(id);
+      const result = await deleteBlogImage(id, blog._id);
 
       if (result?.error) setImgMsg(result.error);
       if (result?.message) {
@@ -96,16 +107,22 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
     [draftImg]
   );
 
-  const router = useRouter();
+  const contentRef = useRef<HTMLInputElement>(null);
 
-  const publishBlog = uploadBlog.bind(null, cover, "Published");
+  useEffect(() => {
+    if (contentRef.current && content) {
+      contentRef.current.value = content;
+    }
+  }, [content]);
+
+  const updateBlogPost = updateBlog.bind(null, cover, "Published");
   const [message, setMessage] = useState("");
-  const [state, formAction] = useActionState(publishBlog, initialState);
+  const [state, formAction] = useActionState(updateBlogPost, initialState);
 
   useEffect(() => {
     if (state) {
       if (state?.error) setMessage(state.error);
-      if (state?.message) router.push("/demo/dashboard/blog");
+      if (state?.message) notify(state.message);
     }
   }, [state]);
 
@@ -120,11 +137,13 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
               </Grid2>
               <Grid2 size={{ xs: 12, md: 8 }}>
                 <Stack spacing={3}>
+                  <input name="id" defaultValue={blog._id} hidden />
                   <TextField
                     variant="outlined"
                     fullWidth
                     label="Post title"
                     name="title"
+                    defaultValue={blog.title}
                   />
                   <TextField
                     variant="outlined"
@@ -133,12 +152,14 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                     name="shortDescription"
                     multiline
                     minRows={3}
+                    defaultValue={blog.shortDescription}
                   />
                   <TextField
                     name="author"
                     variant="outlined"
                     fullWidth
                     label="Aurthor"
+                    defaultValue={blog.author}
                   />
 
                   <TextField
@@ -148,6 +169,7 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                     fullWidth
                     label="Estimated Read Time"
                     slotProps={{ htmlInput: { min: 1 } }}
+                    defaultValue={blog.estReadTime}
                   />
                 </Stack>
               </Grid2>
@@ -225,12 +247,12 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                       </Typography>
                     </Box>
                   )}
-                  {typeof draftImg !== "string" && (
+                  {cover && (
                     <div>
                       <Button
                         color="inherit"
                         disabled={!cover}
-                        onClick={() => handleCoverRemove(draftImg.imageId)}
+                        onClick={() => handleCoverRemove(cover.imageId)}
                       >
                         Remove photo
                       </Button>
@@ -259,9 +281,9 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                   value={content}
                   onChange={(value: string) => setContent(value)}
                   placeholder="Write something"
-                  sx={{ height: 330 }}
+                  sx={{ height: 400 }}
                 />
-                <input defaultValue={content} hidden name="content" />
+                <input ref={contentRef} name="content" type="hidden" />
               </Grid2>
             </Grid2>
           </CardContent>
@@ -279,10 +301,10 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
         justifyContent={"flex-end"}
         direction={"row"}
       >
-        <SubmitButton title="Publish post" isFullWidth={false} />
+        <SubmitButton title="Save Edit" isFullWidth={false} />
       </Stack>
     </form>
   );
 }
 
-export default AddBlog;
+export default EditBlog;

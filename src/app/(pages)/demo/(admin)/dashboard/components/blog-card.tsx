@@ -17,10 +17,8 @@ import { BlogType } from "./blog-page";
 import truncateWords from "@/app/utils/truncated-words";
 import Edit from "@/app/icons/untitled-ui/duocolor/edit";
 import Delete from "@/app/icons/untitled-ui/duocolor/delete";
-import Comments from "@/app/icons/untitled-ui/duocolor/comment";
-import Likes from "@/app/icons/untitled-ui/duocolor/likes";
-import Share07 from "@/app/icons/untitled-ui/duocolor/share-07";
-
+import { deleteBlog } from "@/app/actions/server-actions";
+import notify from "@/app/utils/toast";
 function formatCreatedAt(createdAt: Date): string {
   return format(new Date(createdAt), "MMMM d, yyyy");
 }
@@ -30,9 +28,9 @@ const BlogCard: React.FC<BlogType> = ({
   createdAt,
   title,
   shortDescription,
-  engagements: { comments, likes, shares },
-  coverImage: { url, fileName, imageId },
+  cover,
   author,
+  status,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -74,6 +72,10 @@ const BlogCard: React.FC<BlogType> = ({
           {truncateWords(shortDescription, 20)}
         </Typography>
 
+        <Typography variant="body2" color="textSecondary">
+          Status: {status}
+        </Typography>
+
         {/* Edit/Delete buttons with spacing */}
         <Box
           sx={{
@@ -91,7 +93,17 @@ const BlogCard: React.FC<BlogType> = ({
               </IconButton>
             </Link>
 
-            <IconButton color="error" size="small" aria-label="delete">
+            <IconButton
+              onClick={async () => {
+                const result = await deleteBlog(_id);
+
+                if (result?.message) notify(result.message);
+                if (result?.error) setMessage(result.error);
+              }}
+              color="error"
+              size="small"
+              aria-label="delete"
+            >
               <Delete />
             </IconButton>
           </Box>
@@ -103,7 +115,7 @@ const BlogCard: React.FC<BlogType> = ({
         <CardMedia
           component="img"
           sx={{ width: 200 }}
-          image={url}
+          image={cover?.url ? cover.url : ""}
           alt={title}
         />
       )}

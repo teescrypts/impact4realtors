@@ -12,6 +12,8 @@ import React from "react";
 import BlogPage, { BlogType } from "../components/blog-page";
 
 import { Metadata } from "next/types";
+import { cookies } from "next/headers";
+import apiRequest from "@/app/lib/api-request";
 
 export const metadata: Metadata = {
   title: "Blog | Innovative Real Estate Solutions",
@@ -47,81 +49,21 @@ export const metadata: Metadata = {
   },
 };
 
-export const dummyBlogs: BlogType[] = [
-  {
-    _id: "blog123",
-    title: "The Future of Real Estate in 2025",
-    shortDescription:
-      "A deep dive into emerging trends shaping the real estate market in 2025.",
-    author: "John Doe",
-    content: `
-        The real estate industry is evolving rapidly, with technology and shifting market 
-        dynamics playing a crucial role. In this article, we explore key trends such as 
-        smart homes, AI-driven property recommendations, and sustainable housing developments.
-      `,
-    coverImage: {
-      url: "https://example.com/blog-cover1.jpg",
-      fileName: "blog-cover1.jpg",
-      imageId: "img_456xyz",
-    },
-    engagements: {
-      likes: 120,
-      comments: 35,
-      shares: 50,
-    },
-    createdAt: "2025-02-14T10:30:00Z",
-    updatedAt: "2025-02-14T12:45:00Z",
-  },
-  {
-    _id: "blog124",
-    title: "How AI is Transforming Home Buying",
-    shortDescription:
-      "Exploring how artificial intelligence is reshaping the home-buying process.",
-    author: "Jane Smith",
-    content: `
-        AI-powered tools are making home buying more efficient by providing personalized 
-        recommendations, automating paperwork, and improving mortgage approval processes.
-      `,
-    coverImage: {
-      url: "https://example.com/blog-cover2.jpg",
-      fileName: "blog-cover2.jpg",
-      imageId: "img_789abc",
-    },
-    engagements: {
-      likes: 200,
-      comments: 45,
-      shares: 80,
-    },
-    createdAt: "2025-02-10T08:15:00Z",
-    updatedAt: "2025-02-12T09:30:00Z",
-  },
-  {
-    _id: "blog125",
-    title: "Sustainable Housing: The Next Big Thing",
-    shortDescription:
-      "How eco-friendly housing is becoming the new standard in real estate.",
-    author: "Michael Green",
-    content: `
-        Green homes with energy-efficient designs and sustainable materials are attracting 
-        more buyers. Developers are focusing on solar energy, water conservation, and smart 
-        resource management.
-      `,
-    coverImage: {
-      url: "https://example.com/blog-cover3.jpg",
-      fileName: "blog-cover3.jpg",
-      imageId: "img_987def",
-    },
-    engagements: {
-      likes: 150,
-      comments: 60,
-      shares: 70,
-    },
-    createdAt: "2025-01-25T14:20:00Z",
-    updatedAt: "2025-02-01T16:00:00Z",
-  },
-];
+async function Page() {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
 
-function Page() {
+  const response = await apiRequest<{ data: { blogs: BlogType[] } }>(
+    "admin/blog",
+    {
+      token,
+      tag: "fetchAdminBlogs",
+    }
+  );
+
+  const blogs = response.data.blogs;
+
   return (
     <Box
       component="main"
@@ -151,7 +93,7 @@ function Page() {
               </Button>
             </Stack>
           </Stack>
-          <BlogPage blogs={dummyBlogs} />
+          <BlogPage blogs={blogs} />
         </Stack>
       </Container>
     </Box>
