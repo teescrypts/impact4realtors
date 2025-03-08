@@ -1,62 +1,81 @@
 import React from "react";
 import ListingDetailsPage from "../../../components/listing-details";
 
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
+import apiRequest from "@/app/lib/api-request";
+import FAQsSection from "../../../components/sections/faqs";
+import { propertyType } from "../../page";
 
-// type Props = {
-//   params: Promise<{ id: string }>;
-//   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-// };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
-export async function generateMetadata(): Promise<Metadata> {
-  // { params, searchParams }: Props,
-  // parent: ResolvingMetadata
-  // In a real app, you'd fetch the blog data using the blog ID from params.
-  // For this example, we'll use dummy blog data.
-  const blogId = "hahhhshshshshshs";
-  const blog = {
-    title: "The Future of Real Estate: Trends to Watch",
-    description:
-      "In today's rapidly evolving real estate market, staying ahead of trends is crucial. Discover modern trends shaping the future of real estate in this insightful blog post.",
-    image: "https://yourdomain.com/images/blog_future_real_estate.jpg",
-  };
+export async function generateMetadata(
+  { params, searchParams }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const propertyId = (await params).id;
+  const propertyData = await apiRequest<{
+    message: string;
+    data: { property: propertyType };
+  }>(`public/listing/${propertyId}`, {
+    tag: "fetchPublicProperty",
+  });
+
+  const property = propertyData.data.property;
 
   return {
-    title: `${blog.title} | Realtor Demo Blog`,
-    description: blog.description,
-    keywords:
-      "real estate, trends, realtor demo, independent realtor, blog, real estate technology, property trends",
+    title: `${property.propertyTitle} | Realtor Demo Blog`,
+    description: property.description,
+    keywords: `real estate, trends, realtor demo, independent realtor, blog, real estate technology, property trends, ${property.category}, ${property.price}, ${property.location.addressLine1}, ${property.location.countryName}, ${property.location.stateName}, ${property.location.cityName}`,
     icons: {
       icon: "/favicon.ico",
       apple: "/apple-touch-icon.png",
     },
     openGraph: {
-      title: `${blog.title} | Realtor Demo Blog`,
-      description: blog.description,
-      url: `https://yourdomain.com/blog/${blogId}`,
+      title: `${property.propertyTitle} | Realtor Demo Blog`,
+      description: property.description,
+      url: `https://yourdomain.com/blog/${propertyId}`,
       type: "article",
       images: [
         {
-          url: blog.image,
+          url: property.images[0].url,
           width: 1200,
           height: 630,
-          alt: blog.title,
+          alt: property.category,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${blog.title} | Realtor Demo Blog`,
-      description: blog.description,
-      images: [blog.image],
+      title: `${property.propertyTitle} | Realtor Demo Blog`,
+      description: property.description,
+      images: [property.images[0].url],
     },
   };
 }
 
-function Page() {
+async function Page({ params, searchParams }: Props) {
+  const id = (await params).id;
+  const adminId = (await searchParams).admin;
+
+  const response = await apiRequest<{
+    message: string;
+    data: { property: propertyType };
+  }>(`public/listing/${id}`, {
+    tag: "fetchPublicProperty",
+  });
+
+  const property = response.data.property;
+
   return (
     <div>
-      <ListingDetailsPage />
+      <ListingDetailsPage
+        adminId={adminId as string | undefined}
+        property={property}
+      />
+      <FAQsSection />
     </div>
   );
 }

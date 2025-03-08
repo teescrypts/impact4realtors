@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useActionState,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Box,
   Button,
@@ -13,6 +19,9 @@ import {
   Grid2,
   IconButton,
   SvgIcon,
+  CircularProgress,
+  Stack,
+  Avatar,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTheme } from "@mui/material/styles";
@@ -23,6 +32,15 @@ import ChevronRight from "@/app/icons/untitled-ui/duocolor/chevron-right";
 import { convertTo12HourFormat } from "@/app/utils/convert-to-12hrs-format";
 import Call from "@/app/icons/untitled-ui/duocolor/call";
 import SimpleBarCore from "simplebar-core";
+import Link from "next/link";
+import { ActionStateType, AppointmentData } from "@/types";
+import {
+  fetchAvailabilty,
+  bookAppointment,
+} from "@/app/actions/server-actions";
+import addDurationToTime from "@/app/utils/add-duration-to-time";
+import { SubmitButton } from "@/app/component/submit-buttton";
+import notify from "@/app/utils/toast";
 
 const textFieldStyle = {
   backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -52,40 +70,20 @@ type DateItem = {
   slots: string[];
 };
 
-const SellSection = () => {
+const initialState: ActionStateType = null;
+
+const SellSection = ({ adminId }: { adminId?: string }) => {
   const theme = useTheme();
-  const [selectedDate, setSelectedDate] = useState<DateItem | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isProgrammaticScroll, setIsProgrammaticScroll] =
     useState<boolean>(false);
+  const [dates, setDates] = useState<DateItem[]>([]);
+  const [selectedDate, setSelectedDate] = useState<DateItem | null>(null);
   const [selectedSlot, setSelectedSlot] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const scrollbarRef = useRef<SimpleBarCore | null>(null);
-  const dates: DateItem[] = [
-    {
-      date: "2025-01-09",
-      slots: [
-        "13:00",
-        "10:00",
-        "13:00",
-        "10:00",
-        "13:00",
-        "10:00",
-        "13:00",
-        "10:00",
-      ],
-    },
-    { date: "2025-01-10", slots: ["01:00", "12:00"] },
-    { date: "2025-01-11", slots: ["02:00", "04:00"] },
-    { date: "2025-01-12", slots: ["13:00", "10:00"] },
-    { date: "2025-01-13", slots: ["01:00", "12:00"] },
-    { date: "2025-01-15", slots: ["02:00", "04:00"] },
-    { date: "2025-01-16", slots: ["01:00", "12:00"] },
-    { date: "2025-01-17", slots: ["02:00", "04:00"] },
-    { date: "2025-01-18", slots: ["13:00", "10:00"] },
-    { date: "2025-01-19", slots: ["01:00", "12:00"] },
-    { date: "2025-01-20", slots: ["02:00", "04:00"] },
-  ];
 
   const handleDateClick = (date: DateItem) => {
     if (date.slots.length > 0) {
@@ -154,221 +152,363 @@ const SellSection = () => {
     };
   }, [currentIndex, dates.length, isProgrammaticScroll]);
 
+  const [visibleSlots, setVisibleSlots] = useState(10);
+
+  const handleShowMore = () => {
+    setVisibleSlots((prev) => prev + 10);
+  };
+
+  const [aptData, setAptData] = useState<AppointmentData>({
+    type: "call",
+    date: undefined,
+    bookedTime: {
+      to: undefined,
+      from: undefined,
+    },
+    callReason: "selling",
+  });
+
+  useEffect(() => {
+    if (selectedDate) {
+      setAptData((prev) => {
+        return {
+          ...prev,
+          date: selectedDate?.date,
+        };
+      });
+    }
+
+    if (selectedSlot) {
+      setAptData((prev) => {
+        return {
+          ...prev,
+          bookedTime: {
+            from: selectedSlot,
+            to: addDurationToTime(selectedSlot, { hours: 0, minutes: 45 }),
+          },
+        };
+      });
+    }
+  }, [selectedDate, selectedSlot]);
+
+  const handleContinue = useCallback(async () => {
+    setIsLoading(true);
+    const result = await fetchAvailabilty("tour", adminId);
+    if (result.availability) setDates(result.availability);
+    if (result.error) setMessage(result.error);
+    if (result.message) setMessage(result.message);
+    setIsLoading(false);
+  }, []);
+
+  const bookAppointmentWithData = bookAppointment.bind(null, adminId, aptData);
+  const [state, formAction] = useActionState(
+    bookAppointmentWithData,
+    initialState
+  );
+
+  useEffect(() => {
+    if (state) {
+      if (state?.error) setMessage(state.error);
+      if (state?.message) {
+        notify(state.message);
+        setDates([]);
+        setSelectedSlot("");
+        setSelectedDate(null);
+      }
+    }
+  }, [state]);
+
   return (
     <Box
       sx={{
-        background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.light})`,
+        background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.alpha50})`,
         color: "white",
         py: 6,
       }}
     >
-      <Container maxWidth="md">
-        <div>
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            textAlign="center"
-            gutterBottom
-          >
-            Book a Call with Our Realtor
-          </Typography>
-
-          <Typography
-            variant="subtitle1"
-            textAlign="center"
-            maxWidth={600}
-            mx="auto"
-            mb={4}
-          >
-            Select a date and time that works for you, and let’s discuss selling
-            your home effortlessly.
-          </Typography>
-        </div>
-
-        <Grid2 container spacing={3} mb={4}>
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              label="Full Name"
-              name="name"
-              type="text"
-              required
-              sx={textFieldStyle}
-            />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              label="Email Address"
-              name="email"
-              type="email"
-              required
-              sx={textFieldStyle}
-            />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              label="Phone Number"
-              name="phone"
-              required
-              sx={textFieldStyle}
-            />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              label="Property Type"
-              name="propertyType"
-              required
-              sx={textFieldStyle}
-            />
-          </Grid2>
-        </Grid2>
-
-        <Grid2 container spacing={3} justifyContent="center" mb={4}>
-          <Box sx={{ p: 2 }}>
-            {dates[currentIndex] && (
-              <Typography variant="h2" align="center">
-                {`${format(parseISO(dates[currentIndex].date), "MMMM yyyy")}`}
-              </Typography>
-            )}
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              overflow: "hidden",
-              mb: 2,
-            }}
-          >
-            <IconButton
-              onClick={handleScrollLeft}
-              disabled={currentIndex === 0}
-            >
-              <ChevronLeft />
-            </IconButton>
-
-            <Scrollbar
-              ref={scrollbarRef}
-              style={{ width: "100%", overflowX: "auto" }}
-            >
-              <Grid2 container wrap="nowrap" spacing={2}>
-                {dates.map((date: DateItem) => (
-                  <Grid2
-                    key={date.date}
-                    sx={{
-                      flex: "0 0 auto",
-                      textAlign: "center",
-                    }}
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <Card
-                        sx={{
-                          minWidth: 80,
-                          cursor:
-                            date.slots.length > 0 ? "pointer" : "not-allowed",
-                          background:
-                            selectedDate?.date === date.date
-                              ? "#fff"
-                              : "#eeeeee50",
-                          color:
-                            selectedDate?.date === date.date
-                              ? "black"
-                              : "white",
-                          transition: "all 0.3s ease",
-                        }}
-                        onClick={() => handleDateClick(date)}
-                      >
-                        <CardContent>
-                          <Box>
-                            <Typography variant="subtitle1">
-                              {format(parseISO(date.date), "d")}
-                            </Typography>
-                            <Typography variant="subtitle2">
-                              {format(parseISO(date.date), "EEE")}
-                            </Typography>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </Grid2>
-                ))}
-              </Grid2>
-            </Scrollbar>
-
-            <IconButton
-              onClick={handleScrollRight}
-              disabled={currentIndex === dates.length - 1}
-            >
-              <ChevronRight />
-            </IconButton>
-          </Box>
-        </Grid2>
-
-        {selectedDate && (
+      <form action={formAction}>
+        <Container maxWidth="md">
           <Box textAlign="center" mb={4}>
-            <Typography variant="h6" gutterBottom sx={{ my: 4 }}>
-              Time slots for {format(parseISO(selectedDate.date), "PPPP")}:
+            <Avatar
+              src="/images/agent.jpeg" // Update this path to the actual image location
+              alt="Andrea - Real Estate Agent"
+              sx={{ width: 200, height: 200, mx: "auto", mb: 2 }}
+            />
+
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Hey there, I’m Andrea!
             </Typography>
 
-            <Grid2 container spacing={2} justifyContent="center">
-              {selectedDate.slots.length > 0 ? (
-                selectedDate.slots.map((slot, index) => (
-                  <Grid2
-                    key={index}
-                    size={{ xs: 4, sm: 4, md: 2 }}
-                    display="flex"
-                    justifyContent="center"
-                  >
-                    <Chip
-                      label={convertTo12HourFormat(slot)}
-                      onClick={() => setSelectedSlot(slot)}
-                      sx={{
-                        px: 2,
-                        py: 1,
-                        borderRadius: "20px",
-                        cursor: "pointer",
-                        background:
-                          slot === selectedSlot ? "white" : "#eeeeee50",
-                        color: slot === selectedSlot ? "black" : "white",
-                        transition: "all 0.3s ease",
-                      }}
-                    />
-                  </Grid2>
-                ))
-              ) : (
-                <Typography>No slots available.</Typography>
-              )}
-            </Grid2>
-          </Box>
-        )}
+            <Typography variant="subtitle1" maxWidth={600} mx="auto" mb={2}>
+              Thinking about selling your home? I’m here to make the process
+              smooth and stress-free. Whether you have questions about pricing,
+              market trends, or the next steps, I’ve got you covered!
+            </Typography>
 
-        {selectedSlot && (
-          <Box textAlign="center">
-            <Button
-              startIcon={
-                <SvgIcon>
-                  <Call />
-                </SvgIcon>
-              }
-              variant="contained"
-              color="secondary"
-              size="large"
-            >
-              Book a Call
-            </Button>
+            <Typography variant="subtitle1" maxWidth={600} mx={"auto"}>
+              Schedule a free, no-obligation call today, or give me a call at{" "}
+              <Link href="tel:+17036343963" color="inherit">
+                (123) 456-7890
+              </Link>
+              . Let’s get your home sold for the best price, hassle-free!
+            </Typography>
           </Box>
-        )}
-      </Container>
+
+          <div>
+            <Grid2 container spacing={3} mb={4}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  label="First Name"
+                  name="firstName"
+                  type="text"
+                  required
+                  sx={textFieldStyle}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  label="Last Name"
+                  name="lastName"
+                  type="text"
+                  required
+                  sx={textFieldStyle}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  required
+                  sx={textFieldStyle}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  label="Phone Number"
+                  name="phoneNumber"
+                  required
+                  sx={textFieldStyle}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 12 }}>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  label="Property Type"
+                  name="propertyTypeToSell"
+                  required
+                  sx={textFieldStyle}
+                />
+              </Grid2>
+            </Grid2>
+
+            <Stack>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="large"
+                onClick={handleContinue}
+              >
+                Continue
+              </Button>
+            </Stack>
+
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  minHeight={100}
+                >
+                  <CircularProgress color="secondary" />
+                </Box>
+              </motion.div>
+            )}
+
+            {dates.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Grid2 container spacing={3} justifyContent="center" mb={4}>
+                  <Box sx={{ p: 2 }}>
+                    {dates[currentIndex] && (
+                      <div>
+                        <Typography variant="h3" align="center" sx={{ my: 2 }}>
+                          Select Date
+                        </Typography>
+                        <Typography variant="h5" align="center">
+                          {`${format(
+                            parseISO(dates[currentIndex].date),
+                            "MMMM yyyy"
+                          )}`}
+                        </Typography>
+                      </div>
+                    )}
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      overflow: "hidden",
+                      mb: 2,
+                    }}
+                  >
+                    <IconButton
+                      onClick={handleScrollLeft}
+                      disabled={currentIndex === 0}
+                    >
+                      <ChevronLeft />
+                    </IconButton>
+
+                    <Scrollbar
+                      ref={scrollbarRef}
+                      style={{ width: "100%", overflowX: "auto" }}
+                    >
+                      <Grid2 container wrap="nowrap" spacing={2}>
+                        {dates.map((date: DateItem) => (
+                          <Grid2
+                            key={date.date}
+                            sx={{
+                              flex: "0 0 auto",
+                              textAlign: "center",
+                            }}
+                          >
+                            <motion.div
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <Card
+                                sx={{
+                                  minWidth: 80,
+                                  cursor:
+                                    date.slots.length > 0
+                                      ? "pointer"
+                                      : "not-allowed",
+                                  background:
+                                    date.slots.length > 0
+                                      ? selectedDate?.date === date.date
+                                        ? "#fff"
+                                        : theme.palette.success.alpha50
+                                      : theme.palette.error.alpha50,
+                                  color:
+                                    selectedDate?.date === date.date
+                                      ? "black"
+                                      : "white",
+                                  transition: "all 0.3s ease",
+                                }}
+                                onClick={() => handleDateClick(date)}
+                              >
+                                <CardContent>
+                                  <Box>
+                                    <Typography variant="subtitle1">
+                                      {format(parseISO(date.date), "d")}
+                                    </Typography>
+                                    <Typography variant="subtitle2">
+                                      {format(parseISO(date.date), "EEE")}
+                                    </Typography>
+                                  </Box>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          </Grid2>
+                        ))}
+                      </Grid2>
+                    </Scrollbar>
+
+                    <IconButton
+                      onClick={handleScrollRight}
+                      disabled={currentIndex === dates.length - 1}
+                    >
+                      <ChevronRight />
+                    </IconButton>
+                  </Box>
+                </Grid2>
+              </motion.div>
+            )}
+
+            {selectedDate && (
+              <Box textAlign="center" mb={4}>
+                <Typography variant="h6" gutterBottom sx={{ my: 4 }}>
+                  Time slots for {format(parseISO(selectedDate.date), "PPPP")}:
+                </Typography>
+
+                <Grid2 container spacing={2} justifyContent="center">
+                  {selectedDate.slots.length > 0 ? (
+                    selectedDate.slots
+                      .slice(0, visibleSlots)
+                      .map((slot, index) => (
+                        <Grid2
+                          key={index}
+                          size={{ xs: 6, sm: 4, md: 4 }}
+                          display="flex"
+                          justifyContent="center"
+                        >
+                          <Chip
+                            label={convertTo12HourFormat(slot)}
+                            onClick={() => setSelectedSlot(slot)}
+                            sx={{
+                              px: 2,
+                              py: 1,
+                              borderRadius: "20px",
+                              cursor: "pointer",
+                              background:
+                                slot === selectedSlot ? "white" : "#eeeeee50",
+                              color: slot === selectedSlot ? "black" : "white",
+                              transition: "all 0.3s ease",
+                            }}
+                          />
+                        </Grid2>
+                      ))
+                  ) : (
+                    <Typography>No slots available.</Typography>
+                  )}
+                </Grid2>
+
+                {/* Show More Button */}
+                {visibleSlots < selectedDate.slots.length && (
+                  <Button
+                    onClick={handleShowMore}
+                    sx={{ mt: 2, color: "white" }}
+                  >
+                    Show More
+                  </Button>
+                )}
+              </Box>
+            )}
+
+            {message && (
+              <Typography
+                variant="subtitle2"
+                color="error"
+                textAlign={"center"}
+              >
+                {message}
+              </Typography>
+            )}
+
+            {selectedSlot && (
+              <SubmitButton title="Book Call" isFullWidth={true} />
+            )}
+          </div>
+        </Container>
+      </form>
     </Box>
   );
 };

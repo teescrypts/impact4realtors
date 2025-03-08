@@ -24,10 +24,10 @@ type DayKeys = keyof Pick<
 
 export async function POST(req: NextRequest) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse; // Return if unauthorized
+  if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse as AuthResponse;
-  if (!admin || !admin._id)
+  const admin = authResponse; // Retrieve user ID
+  if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
@@ -79,10 +79,10 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse; // Return if unauthorized
+  if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse as AuthResponse;
-  if (!admin || !admin._id)
+  const admin = authResponse; // Retrieve user ID
+  if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
@@ -115,12 +115,11 @@ interface DeleteRequestBody {
 
 export async function DELETE(req: NextRequest) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse;
+  if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse as AuthResponse;
-  if (!admin || !admin._id) {
+  const admin = authResponse; // Retrieve user ID
+  if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const { day, timeSlot }: DeleteRequestBody = await req.json();
@@ -161,12 +160,11 @@ export async function DELETE(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse;
+  if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse as AuthResponse;
-  if (!admin || !admin._id) {
+  const admin = authResponse; // Retrieve user ID
+  if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     let openingHour = await OpeningHour.findOne({ admin: admin._id });

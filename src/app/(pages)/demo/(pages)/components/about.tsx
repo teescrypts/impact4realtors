@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
-import { Box, Container, Typography, Grid, Button } from "@mui/material";
+import { Box, Container, Typography, Grid2, Button } from "@mui/material";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
-const AboutUs = () => {
+const AboutUs = ({ adminId }: { adminId?: string }) => {
   return (
     <Container maxWidth="md" sx={{ my: 6, fontFamily: "Poppins, sans-serif" }}>
-      <Grid container spacing={4} alignItems="center">
+      <Grid2 container spacing={4} alignItems="center">
         {/* Text Section */}
-        <Grid item xs={12} md={6}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -26,18 +27,26 @@ const AboutUs = () => {
             </Typography>
             <Typography variant="body1" paragraph>
               My approach is personal and hands-on—tailoring strategies to fit
-              your unique needs. Whether you&apos;re buying, selling, or renting, I
-              provide expert guidance, innovative marketing, and a seamless
-              transaction experience.
+              your unique needs. Whether you&apos;re buying, selling, or
+              renting, I provide expert guidance, innovative marketing, and a
+              seamless transaction experience.
             </Typography>
-            <Button variant="contained" color="primary" size="large">
-              Contact Me
-            </Button>
+            <Link
+              href={
+                adminId
+                  ? `/demo/contact/general?admin=${adminId}`
+                  : "/demo/contact/general"
+              }
+            >
+              <Button variant="contained" color="primary" size="large">
+                Contact Me
+              </Button>
+            </Link>
           </motion.div>
-        </Grid>
+        </Grid2>
 
         {/* Image Section */}
-        <Grid item xs={12} md={6}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -50,8 +59,8 @@ const AboutUs = () => {
               sx={{ width: "100%", borderRadius: 3, boxShadow: 3 }}
             />
           </motion.div>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Container>
   );
 };

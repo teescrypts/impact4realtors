@@ -6,7 +6,7 @@ import { NextRequest, NextResponse, userAgent } from "next/server";
 
 export async function GET(req: NextRequest) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse; // Return if unauthorized
+  if (authResponse instanceof NextResponse) return authResponse;
 
   const admin = authResponse; // Retrieve user ID
   if (!admin)

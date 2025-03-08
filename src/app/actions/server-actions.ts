@@ -4,11 +4,55 @@ import { cookies } from "next/headers";
 import apiRequest from "../lib/api-request";
 import { redirect } from "next/navigation";
 import { format, parse } from "date-fns";
-import { ActionStateType, BlogType, PropertyType } from "@/types";
+import {
+  ActionStateType,
+  AppointmentData,
+  AppointmentRequestData,
+  AppointmentResponse,
+  Availability,
+  BlogType,
+  PropertyType,
+} from "@/types";
 import { revalidateTag } from "next/cache";
-import { NextRequest } from "next/server";
 
 const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
+
+export async function login(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  try {
+    const response = await apiRequest<
+      {
+        message: string;
+        data: { token: string };
+      },
+      { email: string; password: string }
+    >("public/login", {
+      method: "POST",
+      data: { email, password },
+    });
+
+    const cookieStore = cookies();
+    (await cookieStore).set({
+      name: "session-token",
+      value: response.data.token,
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: ONE_WEEK_IN_SECONDS,
+    });
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(e.message);
+    } else {
+      throw new Error("An unknown error occurred");
+    }
+  }
+
+  redirect("/demo/dashboard/home");
+}
 
 export async function demoLogin(
   prevState: { error?: string } | null,
@@ -83,8 +127,8 @@ export async function addHour(prev: ActionStateType, formData: FormData) {
   const tokenObj = cookieStore.get("session-token");
   const token = tokenObj?.value;
 
-  const to = formData.get("from") as string;
-  const from = formData.get("to") as string;
+  const to = formData.get("to") as string;
+  const from = formData.get("from") as string;
 
   const parsedFrom = parse(from, "hh:mm a", new Date());
   const parsedTo = parse(to, "hh:mm a", new Date());
@@ -572,6 +616,235 @@ export async function deleteBlog(id: string) {
     });
 
     revalidateTag("fetchAdminBlogs");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function fetchAvailabilty(type: string, adminId?: string) {
+  try {
+    const response = await apiRequest<{
+      message: string;
+      data: { availability: Availability[] };
+    }>(`public/booking/availability?type=${type}&adminId=${adminId}`, {
+      tag: "FetchPublicAvailability",
+    });
+
+    if (response.message === "Success") {
+      const availability = response.data.availability;
+      return { availability };
+    } else {
+      return { message: response.message };
+    }
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function bookAppointment(
+  adminId: string | undefined,
+  appointmentData: AppointmentData,
+  prevState: ActionStateType,
+  formData: FormData
+) {
+  const data = {
+    ...appointmentData,
+    customer: {
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phoneNumber") as string,
+    },
+    ...(formData.get("propertyTypeToSell") && {
+      propertyTypeToSell: formData.get("propertyTypeToSell") as string,
+    }),
+  };
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      AppointmentRequestData
+    >(`public/booking?adminId=${adminId}`, {
+      method: "POST",
+      data,
+    });
+
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function updateLeadStatus(status: string, id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }, { status: string }>(
+      `admin/lead/${id}`,
+      {
+        method: "PATCH",
+        token,
+        data: { status },
+      }
+    );
+
+    revalidateTag("fetchAdminLead");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function deleteLead(id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }>(`admin/lead/${id}`, {
+      method: "DELETE",
+      token,
+    });
+
+    revalidateTag("fetchAdminLead");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function fetchMoreAppointments(
+  lastCreatedAt: Date,
+  status?: string
+) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const url = status
+    ? `admin/appointment?lastCreatedAt=${lastCreatedAt}&status=${status}`
+    : `admin/appointment?lastCreatedAt=${lastCreatedAt}`;
+
+  try {
+    const response = await apiRequest<{
+      data: {
+        appointments: AppointmentResponse[];
+        hasMore: boolean;
+        lastCreatedAt: Date;
+      };
+    }>(url, { token });
+
+    return { data: response.data };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function fetchAdminAvailableDates(type: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{
+      data: { availability: { date: string; slots: string[] }[] };
+    }>(`admin/availability?type=${type}`, {
+      token,
+      tag: "fetchAdminAvailability",
+    });
+
+    return { data: response.data.availability };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function rescheduleApt(
+  date: string,
+  from: string,
+  to: string,
+  id: string
+) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const data = {
+    newDate: date,
+    newBookedTime: {
+      from,
+      to,
+    },
+  };
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      { newDate: string; newBookedTime: { from: string; to: string } }
+    >(`admin/appointment/reschedule/${id}`, {
+      method: "PUT",
+      token,
+      data,
+    });
+
+    revalidateTag("fetchAdminAppointments");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function updateAptStatus(status: string, id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }, { status: string }>(
+      `admin/appointment/${id}`,
+      {
+        method: "PATCH",
+        token,
+        data: { status },
+      }
+    );
+
+    revalidateTag("fetchAdminAppointments");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {

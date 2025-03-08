@@ -3,6 +3,7 @@ import { useDroppable } from "@dnd-kit/core";
 import LeadCard from "./lead-card";
 
 interface LeadColumnProps {
+  category: string;
   stage: string;
   leads: any[];
   toggleSelection: (leadId: string) => void;
@@ -10,6 +11,7 @@ interface LeadColumnProps {
 }
 
 export default function LeadColumn({
+  category,
   stage,
   leads,
   toggleSelection,
@@ -25,13 +27,17 @@ export default function LeadColumn({
         <Typography variant="h6">{stage}</Typography>
         <Box sx={{ overflowY: "auto", maxHeight: "80vh" }}>
           {leads
-            .filter((lead) => lead.stage === stage)
+            .filter((lead) => {
+              return (
+                lead.status === stage.toLowerCase() && lead.type === category
+              );
+            })
             .map((lead) => (
               <LeadCard
-                key={lead.id}
+                key={lead._id}
                 lead={lead}
                 toggleSelection={toggleSelection}
-                isSelected={selectedLeads.includes(lead.id)}
+                isSelected={selectedLeads.includes(lead._id)}
               />
             ))}
         </Box>

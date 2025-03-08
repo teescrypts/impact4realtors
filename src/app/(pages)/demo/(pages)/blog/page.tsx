@@ -1,6 +1,8 @@
 import React from "react";
 import Blogs from "../components/blog";
 import { Metadata } from "next/types";
+import apiRequest from "@/app/lib/api-request";
+import { blogType } from "@/types";
 
 export const metadata: Metadata = {
   title: "Blog | Innovative Real Estate Solutions",
@@ -36,10 +38,39 @@ export const metadata: Metadata = {
   },
 };
 
-function Page() {
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+async function Page({ params, searchParams }: Props) {
+  const adminId = (await searchParams).admin as string | undefined;
+  const page = (await searchParams).page as string | undefined;
+  const url = adminId
+    ? page
+      ? `public/blog?adminId=${adminId}&page=${page}`
+      : `public/blog?adminId=${adminId}&page=1`
+    : page
+    ? `public/blog?page=${page}`
+    : "public/blog?page=1";
+
+  const response = await apiRequest<{
+    data: {
+      blogs: blogType[];
+      pagination: {
+        currentPage: number;
+        totalPages: number;
+        totalBlogs: number;
+      };
+    };
+  }>(url, { tag: "fetchPublicBlogs" });
+
+  const blogs = response.data.blogs;
+  const pagination = response.data.pagination;
+
   return (
     <div>
-      <Blogs />
+      <Blogs adminId={adminId} blogs={blogs} pagination={pagination} />
     </div>
   );
 }

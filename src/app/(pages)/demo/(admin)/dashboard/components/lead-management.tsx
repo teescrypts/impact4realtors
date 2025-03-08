@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   DndContext,
   closestCorners,
@@ -13,17 +13,39 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Tabs, Tab, Paper, TextField, Button, Grid2 } from "@mui/material";
+import {
+  Tabs,
+  Tab,
+  Paper,
+  TextField,
+  Button,
+  Grid2,
+  Typography,
+} from "@mui/material";
 import { leadCategories, sampleLeads } from "./data";
 import LeadColumn from "./lead-column";
 import LeadCard from "./lead-card";
 import { Scrollbar } from "@/app/component/scrollbar";
+import { LeadType } from "../lead/page";
+import { deleteLead, updateLeadStatus } from "@/app/actions/server-actions";
+import notify from "@/app/utils/toast";
+import { useRouter } from "nextjs-toploader/app";
 
-export default function LeadManagement() {
+export default function LeadManagement({
+  leads,
+  hasMore,
+  lastCreatedAt,
+}: {
+  leads: LeadType[];
+  hasMore: boolean;
+  lastCreatedAt: Date;
+}) {
   const [selectedCategory, setSelectedCategory] = useState("House Tour Leads");
-  const [leads, setLeads] = useState(sampleLeads);
+  const [currentLeads, setCurrentLeads] = useState(leads);
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [activeLead, setActiveLead] = useState<any>(null);
+  const [message, setMessage] = useState("");
+  const router = useRouter();
 
   // Drag-and-drop sensors
   const sensors = useSensors(
@@ -31,18 +53,33 @@ export default function LeadManagement() {
   );
 
   // Handles lead movement between stages
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const handleDragEnd = useCallback(
+    (event: any) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    setLeads((prevLeads) =>
-      prevLeads.map((lead) =>
-        lead.id === active.id ? { ...lead, stage: over.id } : lead
-      )
-    );
+      // Optimistically update the UI
+      setCurrentLeads((prev) => {
+        return prev.map((lead) =>
+          lead._id === active.id
+            ? { ...lead, status: over.id.toLowerCase() }
+            : lead
+        );
+      });
 
-    setActiveLead(null);
-  };
+      // Perform the API update
+      updateLeadStatus(over.id.toLowerCase(), active.id).then((result) => {
+        if (result?.error) {
+          setMessage(result.error);
+        } else if (result?.message) {
+          notify(result.message);
+        }
+      });
+
+      setActiveLead(null);
+    },
+    [currentLeads]
+  );
 
   const toggleLeadSelection = (leadId: string) => {
     setSelectedLeads((prevSelected) =>
@@ -53,15 +90,23 @@ export default function LeadManagement() {
   };
 
   const handleBulkDelete = () => {
-    setLeads((prevLeads) =>
-      prevLeads.filter((lead) => !selectedLeads.includes(lead.id))
-    );
-    setSelectedLeads([]);
+    if (selectedLeads.length > 0) {
+      selectedLeads.forEach((leadId) => {
+        deleteLead(leadId).then((result) => {
+          if (result?.error) {
+            setMessage(result.error);
+            return;
+          }
+        });
+      });
+
+      notify("leads Deleted");
+    }
   };
 
-  const handleBulkEmail = () => {
-    alert(`Sending email to ${selectedLeads.length} leads`);
-  };
+  useEffect(() => {
+    setCurrentLeads(leads);
+  }, [leads]);
 
   return (
     <Paper sx={{ p: 2, overflowX: "auto" }}>
@@ -80,18 +125,10 @@ export default function LeadManagement() {
             ))}
           </Tabs>
         </Grid2>
-        <Grid2 size={{ xs: 12, md: 3 }}>
+        {/* <Grid2 size={{ xs: 12, md: 3 }}>
           <TextField fullWidth label="Search Leads" variant="outlined" />
-        </Grid2>
+        </Grid2> */}
         <Grid2 size={{ xs: 12, md: 3 }} sx={{ textAlign: "right" }}>
-          <Button
-            variant="contained"
-            sx={{ mr: 1 }}
-            disabled={selectedLeads.length === 0}
-            onClick={handleBulkEmail}
-          >
-            Bulk Email
-          </Button>
           <Button
             variant="outlined"
             color="error"
@@ -102,6 +139,12 @@ export default function LeadManagement() {
           </Button>
         </Grid2>
       </Grid2>
+
+      {message && (
+        <Typography variant="subtitle2" color="red" textAlign={"center"}>
+          {message}
+        </Typography>
+      )}
 
       {/* Kanban Board */}
       <DndContext
@@ -114,14 +157,15 @@ export default function LeadManagement() {
         <Scrollbar style={{ width: "100%", overflowX: "auto" }}>
           <Grid2 container wrap="nowrap" spacing={2}>
             <SortableContext
-              items={leads.map((lead) => lead.id)}
+              items={leads.map((lead) => lead._id)}
               strategy={verticalListSortingStrategy}
             >
               {leadCategories[selectedCategory].map((stage) => (
                 <LeadColumn
+                  category={selectedCategory}
                   key={stage}
                   stage={stage}
-                  leads={leads}
+                  leads={currentLeads}
                   toggleSelection={toggleLeadSelection}
                   selectedLeads={selectedLeads}
                 />
@@ -134,13 +178,27 @@ export default function LeadManagement() {
         <DragOverlay>
           {activeLead ? (
             <LeadCard
-              lead={leads.find((lead) => lead.id === activeLead)}
+              lead={leads.find((lead) => lead._id === activeLead)}
               toggleSelection={() => {}}
               isSelected={false}
             />
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {hasMore && (
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() =>
+            router.push(`/demo/dashboard/lead?lastCreatedAt=${lastCreatedAt}`, {
+              scroll: false,
+            })
+          }
+        >
+          Load More Leads
+        </Button>
+      )}
     </Paper>
   );
 }

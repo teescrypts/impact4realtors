@@ -37,10 +37,15 @@ export const metadata: Metadata = {
   },
 };
 
-function Page() {
+async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const adminId = (await searchParams).admin as string;
   return (
     <div>
-      <AboutUs /> <FAQsSection />
+      <AboutUs adminId={adminId} /> <FAQsSection />
     </div>
   );
 }

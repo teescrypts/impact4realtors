@@ -5,7 +5,6 @@ import {
   Box,
   Container,
   Typography,
-  Grid2,
   Button,
   CardMedia,
   Stack,
@@ -13,83 +12,82 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  Dialog,
   IconButton,
 } from "@mui/material";
 import Slider from "react-slick";
-import { useRouter } from "next/navigation";
-import Close from "@/app/icons/untitled-ui/duocolor/close";
+import { propertyType } from "../listings/page";
+import BookHouseTour from "./book-house-tour";
+import MortgageEstimationModal from "./calc-mortgage";
+import Share07 from "@/app/icons/untitled-ui/duocolor/share-07";
+import Instagram from "@/app/icons/untitled-ui/duocolor/instaagram";
+import Whatsapp from "@/app/icons/untitled-ui/duocolor/whatsapp";
+import Linkedin from "@/app/icons/untitled-ui/duocolor/linkedin";
+import Twitter from "@/app/icons/untitled-ui/duocolor/twitter";
 
-const ListingDetailsPage = () => {
-  // Dummy listing data (in a real app, fetch this by listing id)
-  const listing = {
-    id: 1,
-    title: "Luxury Apartment in LA",
-    price: 850000,
-    bedrooms: 3,
-    bathrooms: 2,
-    size: 150,
-    location: "Los Angeles, CA",
-    description:
-      "Experience luxury living in this stunning apartment located in the heart of Los Angeles. Enjoy modern amenities, spacious rooms, and breathtaking views that make every day extraordinary.",
-    images: [
-      "/images/luxury_apartment.jpeg",
-      "/images/luxury_apartment.jpeg",
-      "/images/luxury_apartment.jpeg",
-      "/images/luxury_apartment.jpeg",
-    ],
-    floorPlan: "/images/floor-plan.png", // Floor plan image
-    features: [
-      "Modern Kitchen",
-      "Spacious Living Area",
-      "Hardwood Floors",
-      "Energy Efficient Appliances",
-      "Swimming Pool",
-      "Gym",
-      "24/7 Security",
-    ],
-    // Coordinates for Google Maps (if needed)
-    lat: 34.0522,
-    lng: -118.2437,
-  };
+const ListingDetailsPage = ({
+  adminId,
+  property,
+}: {
+  adminId: string | undefined;
+  property: propertyType;
+}) => {
+  const [openMortgageModal, setOpenMortgageModal] = useState(false);
+  const [openBookingModal, setOpenBookingModal] = useState(false);
 
-  const router = useRouter();
-  const [openFloorPlan, setOpenFloorPlan] = useState(false);
+  const handleOpenMortgageModal = () => setOpenMortgageModal(true);
+  const handleOpenBookingModal = () => setOpenBookingModal(true);
 
-  // Slider settings for react-slick carousel
+  // Slider settings for react-slick
   const sliderSettings = {
     dots: true,
-    infinite: true,
+    arrows: true,
+    infinite: property.images.length > 1,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
+    adaptiveHeight: true,
   };
 
-  const handleOpenFloorPlan = () => setOpenFloorPlan(true);
-  const handleCloseFloorPlan = () => setOpenFloorPlan(false);
+  const listingUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareText = `Check out this property: ${property.propertyTitle}`;
+
+  const shareListing = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: property.propertyTitle,
+          text: shareText,
+          url: listingUrl,
+        });
+        return;
+      } catch (error) {
+        console.warn("Web Share API failed, falling back to links.");
+      }
+    }
+
+    // Fallback: open Facebook share as default
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        listingUrl
+      )}`,
+      "_blank"
+    );
+  };
 
   return (
     <Container sx={{ my: 6 }}>
+      {/* Property Image Slider */}
       <Box sx={{ mb: 4 }}>
         <Slider {...sliderSettings}>
-          {listing.images.map((img, index) => (
-            <Box
-              key={index}
-              sx={{
-                position: "relative",
-                borderRadius: 2,
-                overflow: "hidden",
-              }}
-            >
+          {property.images.map((img, index) => (
+            <Box key={index} sx={{ position: "relative", borderRadius: 2 }}>
               <CardMedia
                 component="img"
-                image={img}
-                alt={listing.title}
+                image={img.url}
+                alt={property.propertyTitle}
                 sx={{
                   width: "100%",
-                  height: { xs: 400, md: 500 },
+                  height: { xs: 500, md: 500 },
                   objectFit: "cover",
                 }}
               />
@@ -98,128 +96,131 @@ const ListingDetailsPage = () => {
         </Slider>
       </Box>
 
-      {/* Listing Details */}
-      <Grid2 container spacing={4}>
-        <Grid2 size={{ xs: 12, md: 8 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            {listing.title}
-          </Typography>
-          <Typography variant="h6" color="primary" gutterBottom>
-            ${listing.price.toLocaleString()}
-          </Typography>
-          <Stack direction="row" spacing={3} mb={2}>
-            <Typography variant="body1">{listing.bedrooms} Beds</Typography>
-            <Typography variant="body1">{listing.bathrooms} Baths</Typography>
-            <Typography variant="body1">{listing.size} m²</Typography>
-          </Stack>
-          <Typography variant="body1" gutterBottom>
-            <strong>Location:</strong> {listing.location}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {listing.description}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Features
-          </Typography>
-          <List>
-            {listing.features.map((feature, idx) => (
-              <ListItem key={idx} disableGutters>
-                <ListItemText primary={`• ${feature}`} />
-              </ListItem>
-            ))}
-          </List>
-          <Stack direction="row" spacing={2} mt={3}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => router.push(`/book-tour/${listing.id}`)}
-            >
-              Book Tour
-            </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => router.push(`/contact?listingId=${listing.id}`)}
-            >
-              Contact
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => router.push(`/estimate-mortgage/${listing.id}`)}
-            >
-              Est. Mortgages
-            </Button>
-          </Stack>
-        </Grid2>
+      {/* Property Details */}
+      <Typography variant="h4" fontWeight="bold">
+        {property.propertyTitle}
+      </Typography>
+      <Typography variant="h6" color="primary">
+        ${property.price.toLocaleString()}
+      </Typography>
+      <Stack direction="row" spacing={3} mb={2}>
+        <Typography variant="body1">{property.bedrooms} Beds</Typography>
+        <Typography variant="body1">{property.bathrooms} Baths</Typography>
+        <Typography variant="body1">{property.squareMeters} m²</Typography>
+      </Stack>
+      <Typography variant="body1" gutterBottom>
+        <strong>Location:</strong>{" "}
+        {`${property.location.cityName}, ${property.location.stateName}`}
+      </Typography>
+      <Typography variant="body1">{property.description}</Typography>
+      <Divider sx={{ my: 2 }} />
 
-        {/* Floor Plan Section */}
-        <Grid2 size={{ xs: 12, md: 4 }}>
-          <Box
-            sx={{
-              borderRadius: 2,
-              overflow: "hidden",
-              boxShadow: 2,
-              border: "1px solid #ccc",
-              cursor: "pointer",
-            }}
-            onClick={handleOpenFloorPlan}
-          >
-            <CardMedia
-              component="img"
-              image={listing.floorPlan}
-              alt="Floor Plan"
-              sx={{
-                width: "100%",
-                height: { xs: 200, md: 300 },
-                objectFit: "cover",
-              }}
-            />
-          </Box>
-          <Typography
-            variant="caption"
-            display="block"
-            textAlign="center"
-            mt={1}
-          >
-            Floor Plan (Click to enlarge)
-          </Typography>
-        </Grid2>
-      </Grid2>
+      {/* Features List */}
+      <Typography variant="h6" fontWeight="bold">
+        Features
+      </Typography>
+      <List>
+        {property.features.map((feature, idx) => (
+          <ListItem key={idx} disableGutters>
+            <ListItemText primary={`• ${feature}`} />
+          </ListItem>
+        ))}
+      </List>
 
-      {/* Floor Plan Modal */}
-      <Dialog
-        open={openFloorPlan}
-        onClose={handleCloseFloorPlan}
-        fullWidth
-        maxWidth="md"
-      >
-        <Box sx={{ position: "relative", p: 2 }}>
-          <IconButton
-            onClick={handleCloseFloorPlan}
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              zIndex: 1,
-            }}
+      {/* Call-to-Action Buttons */}
+      <Stack direction="row" spacing={2} mt={3}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleOpenBookingModal}
+        >
+          Book Tour
+        </Button>
+        {property.category === "For Sale" && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleOpenMortgageModal}
           >
-            <Close />
-          </IconButton>
-          <CardMedia
-            component="img"
-            image={listing.floorPlan}
-            alt="Enlarged Floor Plan"
-            sx={{
-              width: "100%",
-              maxHeight: { xs: 300, md: 600 },
-              objectFit: "contain",
-              margin: "0 auto",
-            }}
-          />
-        </Box>
-      </Dialog>
+            Est. Mortgages
+          </Button>
+        )}
+      </Stack>
+
+      {/* Social Sharing Section */}
+      <Divider sx={{ my: 3 }} />
+      <Typography variant="h6" fontWeight="bold" gutterBottom>
+        Share this Property
+      </Typography>
+      <Stack direction="row" spacing={1} mt={1}>
+        <IconButton color="primary" onClick={shareListing}>
+          <Share07 />
+        </IconButton>
+        <IconButton
+          component="a"
+          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+            shareText
+          )}&url=${encodeURIComponent(listingUrl)}`}
+          target="_blank"
+          aria-label="Share on Twitter"
+          color="primary"
+        >
+          <Twitter />
+        </IconButton>
+        <IconButton
+          component="a"
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+            listingUrl
+          )}`}
+          target="_blank"
+          aria-label="Share on LinkedIn"
+          color="primary"
+        >
+          <Linkedin />
+        </IconButton>
+        <IconButton
+          component="a"
+          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+            shareText + " " + listingUrl
+          )}`}
+          target="_blank"
+          aria-label="Share on WhatsApp"
+          color="success"
+        >
+          <Whatsapp />
+        </IconButton>
+        <IconButton
+          component="a"
+          href={`https://www.instagram.com/?url=${encodeURIComponent(
+            listingUrl
+          )}`}
+          target="_blank"
+          aria-label="Share on Instagram"
+          color="secondary"
+        >
+          <Instagram />
+        </IconButton>
+      </Stack>
+
+      {/* Modals */}
+      <MortgageEstimationModal
+        adminId={adminId as string}
+        open={openMortgageModal}
+        onClose={() => setOpenMortgageModal(false)}
+        listing={property}
+      />
+      <BookHouseTour
+        houseTouringType={property.category}
+        open={openBookingModal}
+        onClose={() => setOpenBookingModal(false)}
+        houseDetails={{
+          id: property._id as string,
+          name: property.propertyTitle,
+          location: `${property.location.cityName}, ${property.location.stateName}, ${property.location.countryName}`,
+          price: property.price,
+        }}
+        adminId={adminId as string}
+      />
     </Container>
   );
 };

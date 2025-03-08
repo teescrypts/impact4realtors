@@ -10,113 +10,82 @@ import {
   TextField,
   Typography,
   Box,
-  Grid,
+  Grid2,
   Divider,
   Checkbox,
   FormControlLabel,
-  useTheme,
 } from "@mui/material";
 import { Scrollbar } from "@/app/component/scrollbar";
-
-export interface Listing {
-  id: number;
-  title: string;
-  price: number;
-  name?: string;
-  location?: string;
-  type: "sale" | "rent";
-  hoa?: number; // monthly HOA fee
-  bedrooms: number;
-  toilets: number;
-  size: number;
-  image: string;
-  status: string;
-  localTaxRate?: number; // annual local tax rate in percent
-  agentInsurance?: number; // annual insurance estimate in $
-  agentMortgageRate?: number; // annual interest rate in percent
-  agentLoanTerm?: number; // loan term in years
-}
+import { propertyType } from "../listings/page";
+import Link from "next/link";
 
 interface MortgageEstimationModalProps {
+  adminId?: string;
   open: boolean;
   onClose: () => void;
-  listing: Listing;
+  listing: propertyType;
 }
 
 const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
+  adminId,
   open,
   onClose,
   listing,
 }) => {
-  // Agent provided defaults:
-  const defaultHOA = listing.hoa ?? 200;
-  const defaultLocalTaxRate = listing.localTaxRate ?? 1.25; // %
-  const defaultInsurance = listing.agentInsurance ?? 1200; // annual ($)
-  const defaultMortgageRate = listing.agentMortgageRate ?? 3.5; // %
-  const defaultLoanTerm = listing.agentLoanTerm ?? 30; // years
-
   // Customer override state
-  const [downPayment, setDownPayment] = useState<number | "">(""); // user can input a down payment amount
-  const [insurance, setInsurance] = useState<number>(defaultInsurance);
-  const [mortgageRate, setMortgageRate] = useState<number>(defaultMortgageRate);
-  const [loanTerm, setLoanTerm] = useState<number>(defaultLoanTerm);
+  const [downPayment, setDownPayment] = useState<number | "">("");
+  const [mortgageRate, setMortgageRate] = useState<number | string>("");
+  const [loanTerm, setLoanTerm] = useState<number | string>("");
   const [monthlyIncome, setMonthlyIncome] = useState<number | "">("");
   const [veteran, setVeteran] = useState<boolean>(false);
   const [calculated, setCalculated] = useState(false);
   const [result, setResult] = useState<{
     monthlyPI: number;
-    monthlyTax: number;
-    monthlyInsurance: number;
-    totalMonthly: number;
     downPaymentPercent: number;
     incomeRatio?: number;
   } | null>(null);
 
-  const handleCalculate = () => {
-    // Determine down payment: if user hasn't provided one, assume 20% of price.
-    const dp = downPayment === "" ? listing.price * 0.2 : Number(downPayment);
-    const downPaymentPercent = (dp / listing.price) * 100;
-
-    // Mortgage principal is property price minus down payment.
-    const principal = listing.price - dp;
-
-    // Monthly interest rate and total months.
-    const r = mortgageRate / 100 / 12;
-    const n = loanTerm * 12;
-
-    // Monthly Principal & Interest (P&I) calculation:
-    const monthlyPI =
-      (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-
-    // Monthly Property Tax:
-    const monthlyTax = (listing.price * (defaultLocalTaxRate / 100)) / 12;
-
-    // Monthly Insurance:
-    const monthlyInsurance = insurance / 12;
-
-    // Monthly HOA fee:
-    const monthlyHOA = defaultHOA;
-
-    // Total monthly payment:
-    const totalMonthly = monthlyPI + monthlyTax + monthlyInsurance + monthlyHOA;
-
-    let incomeRatio: number | undefined = undefined;
-    if (monthlyIncome !== "" && Number(monthlyIncome) > 0) {
-      incomeRatio = (totalMonthly / Number(monthlyIncome)) * 100;
-    }
-
-    setResult({
-      monthlyPI,
-      monthlyTax,
-      monthlyInsurance,
-      totalMonthly,
-      downPaymentPercent,
-      incomeRatio,
-    });
-    setCalculated(true);
+  const handleClose = () => {
+    setDownPayment("");
+    setMortgageRate("");
+    setLoanTerm("");
+    setMonthlyIncome("");
+    setVeteran(false);
+    setCalculated(false);
+    setResult(null);
+    onClose();
   };
 
-  const theme = useTheme();
+  const handleCalculate = () => {
+    if (mortgageRate && loanTerm) {
+      const dp = downPayment === "" ? listing.price * 0.2 : Number(downPayment);
+      const downPaymentPercent = (dp / listing.price) * 100;
+
+      // Mortgage principal is property price minus down payment.
+      const principal = listing.price - dp;
+
+      // Monthly interest rate and total months.
+      const r = (mortgageRate as number) / 100 / 12;
+      const n = (loanTerm as number) * 12;
+
+      // Monthly Principal & Interest (P&I) calculation:
+      const monthlyPI =
+        (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+
+      let incomeRatio: number | undefined = undefined;
+      if (monthlyIncome !== "" && Number(monthlyIncome) > 0) {
+        incomeRatio = (monthlyPI / Number(monthlyIncome)) * 100;
+      }
+
+      setResult({
+        monthlyPI,
+        downPaymentPercent,
+        incomeRatio,
+      });
+    }
+
+    setCalculated(true);
+  };
 
   return (
     <Dialog
@@ -129,38 +98,30 @@ const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
           sx: {
             borderRadius: 3,
             p: 3,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main},  ${theme.palette.primary.light})`,
-            boxShadow: 10,
           },
         },
       }}
     >
       <Scrollbar>
         <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
-          Mortgage Estimation for {listing.title}
+          Mortgage Estimation for {listing.propertyTitle}
         </DialogTitle>
 
         <DialogContent>
           <Box component="form" noValidate sx={{ mt: 2 }}>
-            <Grid container spacing={2}>
+            <Grid2 container spacing={2}>
               {/* Agent Provided Values Display */}
-              <Grid item xs={12}>
+              <Grid2 size={{ xs: 12 }}>
                 <Typography variant="body2">
                   <strong>Property Price:</strong> $
                   {listing.price.toLocaleString()}
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Monthly HOA:</strong> ${defaultHOA}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Local Tax Rate (annual):</strong>{" "}
-                  {defaultLocalTaxRate}%
-                </Typography>
-              </Grid>
+              </Grid2>
 
               {/* Down Payment Input */}
-              <Grid item xs={12} sm={6}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  variant="outlined"
                   label="Down Payment ($)"
                   type="number"
                   fullWidth
@@ -170,61 +131,40 @@ const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
                       e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
-                  helperText="Enter your down payment or leave empty to use 20% of price"
-                  InputProps={{
-                    sx: { backgroundColor: "#fff", borderRadius: 1 },
-                  }}
                 />
-              </Grid>
-
-              {/* Insurance Input */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Annual Insurance ($)"
-                  type="number"
-                  fullWidth
-                  value={insurance}
-                  onChange={(e) => setInsurance(Number(e.target.value))}
-                  helperText="Provide your value or use our estimate"
-                  InputProps={{
-                    sx: { backgroundColor: "#fff", borderRadius: 1 },
-                  }}
-                />
-              </Grid>
+              </Grid2>
 
               {/* Mortgage Rate Input */}
-              <Grid item xs={12} sm={6}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  variant="outlined"
                   label="Mortgage Rate (%)"
                   type="number"
                   fullWidth
                   value={mortgageRate}
-                  onChange={(e) => setMortgageRate(Number(e.target.value))}
-                  helperText="Enter your rate or use our estimate"
-                  InputProps={{
-                    sx: { backgroundColor: "#fff", borderRadius: 1 },
+                  onChange={(e) => {
+                    const rate = Number(e.target.value);
+                    setMortgageRate(rate);
                   }}
                 />
-              </Grid>
+              </Grid2>
 
               {/* Loan Term Input */}
-              <Grid item xs={12} sm={6}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  variant="outlined"
                   label="Loan Term (years)"
                   type="number"
                   fullWidth
                   value={loanTerm}
                   onChange={(e) => setLoanTerm(Number(e.target.value))}
-                  helperText="Enter your preferred loan term"
-                  InputProps={{
-                    sx: { backgroundColor: "#fff", borderRadius: 1 },
-                  }}
                 />
-              </Grid>
+              </Grid2>
 
               {/* Monthly Income Input */}
-              <Grid item xs={12} sm={6}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  variant="outlined"
                   label="Monthly Income (optional)"
                   type="number"
                   fullWidth
@@ -234,15 +174,11 @@ const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
                       e.target.value === "" ? "" : Number(e.target.value)
                     )
                   }
-                  helperText="Optional for income ratio insight"
-                  InputProps={{
-                    sx: { backgroundColor: "#fff", borderRadius: 1 },
-                  }}
                 />
-              </Grid>
+              </Grid2>
 
               {/* Veteran Checkbox */}
-              <Grid item xs={12} sm={6}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -253,8 +189,8 @@ const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
                   }
                   label="I am a veteran"
                 />
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
             <Box textAlign="center" mt={3}>
               <Button
                 variant="contained"
@@ -286,41 +222,33 @@ const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
                   <strong>Principal & Interest:</strong> $
                   {result.monthlyPI.toFixed(2)} per month
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Property Tax:</strong> ${result.monthlyTax.toFixed(2)}{" "}
-                  per month
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Insurance:</strong> $
-                  {result.monthlyInsurance.toFixed(2)} per month
-                </Typography>
-                <Typography variant="body2">
-                  <strong>HOA:</strong> ${defaultHOA} per month
-                </Typography>
-                <Typography variant="body2" mt={1}>
-                  <strong>Total Payment:</strong> $
-                  {result.totalMonthly.toFixed(2)} per month
-                </Typography>
                 {result.incomeRatio !== undefined && (
                   <Typography variant="body2" mt={1}>
                     This payment represents {result.incomeRatio.toFixed(2)}% of
                     your monthly income.
                   </Typography>
                 )}
-                {result.downPaymentPercent < 20 && !veteran && (
-                  <Box textAlign="center" mt={2}>
-                    <Button variant="outlined" color="secondary">
-                      Contact Us for More Info
+
+                <Box textAlign="center" mt={2}>
+                  <Link
+                    href={
+                      adminId
+                        ? `/demo/contact/mortgage?admin=${adminId}`
+                        : "/demo/contact/mortgage"
+                    }
+                  >
+                    <Button variant="contained" color="secondary">
+                      Contact Us About Mortgage
                     </Button>
-                  </Box>
-                )}
+                  </Link>
+                </Box>
               </>
             )}
           </Box>
         </DialogContent>
 
         <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-          <Button variant="outlined" onClick={onClose}>
+          <Button variant="outlined" onClick={handleClose} color="error">
             Close
           </Button>
         </DialogActions>

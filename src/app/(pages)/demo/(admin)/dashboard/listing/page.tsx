@@ -6,7 +6,6 @@ import { Metadata } from "next/types";
 import apiRequest from "@/app/lib/api-request";
 import { cookies } from "next/headers";
 import { PropertyType } from "@/types";
-import { revalidateTag } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Listing | Innovative Real Estate Solutions",

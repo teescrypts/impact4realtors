@@ -6,9 +6,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse;
+  if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse;
+  const admin = authResponse; // Retrieve user ID
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -38,9 +38,9 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse;
+  if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse;
+  const admin = authResponse; // Retrieve user ID
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -3,6 +3,9 @@ import AppointmentManagement from "../components/appointment-mgt";
 import { Box, Button, Container, Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import { Metadata } from "next/types";
+import { cookies } from "next/headers";
+import apiRequest from "@/app/lib/api-request";
+import { AppointmentResponse } from "@/types";
 
 export const metadata: Metadata = {
   title: "Appointment | Innovative Real Estate Solutions",
@@ -38,7 +41,41 @@ export const metadata: Metadata = {
   },
 };
 
-function Page() {
+async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const params = await searchParams;
+  const lastCreatedAtQuery = params.lastCreatedAt as string | undefined;
+  const status = params.status as string | undefined;
+
+  // Build the API request URL dynamically
+  const queryParams = new URLSearchParams();
+  if (lastCreatedAtQuery)
+    queryParams.append("lastCreatedAt", lastCreatedAtQuery);
+  if (status) queryParams.append("status", status);
+
+  const url = `admin/appointment${
+    queryParams.toString() ? `?${queryParams.toString()}` : ""
+  }`;
+
+  const response = await apiRequest<{
+    data: {
+      appointments: AppointmentResponse[];
+      hasMore: boolean;
+      lastCreatedAt: Date;
+    };
+  }>(url, { token, tag: "fetchAdminAppointments" });
+
+  const appointments = response.data.appointments;
+  const hasMore = response.data.hasMore;
+  const lastCreatedAt = response.data.lastCreatedAt;
+
   return (
     <Box
       component="main"
@@ -61,7 +98,11 @@ function Page() {
               </Stack>
             </div>
           </Stack>
-          <AppointmentManagement />
+          <AppointmentManagement
+            appointments={appointments}
+            hasMore={hasMore}
+            lastCreatedAt={lastCreatedAt}
+          />
         </Stack>
       </Container>
     </Box>

@@ -8,6 +8,8 @@ import {
   Link,
 } from "@mui/material";
 import Motion from "./motion";
+import { SubmitButton } from "@/app/component/submit-buttton";
+import { login } from "@/app/actions/server-actions";
 
 const RealtorLogin = () => {
   return (
@@ -25,50 +27,38 @@ const RealtorLogin = () => {
           </Typography>
         </Box>
       </Motion>
-      <Box
-        sx={{
-          p: 4,
-          borderRadius: 2,
-          boxShadow: 3,
-          backgroundColor: "#f7f7f7",
-        }}
-      >
-        <TextField
-          required
-          fullWidth
-          label="Email Address"
-          name="email"
-          type="email"
-          margin="normal"
-          variant="outlined"
-          sx={{ backgroundColor: "white", borderRadius: 1 }}
-        />
-        <TextField
-          required
-          fullWidth
-          label="Password"
-          name="password"
-          type="password"
-          margin="normal"
-          variant="outlined"
-          sx={{ backgroundColor: "white", borderRadius: 1 }}
-        />
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          color="primary"
-          sx={{ mt: 3, mb: 2, py: 1.5 }}
+      <form action={login}>
+        <Box
+          sx={{
+            p: 4,
+            borderRadius: 2,
+            boxShadow: 3,
+            backgroundColor: "#f7f7f7",
+          }}
         >
-          Login
-        </Button>
-        <Typography variant="body2" align="center">
-          Don't have an account?{" "}
-          <Link href="/register" underline="hover">
-            Sign Up
-          </Link>
-        </Typography>
-      </Box>
+          <TextField
+            required
+            fullWidth
+            label="Email Address"
+            name="email"
+            type="email"
+            margin="normal"
+            variant="outlined"
+            sx={{ backgroundColor: "white", borderRadius: 1 }}
+          />
+          <TextField
+            required
+            fullWidth
+            label="Password"
+            name="password"
+            type="password"
+            margin="normal"
+            variant="outlined"
+            sx={{ backgroundColor: "white", borderRadius: 1 }}
+          />
+          <SubmitButton title="LOGIN" isFullWidth={true} />
+        </Box>
+      </form>
     </Container>
   );
 };

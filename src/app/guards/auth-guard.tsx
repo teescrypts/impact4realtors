@@ -12,6 +12,7 @@ import React, {
 import { authenticate } from "../actions/server-actions";
 
 const AuthContext = createContext<{
+  id: string;
   email: string;
   fname: string;
   lname: string;
@@ -19,6 +20,7 @@ const AuthContext = createContext<{
 
 export const AuthGuard = ({ children }: { children: ReactNode }) => {
   const [admin, setAdmin] = useState<{
+    id: string;
     email: string;
     fname: string;
     lname: string;
@@ -33,7 +35,12 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
 
       if (result?.ok) {
         const user = result.user;
-        setAdmin({ email: user.email, fname: user.fname, lname: user.lname });
+        setAdmin({
+          email: user.email,
+          fname: user.fname,
+          lname: user.lname,
+          id: user._id,
+        });
       } else {
         router.replace("/demo/auth/demo/login");
       }
@@ -53,7 +60,12 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
   return (
     <div>
       <AuthContext.Provider
-        value={{ fname: admin.fname, lname: admin.lname, email: admin.email }}
+        value={{
+          fname: admin.fname,
+          lname: admin.lname,
+          email: admin.email,
+          id: admin.id,
+        }}
       >
         {children}
       </AuthContext.Provider>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -15,30 +15,46 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import Search from "@/app/icons/untitled-ui/duocolor/search";
+import { useRouter } from "nextjs-toploader/app";
 
-const HeroSection = () => {
+const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState<"sale" | "rent">("sale");
+  const [searchType, setSearchType] = useState<"For Sale" | "For Rent">(
+    "For Sale"
+  );
+  const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const handleSearch = () => {
-    // Implement search logic; you can include the searchType in your search query
-    console.log("Searching for:", searchQuery, "Type:", searchType);
+    if (searchQuery) {
+      router.push(
+        `/demo/listings?category=${searchType}&location=${searchQuery}&admin=${adminId}`
+      );
+    } else {
+      setMessage("Enter a city, state, or country");
+    }
   };
 
   const handleSearchTypeChange = (
     event: React.MouseEvent<HTMLElement>,
-    newType: "sale" | "rent" | null
+    newType: "For Sale" | "For Rent" | null
   ) => {
     if (newType !== null) {
       setSearchType(newType);
     }
   };
 
+  useEffect(() => {
+    if (adminId) {
+      localStorage.setItem("adminId", adminId);
+    }
+  }, [adminId]);
+
   return (
     <Box
       sx={{
         position: "relative",
-        height: "90vh",
+        height: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -57,13 +73,27 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          <Typography variant="h2" fontWeight="bold" gutterBottom>
-            Find Your Dream Property with Ease
-          </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.8, my: 3 }}>
-            Buy, sell, or rent commercial and residential properties seamlessly.
-            Your journey to the perfect home starts here.
-          </Typography>
+          <Stack
+            direction="column"
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
+            mb={4}
+          >
+            <Typography
+              maxWidth={600}
+              variant="h2"
+              fontWeight="bold"
+              textAlign={"center"}
+              gutterBottom
+            >
+              Find Your Dream Property with Ease
+            </Typography>
+            <Typography maxWidth={600} textAlign={"center"} variant="subtitle1">
+              Buy, sell, or rent commercial and residential properties
+              seamlessly. Your journey to the perfect home starts here.
+            </Typography>
+          </Stack>
 
           {/* Search Section */}
           <Stack
@@ -80,15 +110,15 @@ const HeroSection = () => {
               onChange={handleSearchTypeChange}
               color="primary"
             >
-              <ToggleButton value="sale">For Sale</ToggleButton>
-              <ToggleButton value="rent">For Rent</ToggleButton>
+              <ToggleButton value="For Sale">For Sale</ToggleButton>
+              <ToggleButton value="For Rent">For Rent</ToggleButton>
             </ToggleButtonGroup>
 
             {/* Search Input */}
             <TextField
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Enter location or keyword"
+              placeholder="Search by location"
               variant="outlined"
               size="small"
               sx={{
@@ -96,6 +126,7 @@ const HeroSection = () => {
                 borderRadius: 1,
                 width: { xs: "100%", sm: "400px" },
               }}
+              helperText={message ? message : ""}
               slotProps={{
                 input: {
                   endAdornment: (

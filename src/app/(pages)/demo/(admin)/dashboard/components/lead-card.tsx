@@ -1,12 +1,4 @@
-import {
-  Card,
-  CardContent,
-  Typography,
-  Checkbox,
-  Box,
-  Stack,
-  useTheme,
-} from "@mui/material";
+import { Card, CardContent, Typography, Checkbox, Stack } from "@mui/material";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -23,10 +15,8 @@ export default function LeadCard({
 }: LeadCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
-      id: lead.id,
+      id: lead._id,
     });
-
-  const theme = useTheme();
 
   const cardStyle = {
     my: 1,
@@ -41,7 +31,10 @@ export default function LeadCard({
 
   return (
     <Card ref={setNodeRef} {...attributes} {...listeners} sx={cardStyle}>
-      <Checkbox checked={isSelected} onChange={() => toggleSelection(lead.id)} />
+      <Checkbox
+        checked={isSelected}
+        onChange={() => toggleSelection(lead._id)}
+      />
       <CardContent>
         <Stack direction={"column"}>
           <Typography variant="subtitle1">{lead.name}</Typography>

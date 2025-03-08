@@ -8,6 +8,7 @@ import {
   CardContent,
   Avatar,
   IconButton,
+  useTheme,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import ChevronRight from "@/app/icons/untitled-ui/duocolor/chevron-right";
@@ -40,6 +41,8 @@ const testimonials = [
 export default function TestimonialsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const theme = useTheme()
+
   const handleNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
   };
@@ -56,7 +59,7 @@ export default function TestimonialsSection() {
         textAlign: "center",
         py: 8,
         px: 3,
-        background: "linear-gradient(135deg, #2C3E50, #4CA1AF)",
+        background: `linear-gradient(135deg, ${theme.palette.primary.alpha50} , ${theme.palette.primary.dark})`,
         color: "white",
       }}
     >

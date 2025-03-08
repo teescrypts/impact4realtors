@@ -12,6 +12,8 @@ import {
 import React from "react";
 import NotificationsButton from "./notifications/notifications-button";
 import AccountButton from "./account-button/account-button";
+import Link from "next/link";
+import { useUserData } from "@/app/guards/auth-guard";
 
 const TOP_NAV_HEIGHT = 64;
 const SIDE_NAV_WIDTH = 280;
@@ -23,6 +25,7 @@ function Topnav({
   onMobileNavOpen: () => void;
 }) {
   const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("lg"));
+  const admin = useUserData();
 
   return (
     <Box
@@ -63,9 +66,11 @@ function Topnav({
           )}
         </Stack>
         <Stack alignItems="center" direction="row" spacing={2}>
-          <Button variant="contained" color="primary" size="small">
-            Try Customer
-          </Button>
+          <Link href={`/demo?admin=${admin.id}`}>
+            <Button variant="contained" color="primary" size="small">
+              Try Customer
+            </Button>
+          </Link>
           <NotificationsButton />
           <AccountButton />
         </Stack>

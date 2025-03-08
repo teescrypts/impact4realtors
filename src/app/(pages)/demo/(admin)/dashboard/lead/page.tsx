@@ -2,6 +2,8 @@ import React from "react";
 import LeadManagement from "../components/lead-management";
 import { Box, Container, Stack, Typography } from "@mui/material";
 import { Metadata } from "next/types";
+import { cookies } from "next/headers";
+import apiRequest from "@/app/lib/api-request";
 
 export const metadata: Metadata = {
   title: "Leads | Innovative Real Estate Solutions",
@@ -37,7 +39,42 @@ export const metadata: Metadata = {
   },
 };
 
-function Page() {
+export interface LeadType {
+  _id: string;
+  type: string;
+  status: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  propertyId?: string;
+  createdAt: Date;
+}
+
+async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+  const lastCreatedAtQuery = (await searchParams).lastCreatedAt as
+    | string
+    | undefined;
+
+  const url = lastCreatedAtQuery
+    ? `admin/lead?lastCreatedAt=${lastCreatedAtQuery}`
+    : "admin/lead";
+
+  const response = await apiRequest<{
+    data: { leads: LeadType[]; hasMore: boolean; lastCreatedAt: Date };
+  }>(url, { token, tag: "fetchAdminLead" });
+
+  const leads = response.data.leads;
+  const hasMore = response.data.hasMore;
+  const lastCreatedAt = response.data.lastCreatedAt;
+
   return (
     <div>
       <Box
@@ -52,7 +89,11 @@ function Page() {
             <Stack sx={{ mb: 2 }}>
               <Typography variant="h4">Lead</Typography>
             </Stack>
-            <LeadManagement />
+            <LeadManagement
+              leads={leads}
+              hasMore={hasMore}
+              lastCreatedAt={lastCreatedAt}
+            />
           </Stack>
         </Container>
       </Box>

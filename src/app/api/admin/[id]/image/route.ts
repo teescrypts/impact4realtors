@@ -34,7 +34,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const authResponse = await authMiddleware(req);
-  if (authResponse.status === 401) return authResponse; // Return if unauthorized
+  if (authResponse instanceof NextResponse) return authResponse;
 
   const admin = authResponse; // Retrieve user ID
   if (!admin)

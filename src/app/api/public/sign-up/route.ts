@@ -16,8 +16,11 @@ export async function POST(request: Request) {
     const token = await admin.generateAuthToken();
 
     return apiResponse("success", { token });
-  } catch (error: any) {
-    console.log(error.message);
-    return apiResponse(error.message, null);
+  } catch (e) {
+    return apiResponse(
+      e instanceof Error ? e.message : "An unknown error occurred",
+      null,
+      500
+    );
   }
 }

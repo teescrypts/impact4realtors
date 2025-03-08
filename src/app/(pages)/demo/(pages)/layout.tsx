@@ -5,6 +5,8 @@ import Motion from "./components/motion";
 import CustomTheme from "@/app/component/custom-theme";
 import { Metadata } from "next/types";
 import Footer from "./components/footer";
+import TopLoader from "../(admin)/dashboard/components/top-loader";
+import { Box } from "@mui/material";
 
 export const metadata: Metadata = {
   title: "Homepage | Innovative Real Estate Solutions",
@@ -40,12 +42,21 @@ export const metadata: Metadata = {
   },
 };
 
-const Layout = ({ children }: { children: ReactNode }) => {
+const Layout = async ({ children }: { children: ReactNode }) => {
   return (
     <CustomTheme colorPreset="blue">
       <Motion>
+        <TopLoader />
         <Navbar />
-        {children}
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box sx={{ flexGrow: 1 }}>{children}</Box>
+        </Box>
         <Footer />
       </Motion>
     </CustomTheme>

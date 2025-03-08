@@ -14,228 +14,102 @@ import {
   Button,
   Chip,
   Pagination,
+  Stack,
+  SvgIcon,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BookHouseTour from "./book-house-tour";
-import MortgageEstimationModal, { Listing } from "./calc-mortgage";
+import MortgageEstimationModal from "./calc-mortgage";
 import Image from "next/image";
 import Link from "next/link";
-
-const dummyListings: Listing[] = [
-  {
-    id: 1,
-    title: "Luxury Apartment in LA",
-    type: "sale",
-    price: 850000,
-    bedrooms: 3,
-    toilets: 2,
-    size: 150,
-    image: "/images/luxury_apartment.jpeg",
-    status: "sold",
-    // Agent provided values for mortgage estimation:
-    hoa: 200,
-    localTaxRate: 1.25,
-    agentInsurance: 1200,
-    agentMortgageRate: 3.5,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 2,
-    title: "Modern Loft in NY",
-    type: "rent",
-    price: 2500,
-    bedrooms: 2,
-    toilets: 1,
-    size: 100,
-    image: "/images/modern_loft.jpeg",
-    status: "available",
-    hoa: 150,
-    localTaxRate: 1.5,
-    agentInsurance: 1000,
-    agentMortgageRate: 3.8,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 3,
-    title: "Beachfront Villa in Miami",
-    type: "sale",
-    price: 1200000,
-    bedrooms: 4,
-    toilets: 3,
-    size: 250,
-    image: "/images/beachfront_villa.jpeg",
-    status: "available",
-    hoa: 250,
-    localTaxRate: 1.2,
-    agentInsurance: 1400,
-    agentMortgageRate: 3.6,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 4,
-    title: "Downtown Condo in SF",
-    type: "rent",
-    price: 1800,
-    bedrooms: 1,
-    toilets: 1,
-    size: 80,
-    image: "/images/downtown_condo.jpeg",
-    status: "rented",
-    hoa: 180,
-    localTaxRate: 1.8,
-    agentInsurance: 1100,
-    agentMortgageRate: 4.0,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 5,
-    title: "Suburban House in Austin",
-    type: "sale",
-    price: 650000,
-    bedrooms: 3,
-    toilets: 2,
-    size: 180,
-    image: "/images/suburban_house.jpeg",
-    status: "available",
-    hoa: 200,
-    localTaxRate: 1.3,
-    agentInsurance: 1300,
-    agentMortgageRate: 3.7,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 6,
-    title: "Penthouse Suite in Chicago",
-    type: "rent",
-    price: 3200,
-    bedrooms: 2,
-    toilets: 2,
-    size: 120,
-    image: "/images/penthouse_suite.jpeg",
-    status: "rented",
-    hoa: 220,
-    localTaxRate: 1.6,
-    agentInsurance: 1500,
-    agentMortgageRate: 4.2,
-    agentLoanTerm: 30,
-  },
-  // More dummy listings for pagination
-  {
-    id: 7,
-    title: "Cozy Cottage",
-    type: "sale",
-    price: 450000,
-    bedrooms: 2,
-    toilets: 1,
-    size: 110,
-    image: "/images/beachfront_villa.jpeg",
-    status: "available",
-    hoa: 180,
-    localTaxRate: 1.4,
-    agentInsurance: 1250,
-    agentMortgageRate: 3.9,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 8,
-    title: "Urban Studio",
-    type: "rent",
-    price: 1500,
-    bedrooms: 1,
-    toilets: 1,
-    size: 60,
-    image: "/images/beachfront_villa.jpeg",
-    status: "available",
-    hoa: 160,
-    localTaxRate: 1.7,
-    agentInsurance: 1050,
-    agentMortgageRate: 4.1,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 9,
-    title: "Country Home",
-    type: "sale",
-    price: 700000,
-    bedrooms: 4,
-    toilets: 3,
-    size: 220,
-    image: "/images/beachfront_villa.jpeg",
-    status: "available",
-    hoa: 230,
-    localTaxRate: 1.5,
-    agentInsurance: 1350,
-    agentMortgageRate: 3.8,
-    agentLoanTerm: 30,
-  },
-  {
-    id: 10,
-    title: "Modern Villa",
-    type: "sale",
-    price: 950000,
-    bedrooms: 4,
-    toilets: 3,
-    size: 260,
-    image: "/images/beachfront_villa.jpeg",
-    status: "available",
-    hoa: 240,
-    localTaxRate: 1.4,
-    agentInsurance: 1450,
-    agentMortgageRate: 3.7,
-    agentLoanTerm: 30,
-  },
-];
+import { useRouter } from "nextjs-toploader/app";
+import { PropertyResponseType, propertyType } from "../listings/page";
+import { formatDistanceToNow } from "date-fns";
+import EmptyState from "./empty-state";
+import Locations from "@/app/icons/untitled-ui/duocolor/location";
 
 // REMEMBER TO INCLUDE ADDED TWO DAYS AGO THING
 
-function Listings() {
+function Listings({
+  properties,
+  totalPages,
+  currentPage,
+}: PropertyResponseType) {
   // Get default type ("sale" or "rent") from URL query parameter; default to "sale"
   const searchParams = useSearchParams();
-  const defaultType = searchParams.get("type") || "sale";
+  const defaultType = searchParams.get("category") || "For Sale";
+  const location = searchParams.get("location");
+  const adminId = searchParams.get("admin");
 
+  const [loading, setLoading] = useState(false);
   const [type, setType] = useState<string>(defaultType);
   const [priceRange, setPriceRange] = useState<number[]>([0, 2000000]);
   const [bedrooms, setBedrooms] = useState<string>("");
   const [toilets, setToilets] = useState<string>("");
-  const [sizeRange, setSizeRange] = useState<number[]>([0, 500]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [sizeRange, setSizeRange] = useState<number[]>([0, 1000]);
   const [openMortgageModal, setOpenMortgageModal] = useState<boolean>(false);
-  const [selectedListing, setSelectedListing] = useState<null | Listing>(null);
-  const [openBookingModal, setOpenBookingModal] = useState<boolean>(false);
-  const itemsPerPage = 9;
-
-  // Filter the listings based on selected criteria
-  const filteredListings = dummyListings.filter((listing) => {
-    if (listing.type !== type) return false;
-    if (listing.price < priceRange[0] || listing.price > priceRange[1])
-      return false;
-    if (bedrooms && listing.bedrooms !== Number(bedrooms)) return false;
-    if (toilets && listing.toilets !== Number(toilets)) return false;
-    if (listing.size < sizeRange[0] || listing.size > sizeRange[1])
-      return false;
-    return true;
-  });
-
-  const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
-  const paginatedListings = filteredListings.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  const [selectedListing, setSelectedListing] = useState<null | propertyType>(
+    null
   );
+  const [openBookingModal, setOpenBookingModal] = useState<boolean>(false);
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
+  const router = useRouter();
 
-  // Handler for opening the mortgage estimation modal
-  const handleOpenMortgageModal = (listing: Listing) => {
-    setSelectedListing(listing);
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      setLoading(true);
+
+      const queryParams = new URLSearchParams();
+
+      if (adminId) queryParams.set("admin", adminId);
+      if (type) queryParams.set("category", type);
+      if (priceRange[0] > 0) queryParams.set("minPrice", String(priceRange[0]));
+      if (priceRange[1] < 2000000)
+        queryParams.set("maxPrice", String(priceRange[1]));
+      if (bedrooms) queryParams.set("bedrooms", bedrooms);
+      if (toilets) queryParams.set("bathrooms", toilets);
+      if (sizeRange[0] > 0)
+        queryParams.set("minSquareMeters", String(sizeRange[0]));
+      if (sizeRange[1] < 1000)
+        queryParams.set("maxSquareMeters", String(sizeRange[1]));
+      if (location) queryParams.set("location", location);
+      if (page !== 1) queryParams.set("page", String(page));
+
+      router.push(`?${queryParams.toString()}`, { scroll: false });
+      setLoading(false);
+    }, 1000); // Delay API call by 1s
+
+    return () => clearTimeout(delaySearch);
+  }, [type, priceRange, bedrooms, toilets, sizeRange]);
+
+  const handleOpenMortgageModal = (property: propertyType) => {
+    setSelectedListing(property);
     setOpenMortgageModal(true);
   };
 
-  const handleOpenBookingModal = (listing: Listing) => {
-    setSelectedListing(listing);
+  const handleOpenBookingModal = (property: propertyType) => {
+    setSelectedListing(property);
     setOpenBookingModal(true);
   };
 
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setLoading(true);
+    setPage(value);
+    router.push(
+      `?category=${type}&minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}&bedrooms=${bedrooms}&bathrooms=${toilets}&minSquareMeters=${sizeRange[0]}&maxSquareMeters=${sizeRange[1]}&location=${location}&page=${page}`,
+      {
+        scroll: false,
+      }
+    );
+    setLoading(false);
+  };
+
   return (
-    <Container sx={{ mt: 6, mb: 6 }}>
+    <Container maxWidth={"xl"}>
       <Typography variant="h4" gutterBottom align="center">
         Property Listings
       </Typography>
@@ -251,8 +125,8 @@ function Listings() {
                 label="Type"
                 onChange={(e) => setType(e.target.value)}
               >
-                <MenuItem value="sale">For Sale</MenuItem>
-                <MenuItem value="rent">For Rent</MenuItem>
+                <MenuItem value="For Sale">For Sale</MenuItem>
+                <MenuItem value="For Rent">For Rent</MenuItem>
               </Select>
             </FormControl>
           </Grid2>
@@ -313,111 +187,175 @@ function Listings() {
               onChange={(e, newValue) => setSizeRange(newValue as number[])}
               valueLabelDisplay="auto"
               min={0}
-              max={500}
+              max={1000}
               step={10}
             />
           </Grid2>
         </Grid2>
-        <Box textAlign="center" mt={2}>
-          <Button variant="contained" color="primary">
-            Apply Filters
-          </Button>
-        </Box>
       </Paper>
-
       {/* Listings Grid */}
       <Grid2 container spacing={3}>
-        {paginatedListings.map((listing) => (
-          <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={listing.id}>
-            <Box
-              sx={{
-                position: "relative",
-                border: "1px solid #ccc",
-                p: 2,
-                borderRadius: 2,
-                boxShadow: 2,
-              }}
-            >
-              {/* Sold / Rented Label */}
-              {listing.status !== "available" && (
-                <Chip
-                  label={listing.status === "sold" ? "SOLD" : "RENTED"}
-                  color="error"
+        {properties.length > 0 ? (
+          properties.map((property) => {
+            // Format createdAt to display "Added X days ago"
+            const timeAgo = formatDistanceToNow(new Date(property.createdAt), {
+              addSuffix: true,
+            });
+
+            return (
+              <Grid2 size={{ xs: 12, sm: 12, md: 4 }} key={property._id}>
+                <Box
                   sx={{
-                    position: "absolute",
-                    top: 16,
-                    left: 16,
-                    fontWeight: "bold",
-                    m: 2,
-                    backgroundColor:
-                      listing.status === "sold" ? "#d32f2f" : "#ff9800",
-                    color: "#fff",
+                    position: "relative",
+                    border: "1px solid #ccc",
+                    p: 2,
+                    borderRadius: 2,
+                    boxShadow: 2,
                   }}
-                />
-              )}
-              <Link href={`/demo/listings/${type}/${listing.title}`}>
-                <Box sx={{ position: "relative", width: "100%", height: 300 }}>
-                  <Image
-                    src={listing.image}
-                    alt={listing.title}
-                    fill
-                    style={{ objectFit: "cover", borderRadius: "8px" }}
-                  />
-                </Box>
-              </Link>
-
-              <Link href={`/demo/listings/${listing.title}`}>
-                <Typography variant="h6" fontWeight="bold" mt={2}>
-                  {listing.title}
-                </Typography>
-              </Link>
-
-              <Typography variant="body1" color="primary">
-                ${listing.price.toLocaleString()}
-              </Typography>
-              <Typography variant="body2" mt={1}>
-                {listing.bedrooms} Beds, {listing.toilets} Toilets,{" "}
-                {listing.size} m²
-              </Typography>
-              {/* Action Buttons */}
-              {listing.status === "available" && (
-                <Box mt={2} display="flex" justifyContent="space-between">
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleOpenBookingModal(listing)}
+                >
+                  {/* Sold / Rented Label */}
+                  {property.status !== "Active" && (
+                    <Chip
+                      label={property.status === "Sold" ? "SOLD" : "RENTED"}
+                      color="error"
+                      sx={{
+                        position: "absolute",
+                        top: 16,
+                        left: 16,
+                        fontWeight: "bold",
+                        backgroundColor:
+                          property.status === "Sold" ? "#d32f2f" : "#ff9800",
+                        color: "#fff",
+                      }}
+                    />
+                  )}
+                  {/* Property Image */}
+                  <Link
+                    href={
+                      adminId
+                        ? `/demo/listings/${
+                            type === "For Sale" ? "sale" : "rent"
+                          }/${property._id}?admin=${adminId}`
+                        : `/demo/listings/${
+                            type === "For Sale" ? "sale" : "rent"
+                          }/${property._id}`
+                    }
                   >
-                    Book House Showing
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => handleOpenMortgageModal(listing)}
+                    <Box
+                      sx={{ position: "relative", width: "100%", height: 400 }}
+                    >
+                      <Image
+                        src={property.images[0].url}
+                        alt={property.propertyTitle}
+                        fill
+                        style={{ objectFit: "cover", borderRadius: "8px" }}
+                        sizes="100%"
+                        priority
+                      />
+                    </Box>
+                  </Link>
+                  {/* Listing Date Chip - Positioned Above Title */}
+                  <Box mt={2}>
+                    <Chip
+                      label={`Listed ${timeAgo}`}
+                      sx={{
+                        mb: 1, // Add margin below to separate it from the title
+                      }}
+                    />
+                  </Box>
+                  {/* Property Title */}
+                  <Link
+                    href={
+                      adminId
+                        ? `/demo/listings/${
+                            type === "For Sale" ? "sale" : "rent"
+                          }/${property._id}?admin=${adminId}`
+                        : `/demo/listings/${
+                            type === "For Sale" ? "sale" : "rent"
+                          }/${property._id}`
+                    }
                   >
-                    Est. Mortgages
-                  </Button>
+                    <Typography variant="h6" fontWeight="bold">
+                      {property.propertyTitle}
+                    </Typography>
+                  </Link>
+                  {/* Property Location */}
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <SvgIcon
+                      sx={{ fontSize: 18, mr: 0.5, color: "primary.main" }}
+                    >
+                      <Locations />
+                    </SvgIcon>
+                    {property.location.cityName}, {property.location.stateName},{" "}
+                    {property.location.countryName}
+                  </Typography>
+                  {/* Property Price */}
+                  <Typography variant="body1" color="primary">
+                    ${property.price.toLocaleString()}
+                  </Typography>
+                  {/* Property Details */}
+                  <Typography variant="body2" mt={1}>
+                    {property.bedrooms} Beds, {property.bathrooms} Toilets,{" "}
+                    {property.squareMeters} m²
+                  </Typography>
+                  {/* Action Buttons */}
+                  {property.status === "Active" && (
+                    <Box mt={2} display="flex" justifyContent="space-between">
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleOpenBookingModal(property)}
+                      >
+                        Book House Showing
+                      </Button>
+                      {type === "For Sale" && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="primary"
+                          onClick={() => handleOpenMortgageModal(property)}
+                        >
+                          Est. Mortgages
+                        </Button>
+                      )}
+                    </Box>
+                  )}
                 </Box>
-              )}
-            </Box>
-          </Grid2>
-        ))}
+              </Grid2>
+            );
+          })
+        ) : (
+          <Stack
+            direction={"column"}
+            alignItems={"center"}
+            justifyContent={"center"}
+          >
+            <EmptyState
+              title="No property found"
+              description="Kindly check back later"
+            />
+          </Stack>
+        )}
       </Grid2>
 
-      {/* Pagination */}
       <Box display="flex" justifyContent="center" my={4}>
         <Pagination
           count={totalPages}
           page={currentPage}
-          onChange={(_, value) => setCurrentPage(value)}
+          onChange={handlePageChange}
           color="primary"
         />
       </Box>
-
       {/* Mortgage Estimation Modal */}
       {selectedListing && (
         <MortgageEstimationModal
+          adminId={adminId as string}
           open={openMortgageModal}
           onClose={() => setOpenMortgageModal(false)}
           listing={selectedListing}
@@ -426,13 +364,16 @@ function Listings() {
 
       {selectedListing && (
         <BookHouseTour
+          houseTouringType={type}
           open={openBookingModal}
           onClose={() => setOpenBookingModal(false)}
           houseDetails={{
-            name: selectedListing.name!,
-            location: selectedListing.location!,
+            id: selectedListing._id,
+            name: selectedListing.propertyTitle!,
+            location: `${selectedListing.location.cityName}, ${selectedListing.location.stateName}, ${selectedListing.location.countryName}`,
             price: selectedListing.price,
           }}
+          adminId={adminId as string}
         />
       )}
     </Container>

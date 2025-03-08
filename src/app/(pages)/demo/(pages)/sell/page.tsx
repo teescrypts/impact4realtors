@@ -3,7 +3,6 @@ import SellSection from "../components/sections/sell-section";
 import FAQsSection from "../components/sections/faqs";
 import { Metadata } from "next/types";
 
-
 export const metadata: Metadata = {
   title: "Sell a house | Innovative Real Estate Solutions",
   description:
@@ -38,10 +37,15 @@ export const metadata: Metadata = {
   },
 };
 
-function Page() {
+async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const adminId = (await searchParams).admin as string;
   return (
     <div>
-      <SellSection />
+      <SellSection adminId={adminId} />
       <FAQsSection />
     </div>
   );
