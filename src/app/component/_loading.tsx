@@ -1,40 +1,21 @@
-import { CircularProgress, Stack, SvgIcon } from "@mui/material";
-import Box from "@mui/material/Box";
-import CustomTheme from "./custom-theme";
-import ImpactLogo from "../icons/untitled-ui/duocolor/impact-logo";
+import React from "react";
+import { CircularProgress, Box, Typography } from "@mui/material";
 
-export const SplashScreen = () => (
-  <CustomTheme colorPreset="purple">
+const LoadingComponent = ({ message = "Loading..." }) => {
+  return (
     <Box
-      sx={{
-        alignItems: "center",
-        backgroundColor: "background.paper",
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        justifyContent: "center",
-        left: 0,
-        p: 3,
-        position: "fixed",
-        top: 0,
-        width: "100vw",
-        zIndex: 1400,
-      }}
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      height="100vh"
     >
-      <Box
-        sx={{
-          display: "inline-flex",
-          height: 48,
-          width: 48,
-        }}
-      >
-        <Stack direction={"column"} spacing={2}>
-          <SvgIcon fontSize="large">
-            <ImpactLogo />
-          </SvgIcon>
-          <CircularProgress color="primary" />
-        </Stack>
-      </Box>
+      <CircularProgress color="primary" />
+      <Typography variant="body1" mt={2} color="text.secondary">
+        {message}
+      </Typography>
     </Box>
-  </CustomTheme>
-);
+  );
+};
+
+export default LoadingComponent;

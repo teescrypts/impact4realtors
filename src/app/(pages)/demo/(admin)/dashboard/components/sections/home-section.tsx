@@ -1,11 +1,8 @@
 "use client";
 
-import { Scrollbar } from "@/app/component/scrollbar";
 import Calendar from "@/app/icons/untitled-ui/duocolor/calendar";
-import EventBusy from "@/app/icons/untitled-ui/duocolor/event-busy";
 import Funnel from "@/app/icons/untitled-ui/duocolor/funnel";
 import HomeSmile from "@/app/icons/untitled-ui/duocolor/home-smile";
-import Mail04 from "@/app/icons/untitled-ui/duocolor/mail-04";
 import RealEstateAgent from "@/app/icons/untitled-ui/duocolor/real-estate-agent";
 import Users03 from "@/app/icons/untitled-ui/duocolor/users-03";
 import {
@@ -15,71 +12,63 @@ import {
   Grid2,
   Box,
   Button,
-  useTheme,
   AppBar,
   Toolbar,
   Container,
   Stack,
 } from "@mui/material";
-import { useState } from "react";
-
-const mockStats = [
-  {
-    title: "Total Listings",
-    value: 12,
-    icon: <HomeSmile fontSize="large" color="primary" />,
-  },
-  {
-    title: "Upcoming Appointments",
-    value: 5,
-    icon: <Calendar fontSize="large" color="secondary" />,
-  },
-  {
-    title: "New Leads",
-    value: 8,
-    icon: <Users03 fontSize="large" color="success" />,
-  },
-];
-
-const mockActivities = [
-  { text: "Jane Doe just requested a home tour", time: "2 mins ago" },
-  { text: "Meeting with Sarah at 4 PM tomorrow", time: "1 hour ago" },
-  { text: "New listing added: 3-Bedroom Condo in YC", time: "Today" },
-  { text: "John Smith signed up for the newsletter", time: "Yesterday" },
-  { text: "Appointment rescheduled with Mike on Friday", time: "2 days ago" },
-];
+import { useMemo } from "react";
 
 const quickActions = [
   {
     label: "Add New Listing",
-    path: "/dashboard/add-listing",
+    path: "/demo/dashboard/listing/add",
     icon: <RealEstateAgent />,
   },
   {
     label: "View Appointments",
-    path: "/dashboard/appointments",
+    path: "/demo/dashboard/appointment",
     icon: <Calendar />,
   },
-  { label: "Manage Leads", path: "/dashboard/leads", icon: <Funnel /> },
-  { label: "Newsletter", path: "/dashboard/newsletter", icon: <Mail04 /> },
+  { label: "Manage Leads", path: "/demo/dashboard/lead", icon: <Funnel /> },
+  // { label: "Newsletter", path: "/dashboard/newsletter", icon: <Mail04 /> },
 ];
 
 import React from "react";
+import LeadChart from "../lead-chart";
+import { HomeDataRes } from "../../home/page";
 
-function HomeSection() {
-  const theme = useTheme();
-  const [activities] = useState(mockActivities);
+function HomeSection({ data }: { data: HomeDataRes }) {
+  const stats = useMemo(() => {
+    return [
+      {
+        title: "Total Listings",
+        value: data.totalListings,
+        icon: <HomeSmile fontSize="large" color="primary" />,
+      },
+      {
+        title: "Upcoming Appointments",
+        value: data.totalUpcomingAppointments,
+        icon: <Calendar fontSize="large" color="secondary" />,
+      },
+      {
+        title: "New Leads",
+        value: data.totalNewLeads,
+        icon: <Users03 fontSize="large" color="success" />,
+      },
+    ];
+  }, [data]);
 
   return (
     <Container maxWidth="xl">
-      <Stack spacing={2}>
+      <Stack sx={{ mb: 6 }} spacing={2}>
         <Stack sx={{ mb: 2 }}>
           <Typography variant="h4">Home</Typography>
         </Stack>
         <Box>
           {/* Quick Stats */}
           <Grid2 sx={{ my: 4 }} container spacing={3}>
-            {mockStats.map((stat, index) => (
+            {stats.map((stat, index) => (
               <Grid2 size={{ xs: 12, sm: 4 }} key={index}>
                 <Card>
                   <CardContent
@@ -102,12 +91,10 @@ function HomeSection() {
 
           {/* Recent Activities - Upgraded */}
           <Box sx={{ my: 4 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Recent Activities
-            </Typography>
-            <Card sx={{ maxHeight: 500, overflow: "hidden" }}>
-              <CardContent sx={{ p: 0 }}>
-                <Scrollbar style={{ maxHeight: 400 }}>
+            {/* <Card>
+              <CardContent sx={{ p: 0 }}> */}
+            <LeadChart leadData={data.leadChartData} />
+            {/* <Scrollbar style={{ maxHeight: 400 }}>
                   <Box
                     sx={{
                       display: "flex",
@@ -150,9 +137,9 @@ function HomeSection() {
                       </Box>
                     ))}
                   </Box>
-                </Scrollbar>
-              </CardContent>
-            </Card>
+                </Scrollbar> */}
+            {/* </CardContent>
+            </Card> */}
           </Box>
 
           {/* Quick Actions */}

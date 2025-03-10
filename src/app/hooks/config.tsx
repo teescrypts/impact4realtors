@@ -6,7 +6,6 @@ import Time from "../icons/untitled-ui/duocolor/time";
 import Funnel from "../icons/untitled-ui/duocolor/funnel";
 import RealEstateAgent from "../icons/untitled-ui/duocolor/real-estate-agent";
 import LayoutAlt02 from "../icons/untitled-ui/duocolor/layout-alt-02";
-import StackedEmail from "../icons/untitled-ui/duocolor/stacked-email";
 import Settings from "../icons/untitled-ui/duocolor/settings";
 
 interface MenuItem {

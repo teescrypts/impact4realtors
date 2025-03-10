@@ -1,57 +1,90 @@
 "use client";
 
-import React from "react";
+import React, { useActionState, useEffect, useState } from "react";
 import {
   Box,
   Container,
   Typography,
   TextField,
-  Button,
-  Grid,
+  Grid2,
   IconButton,
   Stack,
 } from "@mui/material";
+import Twitter from "@/app/icons/untitled-ui/duocolor/twitter";
+import Instagram from "@/app/icons/untitled-ui/duocolor/instaagram";
+import Linkedin from "@/app/icons/untitled-ui/duocolor/linkedin";
+import Whatsapp from "@/app/icons/untitled-ui/duocolor/whatsapp";
+import { addNewsLetter } from "@/app/actions/server-actions";
+import notify from "@/app/utils/toast";
+import { ActionStateType } from "@/types";
+import { SubmitButton } from "@/app/component/submit-buttton";
+
+const initialState: ActionStateType = null;
 
 const Footer = () => {
+  const [state, formAction] = useActionState(addNewsLetter, initialState);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (state) {
+      if (state?.error) setMessage(state.error);
+      if (state?.message) {
+        notify(state.message);
+      }
+    }
+  }, [state]);
+
   return (
     <Box component="footer" sx={{ bgcolor: "#212121", color: "white", py: 6 }}>
       <Container maxWidth="lg">
-        <Grid
+        <Grid2
           container
           spacing={4}
           justifyContent="space-between"
           alignItems="center"
         >
           {/* Newsletter Sign-up Section */}
-          <Grid item xs={12} md={6}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
             <Typography variant="h6" gutterBottom>
               Sign Up for Our Newsletter
             </Typography>
             <Typography variant="body2" mb={2}>
               Get updated on new listings and exclusive offers.
             </Typography>
-            <Stack direction="row" spacing={2}>
-              <TextField
-                variant="outlined"
-                placeholder="Your Email"
-                size="small"
-                fullWidth
-                InputProps={{
-                  sx: {
+            {message && (
+              <Typography variant="subtitle2" color="error">
+                {message}
+              </Typography>
+            )}
+            <form action={formAction}>
+              <Stack direction="row" spacing={2}>
+                <TextField
+                  variant="outlined"
+                  placeholder="Your Email"
+                  size="small"
+                  name="email"
+                  fullWidth
+                  slotProps={{
+                    input: {
+                      sx: {
+                        backgroundColor: "white",
+                        borderRadius: 1,
+                      },
+                    },
+                  }}
+                  sx={{
+                    flexGrow: 1,
                     backgroundColor: "white",
                     borderRadius: 1,
-                  },
-                }}
-                sx={{ flexGrow: 1 }}
-              />
-              <Button variant="contained" color="secondary">
-                Subscribe
-              </Button>
-            </Stack>
-          </Grid>
+                  }}
+                />
+                <SubmitButton title="Sunscribe" isFullWidth={false} />
+              </Stack>
+            </form>
+          </Grid2>
 
           {/* Contact Us Section */}
-          <Grid item xs={12} md={5}>
+          <Grid2 size={{ xs: 12, md: 5 }}>
             <Typography variant="h6" gutterBottom>
               Contact Us
             </Typography>
@@ -62,21 +95,21 @@ const Footer = () => {
               <strong>Email:</strong> info@realtordemo.com
             </Typography>
             <Stack direction="row" spacing={1}>
-              <IconButton aria-label="Facebook" sx={{ color: "white" }}>
-                F
+              <IconButton aria-label="Whatsapp" sx={{ color: "white" }}>
+                <Whatsapp />
               </IconButton>
               <IconButton aria-label="Twitter" sx={{ color: "white" }}>
-                T
+                <Twitter />
               </IconButton>
               <IconButton aria-label="Instagram" sx={{ color: "white" }}>
-                IG
+                <Instagram />
               </IconButton>
               <IconButton aria-label="LinkedIn" sx={{ color: "white" }}>
-                LN
+                <Linkedin />
               </IconButton>
             </Stack>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         {/* Footer Copyright */}
         <Box textAlign="center" mt={4}>

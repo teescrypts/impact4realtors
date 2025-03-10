@@ -1,18 +1,7 @@
 import React from "react";
-import {
-  Container,
-  Box,
-  Typography,
-  Stack,
-  Divider,
-  Button,
-} from "@mui/material";
-import Link from "next/link";
-
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
 import apiRequest from "@/app/lib/api-request";
 import { blogType } from "@/types";
-import { formatCreatedAt } from "@/app/utils/format-created-at";
 import SingleBlogPage from "../../components/blog-page";
 import SellSection from "../../components/sections/sell-section";
 import TestimonialsSection from "../../components/sections/testimonial-section";
@@ -23,10 +12,7 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const blogId = (await params).id;
 
   const blogData = await apiRequest<{ data: { blog: blogType } }>(
@@ -48,24 +34,26 @@ export async function generateMetadata(
       apple: "/apple-touch-icon.png",
     },
     openGraph: {
-      title: `${blog.title} | Realtor Demo Blog`,
-      description: blog.shortDescription,
-      url: `https://yourdomain.com/blog/${blogId}`,
-      type: "article",
+      title: "Realtor Demo | Innovative Real Estate Solutions",
+      description:
+        "Discover a modern, creative platform designed for independent realtors. Elevate your business with our innovative tools and user-friendly interface.",
+      url: `https://realtyillustrations.live/demo/blog/${blogId}`, // Replace with your actual domain
+      type: "website",
       images: [
         {
-          url: blog.cover!.url!,
+          url: "https://realtyillustrations.live/images/logo.png", // Replace with your actual OG image URL
           width: 1200,
           height: 630,
-          alt: blog.title,
+          alt: "Realtor Demo",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${blog.title} | Realtor Demo Blog`,
-      description: blog.shortDescription,
-      images: [blog.cover!.url!],
+      title: "Realtor Demo | Innovative Real Estate Solutions",
+      description:
+        "Explore our live demo website showcasing modern tools for independent realtors.",
+      images: ["https://realtyillustrations.live/images/logo.png"], // Replace accordingly
     },
   };
 }

@@ -1,7 +1,6 @@
 import apiResponse from "@/app/lib/api-response";
 import { connectToDB } from "@/app/lib/mongoosejs";
 import Property from "@/app/model/property";
-import getAdmin from "@/app/utils/get-admin";
 import { NextRequest } from "next/server";
 
 export async function GET(

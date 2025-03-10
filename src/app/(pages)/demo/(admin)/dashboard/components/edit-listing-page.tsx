@@ -102,12 +102,15 @@ export default function EditListingPage({
     setImgLoading(false);
   }, []);
 
-  const handleFileRemove = useCallback(async (id: string) => {
-    const result = await deleteImage(id, property._id);
+  const handleFileRemove = useCallback(
+    async (id: string) => {
+      const result = await deleteImage(id, property._id);
 
-    if (result?.error) setImgErr(result.error);
-    if (result?.message) notify(result.message);
-  }, []);
+      if (result?.error) setImgErr(result.error);
+      if (result?.message) notify(result.message);
+    },
+    [property]
+  );
 
   const handleAddFeature = () => {
     if (featureInput.trim() && !features.includes(featureInput)) {
@@ -134,9 +137,7 @@ export default function EditListingPage({
       if (state?.message) router.push("/demo/dashboard/listing");
       if (state?.error) setMessage(state?.error);
     }
-  }, [state]);
-
-  console.log(images);
+  }, [state, router]);
 
   return (
     <Box>

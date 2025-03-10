@@ -212,13 +212,17 @@ function BookHouseTour({
   const theme = useTheme();
 
   const handleContinue = useCallback(async () => {
+    if (!sendUpdates) {
+      return alert("Kindly check the box to move forward.");
+    }
+
     setLoading(true);
     const result = await fetchAvailabilty("tour", adminId);
     if (result.availability) setDates(result.availability);
     if (result.error) setMessage(result.error);
     if (result.message) setMessage(result.message);
     setLoading(false);
-  }, []);
+  }, [sendUpdates, adminId]);
 
   const bookAppointmentWithData = bookAppointment.bind(null, adminId, aptData);
   const [state, formAction] = useActionState(
@@ -244,7 +248,7 @@ function BookHouseTour({
         setSelectedDate(null);
       }
     }
-  }, [state]);
+  }, [state, onClose]);
 
   return (
     <Dialog
@@ -317,11 +321,23 @@ function BookHouseTour({
               control={
                 <Checkbox
                   checked={sendUpdates}
-                  onChange={(e) => setSendUpdates(e.target.checked)}
+                  onChange={(e) => {
+                    setSendUpdates(e.target.checked);
+                  }}
                   color="primary"
+                  sx={{ mr: 1 }}
+                  aria-label="Consent to receive promotional updates"
                 />
               }
-              label="Send me updates on market trends and updates"
+              label={
+                <Typography variant="body2" color="white">
+                  I agree to receive <strong>promotional emails and SMS</strong>{" "}
+                  about exclusive real estate listings, market updates, and
+                  special offers. I can <strong>unsubscribe anytime</strong>. My
+                  information is private and will not be shared without my
+                  consent.
+                </Typography>
+              }
             />
           </Stack>
 
@@ -501,7 +517,7 @@ function BookHouseTour({
         </DialogContent>
 
         <DialogActions sx={{ justifyContent: "center", mt: 2 }}>
-          <Button onClick={handleClose} variant="outlined" color="error">
+          <Button onClick={handleClose} variant="contained" color="error">
             Cancel
           </Button>
           <SubmitButton title="Book" isFullWidth={false} />

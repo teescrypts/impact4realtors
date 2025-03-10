@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models, Document, Model } from "mongoose";
+import { Schema, model, models, Document, Model } from "mongoose";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -66,15 +66,14 @@ adminSchema.methods.toJSON = function () {
 
 // Generate JWT Token
 adminSchema.methods.generateAuthToken = async function () {
-  const user = this;
   const token = jwt.sign(
-    { _id: user._id.toString() },
+    { _id: this._id.toString() },
     process.env.JWT_SECRET as string,
     { expiresIn: "7d" }
   );
 
-  user.tokens.push({ token });
-  await user.save();
+  this.tokens.push({ token });
+  await this.save();
   return token;
 };
 

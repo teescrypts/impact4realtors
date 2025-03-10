@@ -38,6 +38,7 @@ function CustomTheme({
   children: ReactNode;
   colorPreset?: string;
 }) {
+  console.log(colorPreset)
   const [mounted, setMounted] = useState(false);
   const [paletteMode, setPaletteMode] = useState<"light" | "dark">("light");
   const [primaryColor, setPrimaryColor] = useState<string>("");

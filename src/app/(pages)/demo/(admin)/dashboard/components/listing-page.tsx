@@ -20,6 +20,7 @@ import {
   Grid2,
   Menu,
   MenuItem,
+  Stack,
 } from "@mui/material";
 import ExpendMore from "@/app/icons/untitled-ui/duocolor/expand-more";
 import Link from "next/link";
@@ -30,6 +31,7 @@ import {
   updatePropertyStatus,
 } from "@/app/actions/server-actions";
 import notify from "@/app/utils/toast";
+import EmptyState from "../../../(pages)/components/empty-state";
 
 export default function ListingsPage({
   properties,
@@ -66,7 +68,7 @@ export default function ListingsPage({
     }, 1000); // Delay API call by 500ms
 
     return () => clearTimeout(delaySearch);
-  }, [search]);
+  }, [search, filter, router]);
 
   // Handle filter change
   const handleFilterChange = (e: SelectChangeEvent<string>) => {
@@ -120,7 +122,7 @@ export default function ListingsPage({
         handleMenuClose();
       }
     },
-    [selectedListing]
+    [selectedListing, selectedListingStatus]
   );
 
   const handleDeleteProperty = useCallback(async () => {
@@ -172,6 +174,15 @@ export default function ListingsPage({
         </FormControl>
       </Box>
 
+      {properties.length === 0 && !loading && (
+        <Stack justifyContent={"center"} alignItems={"center"}>
+          <EmptyState
+            title="No Property Listed"
+            description="You have not listed any property."
+          />
+        </Stack>
+      )}
+
       {/* Property Listings */}
       {loading ? (
         <Box display="flex" justifyContent="center" my={4}>
@@ -179,51 +190,52 @@ export default function ListingsPage({
         </Box>
       ) : (
         <Grid2 container spacing={2}>
-          {properties.map((property) => (
-            <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={property._id}>
-              <Card>
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={property.images[0].url}
-                  alt={property.propertyTitle}
-                />
-                <CardContent>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Box>
-                      <Typography variant="h6" fontWeight="bold">
-                        {property.propertyTitle}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {`${property.location.stateName}, ${property.location.stateCode}`}{" "}
-                        - {property.price}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        fontWeight="bold"
-                        color={
-                          property.status === "Active" ? "green" : "orange"
+          {properties.length > 0 &&
+            properties.map((property) => (
+              <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={property._id}>
+                <Card>
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={property.images[0].url}
+                    alt={property.propertyTitle}
+                  />
+                  <CardContent>
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Box>
+                        <Typography variant="h6" fontWeight="bold">
+                          {property.propertyTitle}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {`${property.location.stateName}, ${property.location.stateCode}`}{" "}
+                          - {property.price}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color={
+                            property.status === "Active" ? "green" : "orange"
+                          }
+                        >
+                          {property.status}
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        onClick={(event) =>
+                          handleMenuClick(event, property._id!, property.status)
                         }
                       >
-                        {property.status}
-                      </Typography>
+                        <ExpendMore />
+                      </IconButton>
                     </Box>
-                    <IconButton
-                      onClick={(event) =>
-                        handleMenuClick(event, property._id!, property.status)
-                      }
-                    >
-                      <ExpendMore />
-                    </IconButton>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid2>
-          ))}
+                  </CardContent>
+                </Card>
+              </Grid2>
+            ))}
         </Grid2>
       )}
 

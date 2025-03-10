@@ -92,7 +92,7 @@ function EditBlog({
 
       setLoading(false);
     },
-    [draftImg, cover]
+    [cover]
   );
 
   const handleCoverRemove = useCallback(
@@ -104,7 +104,7 @@ function EditBlog({
         notify(result.message);
       }
     },
-    [draftImg]
+    [blog]
   );
 
   const contentRef = useRef<HTMLInputElement>(null);
@@ -260,7 +260,6 @@ function EditBlog({
                   )}
                   <FileDropzone
                     accept={{ "image/*": [] }}
-                    maxFiles={1}
                     onDrop={handleCoverDrop}
                     caption="(SVG, JPG, PNG, or gif maximum 900x400)"
                   />

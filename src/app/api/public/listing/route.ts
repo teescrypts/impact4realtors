@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { NextRequest } from "next/server";
 import Property from "@/app/model/property";
 import apiResponse from "@/app/lib/api-response";
@@ -44,22 +46,22 @@ export async function GET(req: NextRequest) {
       page: Math.max(1, parseInt(searchParams.get("page") ?? "1")),
     };
 
-    const filterConditions: Record<string, any> = { admin };
+    const filterConditions: Record<string, unknown> = { admin };
 
     if (query.category) filterConditions.category = query.category;
     if (query.minPrice || query.maxPrice) {
       filterConditions.price = {};
-      if (query.minPrice) filterConditions.price.$gte = query.minPrice;
-      if (query.maxPrice) filterConditions.price.$lte = query.maxPrice;
+      if (query.minPrice) (filterConditions.price as any).$gte = query.minPrice;
+      if (query.maxPrice) (filterConditions.price as any).$lte = query.maxPrice;
     }
     if (query.bedrooms) filterConditions.bedrooms = query.bedrooms;
     if (query.bathrooms) filterConditions.bathrooms = query.bathrooms;
     if (query.minSquareMeters || query.maxSquareMeters) {
       filterConditions.squareMeters = {};
       if (query.minSquareMeters)
-        filterConditions.squareMeters.$gte = query.minSquareMeters;
+        (filterConditions.squareMeters as any).$gte = query.minSquareMeters;
       if (query.maxSquareMeters)
-        filterConditions.squareMeters.$lte = query.maxSquareMeters;
+        (filterConditions.squareMeters as any).$lte = query.maxSquareMeters;
     }
 
     // Handle generic location input (matches city, state, or country)

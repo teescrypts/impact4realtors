@@ -84,17 +84,14 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
     [draftImg]
   );
 
-  const handleCoverRemove = useCallback(
-    async (id: string) => {
-      const result = await deleteImage(id);
+  const handleCoverRemove = useCallback(async (id: string) => {
+    const result = await deleteImage(id);
 
-      if (result?.error) setImgMsg(result.error);
-      if (result?.message) {
-        notify(result.message);
-      }
-    },
-    [draftImg]
-  );
+    if (result?.error) setImgMsg(result.error);
+    if (result?.message) {
+      notify(result.message);
+    }
+  }, []);
 
   const router = useRouter();
 
@@ -107,7 +104,7 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
       if (state?.error) setMessage(state.error);
       if (state?.message) router.push("/demo/dashboard/blog");
     }
-  }, [state]);
+  }, [state, router]);
 
   return (
     <form action={formAction}>
@@ -238,7 +235,6 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                   )}
                   <FileDropzone
                     accept={{ "image/*": [] }}
-                    maxFiles={1}
                     onDrop={handleCoverDrop}
                     caption="(SVG, JPG, PNG, or gif maximum 900x400)"
                   />

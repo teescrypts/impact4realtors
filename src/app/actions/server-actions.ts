@@ -11,9 +11,11 @@ import {
   AppointmentResponse,
   Availability,
   BlogType,
+  NotificationResType,
   PropertyType,
 } from "@/types";
 import { revalidateTag } from "next/cache";
+import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/page";
 
 const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
 
@@ -55,7 +57,7 @@ export async function login(formData: FormData) {
 }
 
 export async function demoLogin(
-  prevState: { error?: string } | null,
+  prevState: ActionStateType,
   formData: FormData
 ) {
   const email = formData.get("email") as string;
@@ -88,13 +90,14 @@ export async function demoLogin(
     }
   } catch (e) {
     if (e instanceof Error) {
-      return e.message;
+      return { error: e.message };
     } else {
-      return "An unknown error occurred";
+      return { error: "An unknown error occurred" };
     }
   }
 
   redirect("/demo/dashboard/home");
+  return { message: "Success" };
 }
 
 export async function authenticate() {
@@ -108,10 +111,16 @@ export async function authenticate() {
         message: string;
         data: {
           user: { _id: string; fname: string; lname: string; email: string };
+          unreadNotifictaionsCount: number;
         } | null;
       }>("admin/authenticate", { token });
 
-      if (response.data) return { ok: true, user: response.data.user };
+      if (response.data)
+        return {
+          ok: true,
+          user: response.data.user,
+          unreadNotifictaionsCount: response.data.unreadNotifictaionsCount,
+        };
     } catch (e) {
       if (e instanceof Error) {
         return { error: e.message };
@@ -846,6 +855,133 @@ export async function updateAptStatus(status: string, id: string) {
 
     revalidateTag("fetchAdminAppointments");
     return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function addNewsLetter(
+  prevState: ActionStateType,
+  formData: FormData
+) {
+  const email = formData.get("email") as string;
+
+  try {
+    const response = await apiRequest<{ message: string }, { email: string }>(
+      "public/newsletter",
+      {
+        method: "POST",
+        data: { email },
+      }
+    );
+
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function fetchNotifications(lastCreatedAt?: Date) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const url = lastCreatedAt
+    ? `admin/notification?lastCreatedAt=${lastCreatedAt}`
+    : `admin/notification`;
+
+  try {
+    const response = await apiRequest<{
+      data: {
+        notifications: NotificationResType[];
+        hasMore: boolean;
+        lastCreatedAt: Date | null;
+      };
+    }>(url, { token, tag: "fetchAdminNotification" });
+
+    return { data: response.data };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function markNotificationAsRead(id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }>(
+      `admin/notification/${id}`,
+      {
+        method: "PATCH",
+        token,
+      }
+    );
+
+    revalidateTag("fetchAdminNotification");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function deleteNotification(id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }>(
+      `admin/notification/${id}`,
+      {
+        method: "DELETE",
+        token,
+      }
+    );
+
+    revalidateTag("fetchAdminNotification");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function fetchMoreLeads(type: string, lastCreatedAt: Date | null) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const url = lastCreatedAt
+    ? `admin/lead?lastCreatedAt=${lastCreatedAt}&type=${type}`
+    : `admin/lead?type=${type}`;
+
+  try {
+    const response = await apiRequest<{
+      data: { leads: LeadType[]; hasMore: boolean; lastCreatedAt: Date | null };
+    }>(url, { token });
+
+    return { data: response.data };
   } catch (e) {
     if (e instanceof Error) {
       return { error: e.message };

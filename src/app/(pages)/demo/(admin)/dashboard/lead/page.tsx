@@ -19,11 +19,11 @@ export const metadata: Metadata = {
     title: "Realtor Demo | Innovative Real Estate Solutions",
     description:
       "Discover a modern, creative platform designed for independent realtors. Elevate your business with our innovative tools and user-friendly interface.",
-    url: "https://impact4realtors.live", // Replace with your actual domain
+    url: "https://realtyillustrations.live", // Replace with your actual domain
     type: "website",
     images: [
       {
-        url: "https://impact4realtors.live/images/logo.png", // Replace with your actual OG image URL
+        url: "https://realtyillustrations.live/images/logo.png", // Replace with your actual OG image URL
         width: 1200,
         height: 630,
         alt: "Realtor Demo",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: "Realtor Demo | Innovative Real Estate Solutions",
     description:
       "Explore our live demo website showcasing modern tools for independent realtors.",
-    images: ["https://impact4realtors.live/images/logo.png"], // Replace accordingly
+    images: ["https://realtyillustrations.live/images/logo.png"], // Replace accordingly
   },
 };
 
@@ -59,17 +59,12 @@ async function Page({
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
   const token = tokenObj?.value;
-  const lastCreatedAtQuery = (await searchParams).lastCreatedAt as
-    | string
-    | undefined;
-
-  const url = lastCreatedAtQuery
-    ? `admin/lead?lastCreatedAt=${lastCreatedAtQuery}`
-    : "admin/lead";
+  const leadType = (await searchParams).type as string | undefined;
+  const type = leadType ? leadType : "House Tour Leads";
 
   const response = await apiRequest<{
-    data: { leads: LeadType[]; hasMore: boolean; lastCreatedAt: Date };
-  }>(url, { token, tag: "fetchAdminLead" });
+    data: { leads: LeadType[]; hasMore: boolean; lastCreatedAt: Date | null };
+  }>(`admin/lead?type=${type}`, { token, tag: "fetchAdminLead" });
 
   const leads = response.data.leads;
   const hasMore = response.data.hasMore;

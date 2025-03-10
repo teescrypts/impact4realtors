@@ -1,16 +1,12 @@
 import React from "react";
 import HomeHeroSection from "./components/homee-sections/home-hero";
-import HowItWorks from "./components/homee-sections/home-how-it-works";
-import PricingSection from "./components/homee-sections/home-pricing-section";
-
-// Metadata
+import FeaturesSection from "./components/features-section";
 
 function Page() {
   return (
     <div>
       <HomeHeroSection />
-      <HowItWorks />
-      <PricingSection />
+      <FeaturesSection />
     </div>
   );
 }

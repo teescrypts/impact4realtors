@@ -13,6 +13,55 @@ import {
   Link,
 } from "@mui/material";
 import EditListingPage from "../../components/edit-listing-page";
+import { Metadata } from "next";
+
+type Props = {
+  params: Promise<{ id: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const id = (await params).id;
+
+  const propertyData = await apiRequest<{
+    messaage: string;
+    data: { property: PropertyType; draftImages: DraftImgType[] };
+  }>(`admin/listing/${id}`, {
+    tag: "fetchAdminProperty",
+  });
+
+  const property = propertyData.data.property;
+
+  return {
+    title: `${property.propertyTitle} | Realtor Demo Blog`,
+    description: property.description,
+    keywords:
+      "real estate, trends, realtor demo, independent realtor, blog, real estate technology, property trends",
+    icons: {
+      icon: "/favicon.ico",
+      apple: "/apple-touch-icon.png",
+    },
+    openGraph: {
+      title: `${property.propertyTitle} | Realtor Demo Blog`,
+      description: property.propertyTitle,
+      url: `https://realtyillustrations.live/demo/dashboard/listing/${id}`,
+      type: "article",
+      images: [
+        {
+          url: property.images[0].url,
+          width: 1200,
+          height: 630,
+          alt: property.propertyTitle,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${property.propertyTitle} | Realtor Demo Blog`,
+      description: property.description,
+      images: [property.images[0].url],
+    },
+  };
+}
 
 async function Page({ params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;

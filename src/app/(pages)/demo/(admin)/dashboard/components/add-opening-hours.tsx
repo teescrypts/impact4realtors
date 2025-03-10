@@ -42,7 +42,7 @@ function AddOpeningHours({ onClose }: { onClose: () => void }) {
         setMessage(state.error);
       }
     }
-  }, [state]);
+  }, [state, onClose]);
 
   return (
     <form action={formAction}>

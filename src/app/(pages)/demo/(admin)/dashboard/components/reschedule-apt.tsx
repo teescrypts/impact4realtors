@@ -16,7 +16,6 @@ import {
   useTheme,
 } from "@mui/material";
 import SimpleBarCore from "simplebar-core";
-import { ActionStateType } from "@/types";
 import { Scrollbar } from "@/app/component/scrollbar";
 import ChevronLeft from "@/app/icons/untitled-ui/duocolor/chevron-left";
 import ChevronRight from "@/app/icons/untitled-ui/duocolor/chevron-right";
@@ -39,8 +38,6 @@ type DateItem = {
   date: string;
   slots: string[];
 };
-
-const initialState: ActionStateType = null;
 
 interface RescheduleModalProps {
   open: boolean;
@@ -105,11 +102,11 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
       setMessage(result.error);
       setLoading(false);
     }
-  }, [currentAptId]);
+  }, [type]);
 
   useEffect(() => {
     fetchAvailabilty();
-  }, [currentAptId]);
+  }, [currentAptId, type, fetchAvailabilty]);
 
   const HandleRescheduleApt = useCallback(async () => {
     if (selectedDate && selectedSlot) {
@@ -134,7 +131,7 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
     } else {
       alert("Please select date and time");
     }
-  }, [selectedSlot, selectedDate]);
+  }, [selectedSlot, selectedDate, currentAptId, onClose, type]);
 
   useEffect(() => {
     // Programmatically scroll to the correct position when currentIndex changes
@@ -205,7 +202,7 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
         }}
       >
         <Typography variant="h6" gutterBottom>
-          Reschedule {customer}'s Appointment
+          Reschedule {customer}&apos;s Appointment
         </Typography>
 
         <Typography variant="subtitle1" gutterBottom>

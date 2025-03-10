@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { connectToDB } from "./mongoosejs";
-import Admin, { IAdmin, IAdminModel } from "../model/admin";
+import Admin, { IAdmin } from "../model/admin";
 
 export async function authMiddleware(
   req: NextRequest
@@ -28,9 +28,9 @@ export async function authMiddleware(
     }
 
     return user;
-  } catch (error) {
+  } catch (e) {
     return NextResponse.json(
-      { error: "Please authenticate." },
+      { error: e instanceof Error ? e.message : "An unknown error occurred" },
       { status: 401 }
     );
   }

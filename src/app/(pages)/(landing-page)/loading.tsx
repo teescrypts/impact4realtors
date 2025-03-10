@@ -1,9 +1,12 @@
-import React from 'react'
+import LoadingComponent from "@/app/component/_loading";
+import React from "react";
 
 function Loading() {
   return (
-    <div>Loading</div>
-  )
+    <div>
+      <LoadingComponent />
+    </div>
+  );
 }
 
-export default Loading
+export default Loading;

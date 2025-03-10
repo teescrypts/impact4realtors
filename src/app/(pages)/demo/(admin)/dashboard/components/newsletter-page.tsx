@@ -9,7 +9,6 @@ import {
   FormControl,
   InputLabel,
   Box,
-  Typography,
 } from "@mui/material";
 import { QuillEditor } from "@/app/component/quil-editor";
 

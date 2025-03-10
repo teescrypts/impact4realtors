@@ -146,14 +146,14 @@ export interface blogType {
   updatedAt: Date;
 }
 
-const APPOINTMENT_TYPES = ["call", "house_touring"] as const;
-const HOUSE_TOURING_TYPES = ["For Sale", "For Rent"] as const;
-const CALL_REASONS = [
+export const APPOINTMENT_TYPES = ["call", "house_touring"] as const;
+export const HOUSE_TOURING_TYPES = ["For Sale", "For Rent"] as const;
+export const CALL_REASONS = [
   "selling",
   "mortgage_enquiry",
   "general_enquiry",
 ] as const;
-const APPOINTMENT_STATUS = [
+export const APPOINTMENT_STATUS = [
   "upcoming",
   "completed",
   "cancelled",
@@ -195,4 +195,18 @@ export interface AppointmentResponse {
     isRescheduled: boolean;
     previousDates: [{ date: string; bookedTime: { from: string; to: string } }];
   };
+}
+
+export const NOTIFICATION_TYPES = [
+  "new_appointment",
+  "new_newsletter",
+] as const;
+
+export interface NotificationResType {
+  _id: string;
+  recipientType: "admin" | "user"; // Specifies if it's for an admin or user
+  type: (typeof NOTIFICATION_TYPES)[number]; // Type of notification
+  message: string; // Notification content
+  isRead: boolean; // Read status
+  createdAt: Date; // Timestamp
 }

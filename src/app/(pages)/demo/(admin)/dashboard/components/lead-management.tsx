@@ -8,6 +8,8 @@ import {
   useSensors,
   PointerSensor,
   DragOverlay,
+  UniqueIdentifier,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -17,19 +19,26 @@ import {
   Tabs,
   Tab,
   Paper,
-  TextField,
   Button,
   Grid2,
   Typography,
+  Stack,
+  CircularProgress,
 } from "@mui/material";
-import { leadCategories, sampleLeads } from "./data";
+import { leadCategories } from "./data";
 import LeadColumn from "./lead-column";
 import LeadCard from "./lead-card";
 import { Scrollbar } from "@/app/component/scrollbar";
 import { LeadType } from "../lead/page";
-import { deleteLead, updateLeadStatus } from "@/app/actions/server-actions";
+import {
+  deleteLead,
+  fetchMoreLeads,
+  updateLeadStatus,
+} from "@/app/actions/server-actions";
 import notify from "@/app/utils/toast";
 import { useRouter } from "nextjs-toploader/app";
+import { useSearchParams } from "next/navigation";
+import EmptyState from "../../../(pages)/components/empty-state";
 
 export default function LeadManagement({
   leads,
@@ -38,14 +47,30 @@ export default function LeadManagement({
 }: {
   leads: LeadType[];
   hasMore: boolean;
-  lastCreatedAt: Date;
+  lastCreatedAt: Date | null;
 }) {
-  const [selectedCategory, setSelectedCategory] = useState("House Tour Leads");
-  const [currentLeads, setCurrentLeads] = useState(leads);
+  const searchParams = useSearchParams();
+  const type = searchParams.get("type");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
+
+  const [currentHasMore, setCurrentHasMore] = useState<boolean>();
+  const [currentLastCreated, setCurrentLastCreated] = useState<Date>();
+  const [currentLeads, setCurrentLeads] = useState<LeadType[]>([]);
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
-  const [activeLead, setActiveLead] = useState<any>(null);
+  const [activeLead, setActiveLead] = useState<UniqueIdentifier | null>(null);
+  const [updatingLeads, setUpdatingLeads] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    if (type) {
+      setSelectedCategory(type);
+    } else {
+      setSelectedCategory("House Tour Leads");
+    }
+  }, [type]);
 
   // Drag-and-drop sensors
   const sensors = useSensors(
@@ -53,33 +78,35 @@ export default function LeadManagement({
   );
 
   // Handles lead movement between stages
-  const handleDragEnd = useCallback(
-    (event: any) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
-      // Optimistically update the UI
-      setCurrentLeads((prev) => {
-        return prev.map((lead) =>
-          lead._id === active.id
-            ? { ...lead, status: over.id.toLowerCase() }
-            : lead
-        );
-      });
+    setUpdatingLeads(true);
+    // Optimistically update the UI
+    setCurrentLeads((prev) => {
+      return prev.map((lead) =>
+        lead._id === active.id
+          ? { ...lead, status: over.id.toString().toLowerCase() }
+          : lead
+      );
+    });
 
-      // Perform the API update
-      updateLeadStatus(over.id.toLowerCase(), active.id).then((result) => {
-        if (result?.error) {
-          setMessage(result.error);
-        } else if (result?.message) {
-          notify(result.message);
-        }
-      });
+    // Perform the API update
+    updateLeadStatus(
+      over.id.toString().toLowerCase(),
+      active.id.toString()
+    ).then((result) => {
+      if (result?.error) {
+        setMessage(result.error);
+      } else if (result?.message) {
+        notify(result.message);
+      }
+    });
 
-      setActiveLead(null);
-    },
-    [currentLeads]
-  );
+    setActiveLead(null);
+    setUpdatingLeads(false);
+  }, []);
 
   const toggleLeadSelection = (leadId: string) => {
     setSelectedLeads((prevSelected) =>
@@ -106,7 +133,30 @@ export default function LeadManagement({
 
   useEffect(() => {
     setCurrentLeads(leads);
-  }, [leads]);
+    setCurrentHasMore(hasMore);
+    if (lastCreatedAt) {
+      setCurrentLastCreated(lastCreatedAt);
+    }
+  }, [leads, hasMore, lastCreatedAt]);
+
+  const HandleLoadmore = useCallback(() => {
+    if (selectedCategory && currentLastCreated) {
+      fetchMoreLeads(selectedCategory, currentLastCreated).then((result) => {
+        if (result?.error) setMessage(result.error);
+        if (result?.data) {
+          setCurrentLeads((prev) => [...prev, ...result.data.leads]);
+          setCurrentHasMore(result.data.hasMore);
+          if (result.data.lastCreatedAt) {
+            setCurrentLastCreated(result.data.lastCreatedAt);
+          }
+        }
+      });
+    }
+  }, [currentLastCreated, selectedCategory]);
+
+  if (!selectedCategory) {
+    return null;
+  }
 
   return (
     <Paper sx={{ p: 2, overflowX: "auto" }}>
@@ -115,7 +165,12 @@ export default function LeadManagement({
         <Grid2 size={{ xs: 12, md: 6 }}>
           <Tabs
             value={selectedCategory}
-            onChange={(_, value) => setSelectedCategory(value)}
+            onChange={(_, value) => {
+              const url = lastCreatedAt
+                ? `/demo/dashboard/lead?lastCreatedAt=${currentLastCreated}&type=${value}`
+                : `/demo/dashboard/lead?type=${value}`;
+              router.push(url);
+            }}
             textColor="primary"
             indicatorColor="primary"
             variant="scrollable"
@@ -125,9 +180,6 @@ export default function LeadManagement({
             ))}
           </Tabs>
         </Grid2>
-        {/* <Grid2 size={{ xs: 12, md: 3 }}>
-          <TextField fullWidth label="Search Leads" variant="outlined" />
-        </Grid2> */}
         <Grid2 size={{ xs: 12, md: 3 }} sx={{ textAlign: "right" }}>
           <Button
             variant="outlined"
@@ -146,55 +198,68 @@ export default function LeadManagement({
         </Typography>
       )}
 
+      {updatingLeads && (
+        <Stack justifyContent={"cente"} alignItems={"center"}>
+          <CircularProgress />
+          <Typography variant="body2">Updating Status...</Typography>
+        </Stack>
+      )}
+
       {/* Kanban Board */}
-      <DndContext
-        collisionDetection={closestCorners}
-        onDragStart={(event) => setActiveLead(event.active.id)}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveLead(null)}
-        sensors={sensors}
-      >
-        <Scrollbar style={{ width: "100%", overflowX: "auto" }}>
-          <Grid2 container wrap="nowrap" spacing={2}>
-            <SortableContext
-              items={leads.map((lead) => lead._id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {leadCategories[selectedCategory].map((stage) => (
-                <LeadColumn
-                  category={selectedCategory}
-                  key={stage}
-                  stage={stage}
-                  leads={currentLeads}
-                  toggleSelection={toggleLeadSelection}
-                  selectedLeads={selectedLeads}
-                />
-              ))}
-            </SortableContext>
-          </Grid2>
-        </Scrollbar>
+      {currentLeads && currentLeads.length > 0 ? (
+        <DndContext
+          collisionDetection={closestCorners}
+          onDragStart={(event) => setActiveLead(event.active.id)}
+          onDragEnd={handleDragEnd}
+          onDragCancel={() => setActiveLead(null)}
+          sensors={sensors}
+        >
+          <Scrollbar style={{ width: "100%", overflowX: "auto" }}>
+            <Grid2 container wrap="nowrap" spacing={2}>
+              <SortableContext
+                items={leads.map((lead) => lead._id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {leadCategories[selectedCategory].map((stage) => (
+                  <LeadColumn
+                    category={selectedCategory}
+                    key={stage}
+                    stage={stage}
+                    leads={currentLeads}
+                    toggleSelection={toggleLeadSelection}
+                    selectedLeads={selectedLeads}
+                  />
+                ))}
+              </SortableContext>
+            </Grid2>
+          </Scrollbar>
 
-        {/* Drag Overlay for smooth dragging */}
-        <DragOverlay>
-          {activeLead ? (
-            <LeadCard
-              lead={leads.find((lead) => lead._id === activeLead)}
-              toggleSelection={() => {}}
-              isSelected={false}
-            />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          {/* Drag Overlay for smooth dragging */}
+          <DragOverlay>
+            {currentLeads.length > 0 && activeLead ? (
+              <LeadCard
+                lead={currentLeads.find((lead) => lead._id === activeLead)!}
+                toggleSelection={() => {}}
+                isSelected={false}
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      ) : (
+        <Stack justifyContent={"center"} alignItems={"center"}>
+          <EmptyState
+            title={`No ${selectedCategory.toLowerCase()}`}
+            description="You will receive notifications about new leads."
+          />
+        </Stack>
+      )}
 
-      {hasMore && (
+      {currentHasMore && (
         <Button
           variant="contained"
           size="small"
-          onClick={() =>
-            router.push(`/demo/dashboard/lead?lastCreatedAt=${lastCreatedAt}`, {
-              scroll: false,
-            })
-          }
+          color="inherit"
+          onClick={HandleLoadmore}
         >
           Load More Leads
         </Button>

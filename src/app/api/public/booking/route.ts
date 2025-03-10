@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import apiResponse from "@/app/lib/api-response";
 import Appointment from "@/app/model/appointment";
 import Lead, { LeadType, LeadStatus } from "@/app/model/lead";
+import Notification from "@/app/model/notification";
 import getAdmin from "@/app/utils/get-admin";
 
 // Define TypeScript Interfaces for Request Data
@@ -39,8 +40,6 @@ export async function POST(req: NextRequest) {
   try {
     const admin = await getAdmin(req);
     const body: AppointmentRequestBody = await req.json();
-
-    console.log(body)
 
     if (!admin) return apiResponse("Admin Required", null, 401);
 
@@ -81,6 +80,19 @@ export async function POST(req: NextRequest) {
     });
 
     await newLead.save();
+
+    const notification = new Notification({
+      admin,
+      recipientType: "admin",
+      type: "new_appointment",
+      message: `${body.customer.firstName} ${
+        body.customer.lastName
+      } just booked a ${
+        body.type === "call" ? "call" : "house touring"
+      } appointment.`,
+    });
+
+    await notification.save();
 
     return apiResponse("Appointment booked successfully", null, 201);
   } catch (e) {

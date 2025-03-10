@@ -15,32 +15,41 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams;
-    const lastCreatedAt = searchParams.get("lastCreatedAt"); // Timestamp of last fetched lead
+    const lastCreatedAt = searchParams.get("lastCreatedAt");
+    const type = searchParams.get("type");
 
     // Ensure admin is always included in the query
-    let query: { admin: string; createdAt?: { $lt: Date } } = {
+    const query: { admin: string; createdAt?: { $lt: Date }; type?: string } = {
       admin: admin._id as string,
     };
-    
+
     if (lastCreatedAt) {
       query.createdAt = { $lt: new Date(lastCreatedAt) }; // Load older leads
     }
+
+    if (!type)
+      return apiResponse("Type of lead to fetch is required", null, 401);
+
+    query.type = type;
 
     const leads: ILead[] = await Lead.find(query)
       .sort({ createdAt: -1 }) // Newest first
       .limit(ITEMS_PER_PAGE);
 
+    const leadsCount = await Lead.countDocuments({ admin: admin._id, type });
+
     // Check if more leads exist
-    const hasMore = leads.length === ITEMS_PER_PAGE;
+    const hasMore =
+      leads.length === ITEMS_PER_PAGE && leads.length < leadsCount;
 
     return apiResponse(
       "Success",
       {
         leads,
         hasMore,
-        lastCreatedAt: leads.length ? leads[leads.length - 1].createdAt : null,
+        lastCreatedAt: leads.at(-1)?.createdAt || null,
       },
-      200 // Use 200 for successful GET responses
+      200
     );
   } catch (e) {
     return apiResponse(

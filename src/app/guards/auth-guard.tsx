@@ -3,7 +3,9 @@
 import { usePathname, useRouter } from "next/navigation";
 import React, {
   createContext,
+  Dispatch,
   ReactNode,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -16,6 +18,8 @@ const AuthContext = createContext<{
   email: string;
   fname: string;
   lname: string;
+  unreadNotifictaionsCount: number;
+  setUreadNotifictaionsCount: Dispatch<SetStateAction<number>>;
 } | null>(null);
 
 export const AuthGuard = ({ children }: { children: ReactNode }) => {
@@ -25,6 +29,7 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
     fname: string;
     lname: string;
   } | null>(null);
+  const [unreadNotifictaionsCount, setUreadNotifictaionsCount] = useState(0);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -41,17 +46,22 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
           lname: user.lname,
           id: user._id,
         });
+
+        if (result.unreadNotifictaionsCount > 0) {
+          setUreadNotifictaionsCount(result.unreadNotifictaionsCount);
+        }
       } else {
         router.replace("/demo/auth/demo/login");
       }
     } catch (e) {
+      console.log(e);
       router.replace("/demo/auth/demo/login");
     }
-  }, [pathname]);
+  }, [router]);
 
   useEffect(() => {
     authenticateUser();
-  }, [pathname]);
+  }, [pathname, authenticateUser]);
 
   if (!admin) {
     return <div>loading...</div>;
@@ -65,6 +75,8 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
           lname: admin.lname,
           email: admin.email,
           id: admin.id,
+          unreadNotifictaionsCount,
+          setUreadNotifictaionsCount,
         }}
       >
         {children}

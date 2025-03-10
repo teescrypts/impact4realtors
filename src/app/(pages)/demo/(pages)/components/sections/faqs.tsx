@@ -7,6 +7,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Container,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import ExpendMore from "@/app/icons/untitled-ui/duocolor/expand-more";
@@ -43,45 +44,45 @@ export default function FAQsSection() {
     };
 
   return (
-    <Box
-      sx={{
-        py: 8,
-        px: 3,
-        textAlign: "center",
-      }}
-    >
-      <Typography variant="h4" fontWeight="bold" mb={4} color="primary">
-        Frequently Asked Questions
-      </Typography>
+    <Container maxWidth="lg" sx={{ my: 6 }}>
+      <Box
+        sx={{
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="h4" fontWeight="bold" mb={4} color="primary">
+          Frequently Asked Questions
+        </Typography>
 
-      <Box maxWidth="800px" mx="auto">
-        {faqs.map((faq, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Accordion
-              expanded={expanded === index}
-              onChange={handleChange(index)}
-              sx={{ mb: 2, boxShadow: 2, borderRadius: 2 }}
+        <Box mx="auto">
+          {faqs.map((faq, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
             >
-              <AccordionSummary
-                expandIcon={<ExpendMore />}
-                sx={{ fontWeight: "bold" }}
+              <Accordion
+                expanded={expanded === index}
+                onChange={handleChange(index)}
+                sx={{ mb: 2, boxShadow: 2, borderRadius: 2 }}
               >
-                {faq.question}
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography variant="body2" color="text.secondary">
-                  {faq.answer}
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-          </motion.div>
-        ))}
+                <AccordionSummary
+                  expandIcon={<ExpendMore />}
+                  sx={{ fontWeight: "bold" }}
+                >
+                  {faq.question}
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="body2" color="text.secondary">
+                    {faq.answer}
+                  </Typography>
+                </AccordionDetails>
+              </Accordion>
+            </motion.div>
+          ))}
+        </Box>
       </Box>
-    </Box>
+    </Container>
   );
 }

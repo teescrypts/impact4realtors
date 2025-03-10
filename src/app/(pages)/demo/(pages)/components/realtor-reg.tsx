@@ -11,6 +11,7 @@ import {
 import Motion from "./motion";
 
 function RealtorRegistration({ token }: { token: string }) {
+  console.log(token);
   return (
     <Container
       maxWidth="sm"

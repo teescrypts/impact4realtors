@@ -8,6 +8,7 @@ import FAQsSection from "./components/sections/faqs";
 import NewsletterPopup from "./components/sections/newssletter-popup";
 import apiRequest from "@/app/lib/api-request";
 import { HomepageResponse } from "@/types";
+import AboutUs from "./components/about";
 
 async function Page({
   searchParams,
@@ -29,6 +30,7 @@ async function Page({
   return (
     <Fragment>
       <HeroSection adminId={adminId} />
+      <AboutUs adminId={adminId} hompage />
       <ListingsSection adminId={adminId} forRent={forRent} forSale={forSale} />
       <SellSection adminId={adminId} />
       <LatestBlogs adminId={adminId} blogs={blogs} />

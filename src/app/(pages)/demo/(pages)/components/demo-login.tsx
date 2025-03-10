@@ -2,17 +2,20 @@
 
 import { demoLogin } from "@/app/actions/server-actions";
 import { SubmitButton } from "@/app/component/submit-buttton";
+import { ActionStateType } from "@/types";
 import { Box, Grid2, TextField, Typography } from "@mui/material";
 import React, { useActionState, useEffect, useState } from "react";
 
-const initialValue = null;
+const initialValue: ActionStateType = null;
 
 function DemoLogin() {
   const [state, formAction] = useActionState(demoLogin, initialValue);
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
-    if (state?.error) setMessage(state.error);
+    if (state) {
+      if (state?.error) setMessage(state.error);
+    }
   }, [state]);
 
   return (

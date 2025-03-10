@@ -1,14 +1,7 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 import OpeningHour, { IOpeningHour } from "@/app/model/opening-hour";
-import { revalidateTag } from "next/cache";
-
-// Define the expected authentication response structure
-interface AuthResponse {
-  _id: mongoose.Types.ObjectId;
-}
 
 // Define valid days as keyof IOpeningHour
 type DayKeys = keyof Pick<

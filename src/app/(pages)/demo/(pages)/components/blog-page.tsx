@@ -38,7 +38,10 @@ function SingleBlogPage({
         });
         return;
       } catch (error) {
-        console.warn("Web Share API failed, falling back to deep links.");
+        console.warn(
+          "Web Share API failed, falling back to deep links.",
+          error
+        );
       }
     }
 

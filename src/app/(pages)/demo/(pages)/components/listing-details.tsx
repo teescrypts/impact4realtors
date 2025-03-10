@@ -61,7 +61,7 @@ const ListingDetailsPage = ({
         });
         return;
       } catch (error) {
-        console.warn("Web Share API failed, falling back to links.");
+        console.warn("Web Share API failed, falling back to links.", error);
       }
     }
 

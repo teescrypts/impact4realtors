@@ -125,7 +125,7 @@ export default function AddListingPage({
       if (state?.message) router.push("/demo/dashboard/listing");
       if (state?.error) setMessage(state?.error);
     }
-  }, [state]);
+  }, [state, router]);
 
   return (
     <Box>

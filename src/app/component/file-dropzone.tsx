@@ -15,6 +15,7 @@ import { useDropzone } from "react-dropzone";
 import React from "react";
 import Upload from "../icons/untitled-ui/duocolor/upload";
 import Close from "../icons/untitled-ui/duocolor/close";
+import Image from "next/image";
 
 type FileType = File & {
   path?: string;
@@ -28,7 +29,6 @@ type PropTypes = {
   accept?: AcceptType;
   caption?: string;
   files?: { url: string; imageId: string; fileName: string }[];
-  maxFiles?: number;
   onDrop?: (newFiles: FileType[]) => void;
   onRemove?: (id: string) => void;
   onRemoveAll?: () => void;
@@ -40,7 +40,6 @@ function FileDropzone({
   caption,
   files = [],
   onDrop,
-  maxFiles,
   onRemove,
   onRemoveAll,
   isEdit,
@@ -139,14 +138,12 @@ function FileDropzone({
                       mr: 2, // Margin between image and file details
                     }}
                   >
-                    <img
+                    <Image
                       src={file.url}
                       alt={file.fileName}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
+                      width={60} // Define explicit width
+                      height={60} // Define explicit height
+                      style={{ objectFit: "cover" }}
                     />
                   </Box>
                   {/* )} */}

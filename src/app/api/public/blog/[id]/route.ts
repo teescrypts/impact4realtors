@@ -1,7 +1,6 @@
 import apiResponse from "@/app/lib/api-response";
 import { connectToDB } from "@/app/lib/mongoosejs";
 import BlogPost from "@/app/model/blog";
-import getAdmin from "@/app/utils/get-admin";
 import { NextRequest } from "next/server";
 
 export async function GET(
@@ -9,7 +8,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await getAdmin(req);
     await connectToDB();
     const _id = (await params).id;
     const blog = await BlogPost.findById(_id);

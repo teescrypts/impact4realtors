@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   const admin = authResponse; // Retrieve user ID
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  
+
   try {
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     const searchQuery = searchParams.get("query");
 
     // Construct filter object
-    const filter: any = { admin: admin._id };
+    const filter: Record<string, unknown> = { admin: admin._id };
 
     if (status && status.trim() !== "") {
       filter.status = status;

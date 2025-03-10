@@ -107,36 +107,36 @@ function Navbar() {
                     },
                   }}
                 >
-                  <MenuItem
-                    onClick={handleMenuClose}
-                    sx={{ "&:hover": { bgcolor: "#f0f0f0" } }}
+                  <Link
+                    href={
+                      adminId
+                        ? `/demo/listings?category=${"For Rent"}&admin=${adminId}`
+                        : `/demo/listings?category=${"For Rent"}`
+                    }
+                    passHref
                   >
-                    <Link
-                      href={
-                        adminId
-                          ? `/demo/listings?category=${"For Rent"}&admin=${adminId}`
-                          : `/demo/listings?category=${"For Rent"}`
-                      }
-                      passHref
+                    <MenuItem
+                      onClick={handleMenuClose}
+                      sx={{ "&:hover": { bgcolor: "#f0f0f0" } }}
                     >
                       Rent
-                    </Link>
-                  </MenuItem>
-                  <MenuItem
-                    onClick={handleMenuClose}
-                    sx={{ "&:hover": { bgcolor: "#f0f0f0" } }}
+                    </MenuItem>
+                  </Link>
+                  <Link
+                    href={
+                      adminId
+                        ? `/demo/listings?category=${"For Sale"}&admin=${adminId}`
+                        : `/demo/listings?category=${"For Sale"}`
+                    }
+                    passHref
                   >
-                    <Link
-                      href={
-                        adminId
-                          ? `/demo/listings?category=${"For Sale"}&admin=${adminId}`
-                          : `/demo/listings?category=${"For Sale"}`
-                      }
-                      passHref
+                    <MenuItem
+                      onClick={handleMenuClose}
+                      sx={{ "&:hover": { bgcolor: "#f0f0f0" } }}
                     >
                       Buy
-                    </Link>
-                  </MenuItem>
+                    </MenuItem>
+                  </Link>
                 </MUImenu>
                 <Button
                   color="inherit"

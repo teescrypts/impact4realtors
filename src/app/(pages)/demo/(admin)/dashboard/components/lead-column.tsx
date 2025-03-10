@@ -1,11 +1,12 @@
 import { Paper, Typography, Box, Grid2 } from "@mui/material";
 import { useDroppable } from "@dnd-kit/core";
 import LeadCard from "./lead-card";
+import { LeadType } from "../lead/page";
 
 interface LeadColumnProps {
   category: string;
   stage: string;
-  leads: any[];
+  leads: LeadType[];
   toggleSelection: (leadId: string) => void;
   selectedLeads: string[];
 }
@@ -29,7 +30,8 @@ export default function LeadColumn({
           {leads
             .filter((lead) => {
               return (
-                lead.status === stage.toLowerCase() && lead.type === category
+                lead.status.toLowerCase() === stage.toLowerCase() &&
+                lead.type.toLowerCase() === category.toLowerCase()
               );
             })
             .map((lead) => (

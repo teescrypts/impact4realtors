@@ -27,6 +27,8 @@ import {
   Chip,
   IconButton,
   useTheme,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
@@ -66,6 +68,7 @@ export default function ContactUs({
     useState<boolean>(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sendUpdates, setSendUpdates] = useState(false);
 
   const scrollbarRef = useRef<SimpleBarCore | null>(null);
 
@@ -177,13 +180,14 @@ export default function ContactUs({
   }, [selectedDate, selectedSlot]);
 
   const handleContinue = useCallback(async () => {
+    if (!sendUpdates) return alert("Kindly check the box to move forward.");
     setLoading(true);
     const result = await fetchAvailabilty("call", adminId);
     if (result.availability) setDates(result.availability);
     if (result.error) setMessage(result.error);
     if (result.message) setMessage(result.message);
     setLoading(false);
-  }, []);
+  }, [sendUpdates, adminId]);
 
   const bookAppointmentWithData = bookAppointment.bind(null, adminId, aptData);
   const [state, formAction] = useActionState(
@@ -267,6 +271,29 @@ export default function ContactUs({
                     variant="outlined"
                     required
                     fullWidth
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={sendUpdates}
+                        onChange={(e) => {
+                          setSendUpdates(e.target.checked);
+                        }}
+                        color="primary"
+                        sx={{ mr: 1 }}
+                        aria-label="Consent to receive promotional updates"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2">
+                        I agree to receive{" "}
+                        <strong>promotional emails and SMS</strong> about
+                        exclusive real estate listings, market updates, and
+                        special offers. I can{" "}
+                        <strong>unsubscribe anytime</strong>. My information is
+                        private and will not be shared without my consent.
+                      </Typography>
+                    }
                   />
                   <Button
                     variant="contained"

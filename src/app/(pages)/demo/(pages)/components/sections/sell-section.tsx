@@ -18,10 +18,11 @@ import {
   TextField,
   Grid2,
   IconButton,
-  SvgIcon,
   CircularProgress,
   Stack,
   Avatar,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTheme } from "@mui/material/styles";
@@ -30,7 +31,6 @@ import { Scrollbar } from "@/app/component/scrollbar";
 import ChevronLeft from "@/app/icons/untitled-ui/duocolor/chevron-left";
 import ChevronRight from "@/app/icons/untitled-ui/duocolor/chevron-right";
 import { convertTo12HourFormat } from "@/app/utils/convert-to-12hrs-format";
-import Call from "@/app/icons/untitled-ui/duocolor/call";
 import SimpleBarCore from "simplebar-core";
 import Link from "next/link";
 import { ActionStateType, AppointmentData } from "@/types";
@@ -82,6 +82,7 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
   const [selectedSlot, setSelectedSlot] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [sendUpdates, setSendUpdates] = useState(false);
 
   const scrollbarRef = useRef<SimpleBarCore | null>(null);
 
@@ -192,13 +193,14 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
   }, [selectedDate, selectedSlot]);
 
   const handleContinue = useCallback(async () => {
+    if (!sendUpdates) return alert("Kindly check the box to move forward.");
     setIsLoading(true);
     const result = await fetchAvailabilty("tour", adminId);
     if (result.availability) setDates(result.availability);
     if (result.error) setMessage(result.error);
     if (result.message) setMessage(result.message);
     setIsLoading(false);
-  }, []);
+  }, [sendUpdates, adminId]);
 
   const bookAppointmentWithData = bookAppointment.bind(null, adminId, aptData);
   const [state, formAction] = useActionState(
@@ -230,7 +232,7 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
         <Container maxWidth="md">
           <Box textAlign="center" mb={4}>
             <Avatar
-              src="/images/agent.jpeg" // Update this path to the actual image location
+              src="/images/agent.jpeg"
               alt="Andrea - Real Estate Agent"
               sx={{ width: 200, height: 200, mx: "auto", mb: 2 }}
             />
@@ -309,6 +311,29 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
                   sx={textFieldStyle}
                 />
               </Grid2>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={sendUpdates}
+                    onChange={(e) => {
+                      setSendUpdates(e.target.checked);
+                    }}
+                    color="primary"
+                    sx={{ mr: 1 }}
+                    aria-label="Consent to receive promotional updates"
+                  />
+                }
+                label={
+                  <Typography variant="body2" color="white">
+                    I agree to receive{" "}
+                    <strong>promotional emails and SMS</strong> about exclusive
+                    real estate listings, market updates, and special offers. I
+                    can <strong>unsubscribe anytime</strong>. My information is
+                    private and will not be shared without my consent.
+                  </Typography>
+                }
+              />
             </Grid2>
 
             <Stack>
