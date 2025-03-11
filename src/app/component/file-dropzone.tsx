@@ -139,14 +139,19 @@ function FileDropzone({
                       mr: 2, // Margin between image and file details
                     }}
                   >
-                    <Image
+                    <img
                       src={file.url}
                       alt={file.fileName}
                       width={60} // Define explicit width
                       height={60} // Define explicit height
-                      style={{ objectFit: "cover" }}
+                      style={{
+                        objectFit: "cover",
+                        width: "100%",
+                        height: "100%",
+                      }}
                     />
                   </Box>
+
                   {/* )} */}
                   <ListItemText
                     primary={file.fileName}

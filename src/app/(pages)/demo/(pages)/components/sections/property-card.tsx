@@ -44,14 +44,17 @@ function PropertyCard({
                 }/${property._id}`
           }
         >
-          <CardMedia sx={{ height: 300, position: "relative" }}>
-            <Image
+          <CardMedia
+            sx={{ height: 300, position: "relative", overflow: "hidden" }}
+          >
+            <img
               src={property.images[0].url}
               alt={property.propertyTitle}
-              fill
-              style={{ objectFit: "cover" }}
-              sizes="100%"
-              priority
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
             />
           </CardMedia>
         </Link>

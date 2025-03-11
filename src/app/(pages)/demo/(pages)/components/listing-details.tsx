@@ -87,7 +87,7 @@ const ListingDetailsPage = ({
                 alt={property.propertyTitle}
                 sx={{
                   width: "100%",
-                  height: { xs: 500, md: 500 },
+                  height: { xs: 550, md: 600 },
                   objectFit: "cover",
                 }}
               />

@@ -8,7 +8,7 @@ import {
   CardContent,
   CardMedia,
   Button,
-  Grid,
+  Grid2,
   Container,
 } from "@mui/material";
 import { motion } from "framer-motion";
@@ -43,9 +43,9 @@ export default function LatestBlogs({
         </Box>
 
         {blogs.length > 0 ? (
-          <Grid container spacing={4} justifyContent="center">
+          <Grid2 container spacing={4} justifyContent="center">
             {blogs.map((blog) => (
-              <Grid item xs={12} sm={6} md={4} key={blog._id}>
+              <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={blog._id}>
                 <motion.div
                   whileHover={{ scale: 1.03 }}
                   transition={{ duration: 0.3 }}
@@ -96,9 +96,9 @@ export default function LatestBlogs({
                     </CardContent>
                   </Card>
                 </motion.div>
-              </Grid>
+              </Grid2>
             ))}
-          </Grid>
+          </Grid2>
         ) : (
           <EmptyState
             title="No blogs found."

@@ -175,7 +175,7 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                         overflow: "hidden",
                       }}
                     >
-                      <Image
+                      <img
                         src={cover.url}
                         alt="Blog Cover"
                         width={500} // Set appropriate width
@@ -185,7 +185,6 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                           maxHeight: "100%",
                           objectFit: "contain",
                         }}
-                        priority // Optional: Ensures image loads quickly
                       />
                     </Box>
                   ) : (

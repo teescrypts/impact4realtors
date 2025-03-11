@@ -34,7 +34,6 @@ export async function GET(req: NextRequest) {
 
     return apiResponse("success", { forSale, forRent, publishedBlogs }, 201);
   } catch (e) {
-    console.error("Server Component Error Digest:", e);
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
