@@ -112,6 +112,7 @@ function FileDropzone({
         <Box sx={{ mt: 2 }}>
           <List>
             {files.map((file) => {
+              console.log(file);
               return (
                 <ListItem
                   key={file.imageId}
