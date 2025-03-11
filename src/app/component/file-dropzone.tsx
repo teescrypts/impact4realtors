@@ -15,7 +15,6 @@ import { useDropzone } from "react-dropzone";
 import React from "react";
 import Upload from "../icons/untitled-ui/duocolor/upload";
 import Close from "../icons/untitled-ui/duocolor/close";
-import Image from "next/image";
 
 type FileType = File & {
   path?: string;

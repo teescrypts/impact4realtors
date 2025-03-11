@@ -15,7 +15,6 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import React from "react";
-import Image from "next/image";
 import { propertyType } from "../../listings/page";
 import KingBed from "@/app/icons/untitled-ui/duocolor/king-bed";
 

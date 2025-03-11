@@ -14,7 +14,6 @@ import {
 import React, { useActionState, useCallback, useEffect, useState } from "react";
 import FileDropzone from "@/app/component/file-dropzone";
 import { QuillEditor } from "@/app/component/quil-editor";
-import Image from "next/image";
 import {
   deleteImage,
   uploadBlog,
