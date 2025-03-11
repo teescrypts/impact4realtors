@@ -8,9 +8,6 @@ export async function GET(req: NextRequest) {
   try {
     const admin = await getAdmin(req);
 
-    console.log(admin)
-
-    // Fetch properties and blogs concurrently
     const [forRent, forSale, publishedBlogs] = await Promise.all([
       Property.find({
         category: "For Rent",
@@ -35,10 +32,9 @@ export async function GET(req: NextRequest) {
         .select("title shortDescription cover.url createdAt"),
     ]);
 
-    console.log(forRent, forSale, publishedBlogs)
-
     return apiResponse("success", { forSale, forRent, publishedBlogs }, 201);
   } catch (e) {
+    console.error("Server Component Error Digest:", e);
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,

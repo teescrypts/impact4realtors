@@ -31,14 +31,7 @@ const availableColors = [
   { name: "Green", value: "green" },
 ];
 
-function CustomTheme({
-  children,
-  colorPreset,
-}: {
-  children: ReactNode;
-  colorPreset?: string;
-}) {
-  console.log(colorPreset)
+function CustomTheme({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [paletteMode, setPaletteMode] = useState<"light" | "dark">("light");
   const [primaryColor, setPrimaryColor] = useState<string>("");

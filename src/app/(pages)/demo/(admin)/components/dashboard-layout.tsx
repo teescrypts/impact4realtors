@@ -10,7 +10,7 @@ import TopLoader from "../dashboard/components/top-loader";
 function DashboardLayout({ children }: { children: ReactNode }) {
   const theme = useTheme();
   return (
-    <CustomTheme colorPreset="blue">
+    <CustomTheme>
       <VerticalLayout navColor="blend-in">
         <TopLoader />
         <ToastContainer

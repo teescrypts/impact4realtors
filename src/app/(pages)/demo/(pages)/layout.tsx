@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   return (
-    <CustomTheme colorPreset="blue">
+    <CustomTheme>
       <Motion>
         <TopLoader />
         <Navbar />

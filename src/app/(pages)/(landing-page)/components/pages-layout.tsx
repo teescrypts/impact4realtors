@@ -8,7 +8,7 @@ import Footer from "./footer";
 
 function PagesLayout({ children }: { children: ReactNode }) {
   return (
-    <CustomTheme colorPreset="blue">
+    <CustomTheme>
       <Box
         sx={{
           display: "flex",
