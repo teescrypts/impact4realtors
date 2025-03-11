@@ -8,6 +8,8 @@ export async function GET(req: NextRequest) {
   try {
     const admin = await getAdmin(req);
 
+    console.log(admin)
+
     // Fetch properties and blogs concurrently
     const [forRent, forSale, publishedBlogs] = await Promise.all([
       Property.find({
@@ -32,6 +34,8 @@ export async function GET(req: NextRequest) {
         .limit(3)
         .select("title shortDescription cover.url createdAt"),
     ]);
+
+    console.log(forRent, forSale, publishedBlogs)
 
     return apiResponse("success", { forSale, forRent, publishedBlogs }, 201);
   } catch (e) {

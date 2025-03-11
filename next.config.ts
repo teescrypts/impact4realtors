@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: isDev ? "http" : "https",
-        hostname: isDev ? "localhost" : "assets.example.com",
+        hostname: isDev ? "localhost" : "realtyillustrations.live",
         port: isDev ? "3000" : "",
         pathname: "/**",
       },

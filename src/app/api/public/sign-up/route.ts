@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
     const admin = new Admin({
       email: body.email,
-      password: "impact4agents",
+      password: "realtyillustrations.live.98",
     });
 
     await admin.save();

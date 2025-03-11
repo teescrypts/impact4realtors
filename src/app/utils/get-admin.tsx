@@ -14,7 +14,7 @@ const getAdmin = async (req: NextRequest) => {
     return admin;
   } else {
     const defaultAdmin = await Admin.findOne({
-      email: "testing@gmail.com",
+      email: "admin@realtyillustrations.live",
     }).select("_id");
 
     admin = defaultAdmin?._id || null;
