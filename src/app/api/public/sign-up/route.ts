@@ -4,8 +4,10 @@ import Admin from "@/app/model/admin";
 
 export async function POST(request: Request) {
   try {
-    await connectToDB();
+    const test = await connectToDB();
     const body = await request.json();
+
+    console.log(body, test)
 
     const admin = new Admin({
       email: body.email,
