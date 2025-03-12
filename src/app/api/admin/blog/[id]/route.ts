@@ -1,5 +1,6 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
+import cloudinary from "@/app/lib/cloudinary";
 import BlogPost from "@/app/model/blog";
 import Image from "@/app/model/images";
 import { NextRequest, NextResponse } from "next/server";
@@ -27,11 +28,8 @@ export async function GET(
     let draftImg;
 
     if (draftImgObj) {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
       draftImg = {
-        url: `${apiBaseUrl}/api/admin/${draftImgObj._id}/image`,
+        url: draftImgObj.url,
         fileName: draftImgObj.filename,
         imageId: draftImgObj._id,
       };
@@ -108,13 +106,24 @@ export async function DELETE(
   const authResponse = await authMiddleware(req);
   if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse; // Retrieve user ID
+  const admin = authResponse; 
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const _id = (await params).id;
-    await BlogPost.findByIdAndDelete(_id);
+    const deletedBlogPost = await BlogPost.findByIdAndDelete(_id);
+
+    if (deletedBlogPost?.cover && deletedBlogPost?.cover?.imageId) {
+      const deletedImg = await Image.findByIdAndDelete(
+        deletedBlogPost.cover.imageId
+      );
+
+      if (deletedImg?.public_id) {
+        await cloudinary.uploader.destroy(deletedImg.public_id);
+      }
+    }
+    
     return apiResponse("Blog post deleted", null, 201);
   } catch (e) {
     return apiResponse(

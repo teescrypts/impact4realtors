@@ -1,33 +1,34 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
+import cloudinary from "@/app/lib/cloudinary";
 import BlogPost from "@/app/model/blog";
 import Image from "@/app/model/images";
 import Property from "@/app/model/property";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const id = (await params).id;
-    const image = await Image.findById(id).select("contentType data");
+// export async function GET(
+//   req: NextRequest,
+//   { params }: { params: Promise<{ id: string }> }
+// ) {
+//   try {
+//     const id = (await params).id;
+//     const image = await Image.findById(id).select("contentType data");
 
-    if (!image) return apiResponse("Image not found", null, 401);
+//     if (!image) return apiResponse("Image not found", null, 401);
 
-    return new Response(image.data, {
-      headers: {
-        "Content-Type": image.contentType!,
-      },
-    });
-  } catch (e) {
-    return apiResponse(
-      e instanceof Error ? e.message : "An unknown error occurred",
-      null,
-      500
-    );
-  }
-}
+//     return new Response(image.data, {
+//       headers: {
+//         "Content-Type": image.contentType!,
+//       },
+//     });
+//   } catch (e) {
+//     return apiResponse(
+//       e instanceof Error ? e.message : "An unknown error occurred",
+//       null,
+//       500
+//     );
+//   }
+// }
 
 export async function DELETE(
   req: NextRequest,
@@ -47,7 +48,11 @@ export async function DELETE(
 
   try {
     if (propertyId) {
-      await Image.findByIdAndDelete({ _id });
+      const deletedImg = await Image.findByIdAndDelete({ _id });
+
+      if (deletedImg?.public_id) {
+        await cloudinary.uploader.destroy(deletedImg.public_id);
+      }
 
       const property = await Property.findById(propertyId).select("images");
       const updatedImgs = property.images.filter(
@@ -61,7 +66,11 @@ export async function DELETE(
 
       return apiResponse("Image removed", null, 201);
     } else if (blogId) {
-      await Image.findByIdAndDelete(_id);
+      const deletedImg = await Image.findByIdAndDelete(_id);
+
+      if (deletedImg?.public_id) {
+        await cloudinary.uploader.destroy(deletedImg.public_id);
+      }
 
       const blog = await BlogPost.findById(blogId).select("cover status");
       blog.status = "Draft";
@@ -71,7 +80,11 @@ export async function DELETE(
 
       return apiResponse("Image removed", null, 201);
     } else {
-      await Image.findByIdAndDelete({ _id });
+      const deletedImg = await Image.findByIdAndDelete({ _id });
+      if (deletedImg?.public_id) {
+        await cloudinary.uploader.destroy(deletedImg.public_id);
+      }
+
       return apiResponse("draft Image removed", null, 201);
     }
   } catch (e) {

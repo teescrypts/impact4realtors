@@ -317,15 +317,19 @@ export async function deleteImage(id: string, propertyId?: string) {
   }
 }
 
-export async function deleteImages() {
+export async function deleteImages(ids: string[]) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
   const token = tokenObj?.value;
 
   try {
-    const response = await apiRequest<{ message: string }>("admin/image", {
+    const response = await apiRequest<
+      { message: string },
+      { imageIds: string[] }
+    >("admin/image", {
       method: "DELETE",
       token,
+      data: { imageIds: ids },
     });
 
     revalidateTag("fetchistingDraftImgs");

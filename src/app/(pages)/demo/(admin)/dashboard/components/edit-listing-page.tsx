@@ -218,9 +218,6 @@ export default function EditListingPage({
             />
           </Grid2>
 
-          <Grid2 size={{ xs: 12 }}>
-            <Typography variant="subtitle1">Type</Typography>
-          </Grid2>
           <Grid2 size={{ xs: 12, sm: 6 }}>
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
@@ -237,19 +234,15 @@ export default function EditListingPage({
           </Grid2>
 
           <Grid2 size={{ xs: 12, sm: 6 }}>
-            <FormControl fullWidth>
-              <InputLabel>Property Type</InputLabel>
-              <Select
-                label="Property Type"
-                variant="outlined"
-                name="propertyType"
-                defaultValue={property.propertyType}
-              >
-                <MenuItem value="House">House</MenuItem>
-                <MenuItem value="Apartment">Apartment</MenuItem>
-                <MenuItem value="Condo">Condo</MenuItem>
-              </Select>
-            </FormControl>
+            <TextField
+              fullWidth
+              label="Property Type"
+              variant="outlined"
+              name="propertyType"
+              type="text"
+              required
+              defaultValue={property.propertyType}
+            />
           </Grid2>
 
           <Grid2 size={{ xs: 12 }}>
@@ -262,7 +255,7 @@ export default function EditListingPage({
                 defaultValue={property.status}
               >
                 <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Rented">Rented</MenuItem>
                 <MenuItem value="Sold">Sold</MenuItem>
               </Select>
             </FormControl>

@@ -97,11 +97,15 @@ export default function AddListingPage({
   }, []);
 
   const handleFilesRemoveAll = useCallback(async () => {
-    const result = await deleteImages();
+    if (draftImages.length > 0) {
+      const imageIds = draftImages.map((img) => img.imageId);
 
-    if (result?.error) setImgErr(result.error);
-    if (result?.message) notify(result.message);
-  }, []);
+      const result = await deleteImages(imageIds);
+
+      if (result?.error) setImgErr(result.error);
+      if (result?.message) notify(result.message);
+    }
+  }, [draftImages]);
 
   const handleAddFeature = () => {
     if (featureInput.trim() && !features.includes(featureInput)) {
@@ -218,19 +222,14 @@ export default function AddListingPage({
           </Grid2>
 
           <Grid2 size={{ xs: 12, sm: 6 }}>
-            <FormControl fullWidth>
-              <InputLabel>Property Type</InputLabel>
-              <Select
-                label="Property Type"
-                variant="outlined"
-                name="propertyType"
-                defaultValue=""
-              >
-                <MenuItem value="House">House</MenuItem>
-                <MenuItem value="Apartment">Apartment</MenuItem>
-                <MenuItem value="Condo">Condo</MenuItem>
-              </Select>
-            </FormControl>
+            <TextField
+              fullWidth
+              label="Property Type"
+              variant="outlined"
+              name="propertyType"
+              type="text"
+              required
+            />
           </Grid2>
 
           <Grid2 size={{ xs: 12 }}>
@@ -243,7 +242,7 @@ export default function AddListingPage({
                 defaultValue=""
               >
                 <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Rented">Rented</MenuItem>
                 <MenuItem value="Sold">Sold</MenuItem>
               </Select>
             </FormControl>

@@ -54,7 +54,7 @@ function PropertyCard({
               style={{
                 objectFit: "cover",
               }}
-              unoptimized
+              
             />
           </CardMedia>
         </Link>

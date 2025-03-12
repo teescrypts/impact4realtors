@@ -9,7 +9,7 @@ interface IProperty extends Document {
   squareMeters: number;
   description: string;
   category: "For Sale" | "For Rent";
-  propertyType: "House" | "Apartment" | "Condo";
+  propertyType: string;
   status: "Active" | "Rented" | "Sold";
   location: {
     addressLine1: string;
@@ -43,7 +43,6 @@ const PropertySchema = new Schema<IProperty>(
     },
     propertyType: {
       type: String,
-      enum: ["House", "Apartment", "Condo"],
       required: true,
     },
     status: {
@@ -79,8 +78,3 @@ const Property =
   mongoose.model<IProperty>("Property", PropertySchema);
 
 export default Property;
-
-
-
-
-

@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         port: isDev ? "3000" : "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com", // ✅ Allow images from Cloudinary
+        pathname: "/**",
+      },
     ],
   },
   experimental: {

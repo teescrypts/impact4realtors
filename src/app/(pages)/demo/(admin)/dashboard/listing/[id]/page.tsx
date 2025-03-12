@@ -21,11 +21,15 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const id = (await params).id;
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
 
   const propertyData = await apiRequest<{
     messaage: string;
     data: { property: PropertyType; draftImages: DraftImgType[] };
   }>(`admin/listing/${id}`, {
+    token,
     tag: "fetchAdminProperty",
   });
 

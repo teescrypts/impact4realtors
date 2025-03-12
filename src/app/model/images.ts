@@ -7,7 +7,8 @@ export interface IImage extends Document {
   type: "listing" | "blog";
   filename?: string;
   contentType?: string;
-  data: Buffer;
+  url: string; // Cloudinary image URL
+  public_id: string; // Cloudinary public ID (needed for deletion)
 }
 
 // Define the Image schema
@@ -17,17 +18,18 @@ const ImageSchema = new Schema<IImage>(
     status: {
       type: String,
       required: true,
-      enum: ["uploaded", "drafted"], // Fixed typo
+      enum: ["uploaded", "drafted"],
       default: "drafted",
     },
     type: {
       type: String,
       required: true,
-      enum: ["listing", "blog"], // Fixed typo
+      enum: ["listing", "blog"],
     },
     filename: { type: String },
     contentType: { type: String },
-    data: { type: Buffer, required: true },
+    url: { type: String, required: true }, // Store Cloudinary image URL
+    public_id: { type: String, required: true }, // Store Cloudinary public ID
   },
   { timestamps: true } // Automatically adds createdAt & updatedAt fields
 );

@@ -27,12 +27,9 @@ export async function GET(
       type: "listing",
     });
 
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
     const draftImages = draftImagesArr.map((img) => {
       return {
-        url: `${apiBaseUrl}/api/admin/${img._id}/image`,
+        url: img.url,
         fileName: img.filename,
         imageId: img._id,
       };

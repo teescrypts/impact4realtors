@@ -50,7 +50,7 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
       setCover(null);
     } else {
       setCover({
-        url: `${draftImg.url}?name=${draftImg.fileName}`,
+        url: draftImg.url,
         imageId: draftImg.imageId,
         fileName: draftImg.fileName,
       });
@@ -178,14 +178,13 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                       <Image
                         src={cover.url}
                         alt="Blog Cover"
-                        width={500} // Set appropriate width
-                        height={300} // Set appropriate height
+                        width={500}
+                        height={300}
                         style={{
                           maxWidth: "100%",
                           maxHeight: "100%",
                           objectFit: "contain",
                         }}
-                        unoptimized
                       />
                     </Box>
                   ) : (

@@ -61,7 +61,7 @@ function EditBlog({
       setCover(blog.cover);
     } else {
       setCover({
-        url: `${draftImg.url}?name=${draftImg.fileName}`,
+        url: draftImg.url,
         imageId: draftImg.imageId,
         fileName: draftImg.fileName,
       });

@@ -16,16 +16,13 @@ export async function GET(req: NextRequest) {
       admin: admin._id,
       status: "drafted",
       type: "blog",
-    }).select("filename");
+    }).select("filename url");
 
     if (!draftImgObj)
       return apiResponse("No draft Image", { draftImg: "No Image" }, 200);
 
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
     const draftImg = {
-      url: `${apiBaseUrl}/api/admin/${draftImgObj._id}/image`,
+      url: draftImgObj.url,
       fileName: draftImgObj.filename,
       imageId: draftImgObj._id,
     };

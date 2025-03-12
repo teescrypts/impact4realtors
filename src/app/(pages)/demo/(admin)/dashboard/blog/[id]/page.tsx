@@ -1,5 +1,5 @@
 import apiRequest from "@/app/lib/api-request";
-import { blogType, BlogType } from "@/types";
+import { BlogType } from "@/types";
 import { cookies } from "next/headers";
 import React from "react";
 import { DraftImgType } from "../../listing/add/page";
@@ -22,13 +22,16 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const blogId = (await params).id;
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
 
-  const blogData = await apiRequest<{ data: { blog: blogType } }>(
-    `public/blog/${blogId}`,
-    {
-      tag: "fetchPublicBlogPost",
-    }
-  );
+  const blogData = await apiRequest<{
+    data: { blog: BlogType; draftImg: DraftImgType };
+  }>(`admin/blog/${blogId}`, {
+    token,
+    tag: "fetchAdminBlog",
+  });
 
   const blog = blogData.data.blog;
 
@@ -46,20 +49,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: blog.shortDescription,
       url: `https://realtyillustrations.live/demo/dashboard/blog/${blogId}`,
       type: "article",
-      images: [
-        {
-          url: blog.cover!.url!,
-          width: 1200,
-          height: 630,
-          alt: blog.title,
-        },
-      ],
+      ...(blog?.cover &&
+        blog.cover?.url && {
+          images: [
+            {
+              url: blog.cover!.url!,
+              width: 1200,
+              height: 630,
+              alt: blog.title,
+            },
+          ],
+        }),
     },
     twitter: {
       card: "summary_large_image",
       title: `${blog.title} | Realtor Demo Blog`,
       description: blog.shortDescription,
-      images: [blog.cover!.url!],
+      ...(blog?.cover && blog.cover?.url && { images: [blog.cover.url] }),
     },
   };
 }
