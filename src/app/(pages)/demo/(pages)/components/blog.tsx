@@ -6,7 +6,6 @@ import {
   Typography,
   Card,
   CardContent,
-  CardMedia,
   Button,
   Grid2,
   Container,
@@ -16,6 +15,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EmptyState from "./empty-state";
+import Image from "next/image";
 
 export default function Blogs({
   blogs,
@@ -49,9 +49,7 @@ export default function Blogs({
             {blogs.length > 0 ? (
               blogs.map((blog) => (
                 <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={blog._id}>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.05 }}>
                     <Card
                       sx={{
                         mx: "auto",
@@ -61,12 +59,20 @@ export default function Blogs({
                         transition: "transform 0.3s ease-in-out",
                       }}
                     >
-                      <CardMedia
-                        component="img"
-                        height="300"
-                        image={blog.cover?.url}
-                        alt={blog.title}
-                      />
+                      <Box
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          height: 260,
+                        }}
+                      >
+                        <Image
+                          src={blog.cover!.url!}
+                          alt={blog.title!}
+                          layout="fill"
+                          objectFit="cover"
+                        />
+                      </Box>
                       <CardContent>
                         <Typography variant="h6" fontWeight="bold" gutterBottom>
                           {blog.title}

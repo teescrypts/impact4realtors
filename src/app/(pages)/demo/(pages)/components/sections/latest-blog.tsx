@@ -6,7 +6,6 @@ import {
   Typography,
   Card,
   CardContent,
-  CardMedia,
   Button,
   Grid2,
   Container,
@@ -14,6 +13,7 @@ import {
 import { motion } from "framer-motion";
 import Link from "next/link";
 import EmptyState from "../empty-state";
+import Image from "next/image";
 
 export default function LatestBlogs({
   blogs,
@@ -59,13 +59,16 @@ export default function LatestBlogs({
                       "&:hover": { boxShadow: 6 },
                     }}
                   >
-                    <CardMedia
-                      component="img"
-                      height="260"
-                      image={blog.cover.url}
-                      alt={blog.title}
-                      sx={{ objectFit: "cover" }}
-                    />
+                    <Box
+                      sx={{ position: "relative", width: "100%", height: 260 }}
+                    >
+                      <Image
+                        src={blog.cover.url}
+                        alt={blog.title}
+                        layout="fill"
+                        objectFit="cover"
+                      />
+                    </Box>
                     <CardContent
                       sx={{ p: 3, display: "flex", flexDirection: "column" }}
                     >

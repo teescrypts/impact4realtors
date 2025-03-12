@@ -15,6 +15,7 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -59,19 +60,29 @@ function SingleBlogPage({
       {/* Blog Header */}
       <Box sx={{ mb: 4, textAlign: "center" }}>
         <Box
-          component="img"
-          src={blog.cover?.url || ""}
-          alt={blog.title}
           sx={{
+            position: "relative",
             width: "100%",
-            maxHeight: { xs: 500, md: 600 },
-            objectFit: "cover",
+            height: { xs: 500, md: 600 }, // Responsive height
             borderRadius: 2,
+            overflow: "hidden",
           }}
-        />
+        >
+          {blog.cover?.url && (
+            <Image
+              src={blog.cover.url}
+              alt={blog.title!}
+              layout="fill"
+              objectFit="cover"
+              priority // Improve performance for above-the-fold images
+            />
+          )}
+        </Box>
+
         <Typography variant="h3" fontWeight="bold" mt={3}>
           {blog.title}
         </Typography>
+
         <Stack direction="row" spacing={2} justifyContent="center" mt={1}>
           <Typography variant="body1" color="text.secondary">
             By {blog.author}
