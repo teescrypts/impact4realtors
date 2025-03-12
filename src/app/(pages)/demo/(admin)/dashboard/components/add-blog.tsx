@@ -23,6 +23,7 @@ import notify from "@/app/utils/toast";
 import { ActionStateType } from "@/types";
 import { SubmitButton } from "@/app/component/submit-buttton";
 import { useRouter } from "nextjs-toploader/app";
+import Image from "next/image";
 
 export interface BlogDraftImageType {
   url: string;
@@ -174,7 +175,7 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                         overflow: "hidden",
                       }}
                     >
-                      <img
+                      <Image
                         src={cover.url}
                         alt="Blog Cover"
                         width={500} // Set appropriate width
@@ -184,6 +185,7 @@ function AddBlog({ draftImg }: { draftImg: BlogDraftImageType | string }) {
                           maxHeight: "100%",
                           objectFit: "contain",
                         }}
+                        unoptimized
                       />
                     </Box>
                   ) : (

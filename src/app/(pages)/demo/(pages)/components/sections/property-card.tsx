@@ -17,6 +17,7 @@ import Link from "next/link";
 import React from "react";
 import { propertyType } from "../../listings/page";
 import KingBed from "@/app/icons/untitled-ui/duocolor/king-bed";
+import Image from "next/image";
 
 function PropertyCard({
   property,
@@ -46,14 +47,14 @@ function PropertyCard({
           <CardMedia
             sx={{ height: 300, position: "relative", overflow: "hidden" }}
           >
-            <img
+            <Image
               src={property.images[0].url}
               alt={property.propertyTitle}
+              fill
               style={{
-                width: "100%",
-                height: "100%",
                 objectFit: "cover",
               }}
+              unoptimized
             />
           </CardMedia>
         </Link>

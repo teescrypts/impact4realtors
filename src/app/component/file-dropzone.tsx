@@ -15,6 +15,7 @@ import { useDropzone } from "react-dropzone";
 import React from "react";
 import Upload from "../icons/untitled-ui/duocolor/upload";
 import Close from "../icons/untitled-ui/duocolor/close";
+import Image from "next/image";
 
 type FileType = File & {
   path?: string;
@@ -138,16 +139,17 @@ function FileDropzone({
                       mr: 2, // Margin between image and file details
                     }}
                   >
-                    <img
+                    <Image
                       src={file.url}
                       alt={file.fileName}
-                      width={60} // Define explicit width
-                      height={60} // Define explicit height
+                      width={60} // Explicit width
+                      height={60} // Explicit height
                       style={{
                         objectFit: "cover",
                         width: "100%",
                         height: "100%",
                       }}
+                      unoptimized
                     />
                   </Box>
 
