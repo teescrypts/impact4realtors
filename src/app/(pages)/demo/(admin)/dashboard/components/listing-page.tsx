@@ -51,6 +51,7 @@ export default function ListingsPage({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedListing, setSelectedListing] = useState<string | null>(null);
   const [selectedListingStatus, setSelectedListingStatus] = useState("");
+  const [selectedListingCategory, setSelctedListingCategory] = useState("");
   const [search, setSearch] = useState(searchParams.get("query") || "");
   const [filter, setFilter] = useState(searchParams.get("status") || "");
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
@@ -97,11 +98,13 @@ export default function ListingsPage({
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
     id: string,
-    status: string
+    status: string,
+    category: string
   ) => {
     setAnchorEl(event.currentTarget);
     setSelectedListing(id);
     setSelectedListingStatus(status);
+    setSelctedListingCategory(category);
   };
 
   const handleMenuClose = () => {
@@ -226,7 +229,12 @@ export default function ListingsPage({
                       </Box>
                       <IconButton
                         onClick={(event) =>
-                          handleMenuClick(event, property._id!, property.status)
+                          handleMenuClick(
+                            event,
+                            property._id!,
+                            property.status,
+                            property.category
+                          )
                         }
                       >
                         <ExpendMore />
@@ -266,7 +274,9 @@ export default function ListingsPage({
         </MenuItem>
         {selectedListingStatus === "Active" ? (
           <MenuItem onClick={() => handleUpdateProperty("Sold")}>
-            Mark as Sold
+            {selectedListingCategory === "For Rent"
+              ? "Mark as rented"
+              : "Mark as sold"}
           </MenuItem>
         ) : (
           <MenuItem onClick={() => handleUpdateProperty("Active")}>

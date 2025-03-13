@@ -33,7 +33,7 @@ function PagesLayout({ children }: { children: ReactNode }) {
                   color="textPrimary"
                   sx={{ ml: 2, fontWeight: 700 }}
                 >
-                  RealtyIllustrations By Impact
+                  RealtyIllustrations
                 </Typography>
               </Box>
             </Toolbar>
