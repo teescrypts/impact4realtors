@@ -12,6 +12,7 @@ import React, {
   useState,
 } from "react";
 import { authenticate } from "../actions/server-actions";
+import LoadingComponent from "../component/_loading";
 
 const AuthContext = createContext<{
   id: string;
@@ -64,7 +65,7 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
   }, [pathname, authenticateUser]);
 
   if (!admin) {
-    return <div>loading...</div>;
+    return <LoadingComponent />;
   }
 
   return (
