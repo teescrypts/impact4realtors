@@ -3,7 +3,7 @@ import { TypographyOptions } from "@mui/material/styles/createTypography";
 export const createTypography = (): TypographyOptions => {
   return {
     fontFamily:
-      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+      '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
 
     body1: {
       fontSize: "1rem",
@@ -18,7 +18,7 @@ export const createTypography = (): TypographyOptions => {
       letterSpacing: "0.2px",
     },
     button: {
-      fontFamily: '"Poppins", sans-serif',
+      fontFamily: '"Satoshi", sans-serif',
       fontWeight: 600,
       textTransform: "none",
       letterSpacing: "0.5px",
@@ -47,37 +47,37 @@ export const createTypography = (): TypographyOptions => {
       textTransform: "uppercase",
     },
     h1: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'DM Serif Display', serif",
       fontWeight: 700,
       fontSize: "3.5rem",
       lineHeight: 1.2,
     },
     h2: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'DM Serif Display', serif",
       fontWeight: 700,
       fontSize: "3rem",
       lineHeight: 1.2,
     },
     h3: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'DM Serif Display', serif",
       fontWeight: 700,
       fontSize: "2.25rem",
       lineHeight: 1.3,
     },
     h4: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'DM Serif Display', serif",
       fontWeight: 700,
       fontSize: "2rem",
       lineHeight: 1.3,
     },
     h5: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'DM Serif Display', serif",
       fontWeight: 600,
       fontSize: "1.5rem",
       lineHeight: 1.4,
     },
     h6: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'DM Serif Display', serif",
       fontWeight: 600,
       fontSize: "1.25rem",
       lineHeight: 1.5,
