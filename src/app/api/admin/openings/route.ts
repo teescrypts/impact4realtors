@@ -165,7 +165,7 @@ export async function GET(req: NextRequest) {
     if (!openingHour) {
       openingHour = new OpeningHour({ admin: admin._id });
       const newOpeningHour = await openingHour.save();
-      return apiResponse("success", { newOpeningHour }, 200);
+      return apiResponse("success", { openingHour: newOpeningHour }, 200);
     } else {
       return apiResponse("success", { openingHour }, 200);
     }
