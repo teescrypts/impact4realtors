@@ -139,6 +139,8 @@ export async function addHour(prev: ActionStateType, formData: FormData) {
   const to = formData.get("to") as string;
   const from = formData.get("from") as string;
 
+  if (!to && !from) return { error: "Ensure start and end time are selected" };
+
   const parsedFrom = parse(from, "hh:mm a", new Date());
   const parsedTo = parse(to, "hh:mm a", new Date());
 

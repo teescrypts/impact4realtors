@@ -37,7 +37,7 @@ function AddOpeningHours({ onClose }: { onClose: () => void }) {
     if (state) {
       if ("ok" in state && state.ok) {
         notify(state.message);
-        onClose()
+        onClose();
       } else if ("error" in state) {
         setMessage(state.error);
       }
@@ -69,8 +69,8 @@ function AddOpeningHours({ onClose }: { onClose: () => void }) {
 
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-            <TimePicker label="From" name="from" />
-            <TimePicker label="To" name="to" />
+            <TimePicker sx={{ width: "100%" }} label="From" name="from" />
+            <TimePicker sx={{ width: "100%" }} label="To" name="to" />
           </Stack>
         </LocalizationProvider>
 
