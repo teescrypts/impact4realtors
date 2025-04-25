@@ -18,6 +18,7 @@ import {
   useTheme,
 } from "@mui/material";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { ToastContainer, Zoom } from "react-toastify";
 
@@ -26,8 +27,11 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [listingsOpen, setListingsOpen] = useState(false);
   const [adminId, setAdminId] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const pathname = usePathname();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -41,6 +45,19 @@ function Navbar() {
     const adminId = localStorage.getItem("adminId");
     setAdminId(adminId);
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isHomePage = pathname === "/demo";
+
+  const textColor = scrolled || !isHomePage ? "#333" : "#fff";
 
   return (
     <>
@@ -58,24 +75,27 @@ function Navbar() {
         transition={Zoom}
       />
       <AppBar
-        position="sticky"
-        color="transparent"
-        elevation={0}
-        sx={{ backdropFilter: "blur(10px)", bgcolor: "rgba(255,255,255,0.8)" }}
+        position="fixed"
+        elevation={scrolled ? 4 : 0}
+        sx={{
+          backgroundColor: scrolled
+            ? "rgba(255, 255, 255, 0.9)"
+            : "transparent",
+          backdropFilter: scrolled ? "blur(10px)" : "none",
+          transition: "background-color 0.3s ease-in-out",
+        }}
       >
         <Container>
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-            {/* Logo */}
             <Link href={adminId ? `/demo?admin=${adminId}` : `/demo`}>
               <Typography
                 variant="h5"
-                sx={{ fontWeight: "bold", color: "#333" }}
+                sx={{ fontWeight: "bold", color: textColor }}
               >
                 RealtorDemo
               </Typography>
             </Link>
 
-            {/* Desktop Menu */}
             {!isMobile ? (
               <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                 <Button
@@ -84,7 +104,7 @@ function Navbar() {
                   endIcon={<ExpandMore />}
                   sx={{
                     fontWeight: "bold",
-                    color: "#333",
+                    color: textColor,
                     textTransform: "none",
                   }}
                 >
@@ -142,7 +162,7 @@ function Navbar() {
                   color="inherit"
                   component={Link}
                   href={adminId ? `/demo/sell?admin=${adminId}` : `/demo/sell`}
-                  sx={{ fontWeight: "bold", color: "#333" }}
+                  sx={{ fontWeight: "bold", color: textColor }}
                 >
                   Sell
                 </Button>
@@ -150,7 +170,7 @@ function Navbar() {
                   color="inherit"
                   component={Link}
                   href={adminId ? `/demo/blog?admin=${adminId}` : `/demo/blog`}
-                  sx={{ fontWeight: "bold", color: "#333" }}
+                  sx={{ fontWeight: "bold", color: textColor }}
                 >
                   Blog
                 </Button>
@@ -160,29 +180,29 @@ function Navbar() {
                   href={
                     adminId ? `/demo/about?admin=${adminId}` : `/demo/about`
                   }
-                  sx={{ fontWeight: "bold", color: "#333" }}
+                  sx={{ fontWeight: "bold", color: textColor }}
                 >
                   About
                 </Button>
               </Box>
             ) : (
-              // Mobile Menu Button
               <IconButton
                 edge="end"
                 color="inherit"
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
-                <Menu />
+                <SvgIcon sx={{ color: textColor }}>
+                  <Menu />
+                </SvgIcon>
               </IconButton>
             )}
           </Toolbar>
 
-          {/* Mobile Collapse Menu */}
           <Collapse
             in={mobileOpen}
             timeout="auto"
             unmountOnExit
-            sx={{ bgcolor: "#f9f9f9", p: 2 }}
+            sx={{ bgcolor: "#1a1a1a", p: 2 }}
           >
             <Button
               fullWidth

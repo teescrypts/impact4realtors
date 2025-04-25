@@ -59,8 +59,10 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        background:
-          "linear-gradient(to right, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3)), url('/images/bg-demo.webp')",
+        background: `
+      linear-gradient(to bottom right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)),
+      url('/images/bg-demo.webp')
+    `,
         backgroundSize: "cover",
         backgroundPosition: "center",
         color: "white",
@@ -69,27 +71,38 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
     >
       <Container maxWidth="md">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
           <Stack
             direction="column"
-            spacing={2}
+            spacing={4}
             justifyContent="center"
             alignItems="center"
-            mb={4}
+            mb={6}
           >
             <Typography
-              maxWidth={600}
               variant="h2"
-              fontWeight="bold"
-              textAlign={"center"}
-              gutterBottom
+              fontWeight={800}
+              textAlign="center"
+              sx={{
+                fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
+                textShadow: "0 2px 4px rgba(0,0,0,0.4)",
+                lineHeight: 1.2,
+                maxWidth: 700,
+              }}
             >
               Find Your Dream Property with Ease
             </Typography>
-            <Typography maxWidth={600} textAlign={"center"} variant="subtitle1">
+            <Typography
+              variant="h6"
+              sx={{
+                maxWidth: 600,
+                color: "rgba(255, 255, 255, 0.85)",
+                fontWeight: 400,
+              }}
+            >
               Buy, sell, or rent commercial and residential properties
               seamlessly. Your journey to the perfect home starts here.
             </Typography>
@@ -98,51 +111,88 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
           {/* Search Section */}
           <Stack
             direction="column"
-            spacing={2}
+            spacing={3}
             justifyContent="center"
             alignItems="center"
-            mb={4}
           >
-            {/* Toggle to choose Sale or Rent */}
             <ToggleButtonGroup
               value={searchType}
               exclusive
               onChange={handleSearchTypeChange}
               color="primary"
+              sx={{
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "999px",
+                p: 0.5,
+                "& .MuiToggleButton-root": {
+                  color: "white",
+                  fontWeight: 500,
+                  border: 0,
+                  px: 3,
+                  "&.Mui-selected": {
+                    backgroundColor: "white",
+                    color: "#333",
+                  },
+                },
+              }}
             >
               <ToggleButton value="For Sale">For Sale</ToggleButton>
               <ToggleButton value="For Rent">For Rent</ToggleButton>
             </ToggleButtonGroup>
 
-            {/* Search Input */}
-            <TextField
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by location"
-              variant="outlined"
-              size="small"
+            <Box
+              component="form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
               sx={{
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                borderRadius: 1,
-                width: { xs: "100%", sm: "400px" },
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: "center",
+                width: "100%",
+                maxWidth: 600,
               }}
-              helperText={message ? message : ""}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={handleSearch}>
-                        <Search />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-
-            <Button variant="contained" size="large" onClick={handleSearch}>
-              Search
-            </Button>
+            >
+              <TextField
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by location"
+                variant="outlined"
+                size="small"
+                sx={{
+                  backgroundColor: "white",
+                  borderRadius: 2,
+                  flex: 1,
+                }}
+                helperText={message ? message : ""}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleSearch}>
+                          <Search />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleSearch}
+                sx={{
+                  px: 4,
+                  borderRadius: "999px",
+                  textTransform: "none",
+                  fontWeight: "bold",
+                }}
+              >
+                Search
+              </Button>
+            </Box>
           </Stack>
         </motion.div>
       </Container>

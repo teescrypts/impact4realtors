@@ -201,48 +201,68 @@ const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
               </Button>
             </Box>
             {calculated && result && (
-              <>
+              <Box
+                sx={{ bgcolor: "#fff", p: 3, borderRadius: 2, boxShadow: 2 }}
+              >
                 <Divider sx={{ my: 3 }} />
-                <Typography variant="h6" gutterBottom>
+
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
                   Mortgage Estimation Results
                 </Typography>
-                <Typography variant="body2">
+
+                <Typography variant="body2" sx={{ mb: 1 }}>
                   <strong>Down Payment:</strong> $
                   {downPayment === ""
-                    ? (listing.price * 0.2).toFixed(2)
-                    : Number(downPayment).toFixed(2)}{" "}
+                    ? (listing.price * 0.2).toLocaleString()
+                    : Number(downPayment).toLocaleString()}{" "}
                   ({result.downPaymentPercent.toFixed(2)}% of property price)
                 </Typography>
+
                 {result.downPaymentPercent < 20 && !veteran && (
-                  <Typography variant="body2" color="error" mt={1}>
-                    Warning: A down payment of less than 20% may require PMI.
+                  <Typography variant="body2" color="error" sx={{ mb: 1 }}>
+                    <strong>Warning:</strong> A down payment of less than 20%
+                    may require PMI.
                   </Typography>
                 )}
-                <Typography variant="body2" mt={1}>
+
+                <Typography variant="body2" sx={{ mb: 1 }}>
                   <strong>Principal & Interest:</strong> $
-                  {result.monthlyPI.toFixed(2)} per month
+                  {result.monthlyPI.toLocaleString()} per month
                 </Typography>
+
                 {result.incomeRatio !== undefined && (
-                  <Typography variant="body2" mt={1}>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     This payment represents {result.incomeRatio.toFixed(2)}% of
                     your monthly income.
                   </Typography>
                 )}
 
-                <Box textAlign="center" mt={2}>
+                {/* Call-to-action Section */}
+                <Box textAlign="center">
                   <Link
                     href={
                       adminId
                         ? `/demo/contact/mortgage?admin=${adminId}`
                         : "/demo/contact/mortgage"
                     }
+                    passHref
                   >
-                    <Button variant="contained" color="secondary">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{
+                        mt: 2,
+                        borderRadius: "50px",
+                        textTransform: "none",
+                        fontWeight: "bold",
+                        px: 4,
+                      }}
+                    >
                       Contact Us About Mortgage
                     </Button>
                   </Link>
                 </Box>
-              </>
+              </Box>
             )}
           </Box>
         </DialogContent>

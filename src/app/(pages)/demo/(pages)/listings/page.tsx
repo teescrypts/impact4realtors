@@ -1,6 +1,7 @@
 import { Metadata } from "next/types";
 import Listings from "../components/listings";
 import apiRequest from "@/app/lib/api-request";
+import { Box } from "@mui/material";
 
 export const metadata: Metadata = {
   title: "Listings | Innovative Real Estate Solutions",
@@ -112,11 +113,13 @@ const Page = async ({
   const currentPage = response.data.currentPage;
 
   return (
-    <Listings
-      properties={properties}
-      totalPages={totalPages}
-      currentPage={currentPage}
-    />
+    <Box sx={{ my: 10 }}>
+      <Listings
+        properties={properties}
+        totalPages={totalPages}
+        currentPage={currentPage}
+      />
+    </Box>
   );
 };
 

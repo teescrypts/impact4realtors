@@ -273,11 +273,11 @@ function BookHouseTour({
         </DialogTitle>
 
         <DialogContent>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="h6" gutterBottom>
             <strong>Location:</strong> {houseDetails.location}
           </Typography>
-          <Typography variant="body1" gutterBottom>
-            <strong>Price:</strong> {houseDetails.price}
+          <Typography variant="h6" gutterBottom>
+            <strong>Price:</strong> $ {houseDetails.price.toLocaleString()}
           </Typography>
 
           <Stack spacing={2} sx={{ my: 2 }}>
