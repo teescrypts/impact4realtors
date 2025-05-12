@@ -19,11 +19,11 @@ export default function HomeHero() {
 
   const images = [
     {
-      src: "/images/bg-demo.webp",
+      src: "/images/agent.png",
       alt: "Dashboard Design",
     },
     {
-      src: "/images/bg-demo2.webp",
+      src: "/images/broker.png",
       alt: "Homepage Design",
     },
   ];

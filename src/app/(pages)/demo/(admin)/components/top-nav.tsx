@@ -66,7 +66,13 @@ function Topnav({
           )}
         </Stack>
         <Stack alignItems="center" direction="row" spacing={2}>
-          <Link href={`/demo?admin=${admin.id}`}>
+          <Link
+            href={
+              admin.isBroker
+                ? `/demo/broker/?admin=${admin.id}`
+                : `/demo?admin=${admin.id}`
+            }
+          >
             <Button variant="contained" color="primary" size="small">
               Try Customer
             </Button>

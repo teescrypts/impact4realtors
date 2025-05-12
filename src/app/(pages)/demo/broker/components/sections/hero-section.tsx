@@ -70,7 +70,7 @@ export default function HeroSection({
         textAlign: "center",
         background: `
          linear-gradient(to bottom right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)),
-         url('/images/bg-demo.webp')
+         url('/images/broker-bg.png')
        `,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -86,19 +86,15 @@ export default function HeroSection({
         >
           <Stack
             direction="column"
-            spacing={4}
+            spacing={2}
             justifyContent="center"
             alignItems="center"
           >
             <Typography
               variant="h2"
-              fontWeight={800}
               textAlign="center"
               sx={{
-                fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
                 textShadow: "0 2px 4px rgba(0,0,0,0.4)",
-                lineHeight: 1.2,
-                maxWidth: 800,
               }}
             >
               Your Home Journey Starts Here
@@ -106,9 +102,7 @@ export default function HeroSection({
             <Typography
               variant="h6"
               sx={{
-                maxWidth: 600,
                 color: "rgba(255, 255, 255, 0.85)",
-                fontWeight: 400,
               }}
             >
               Buy, rent, or sell your home with trusted local experts by your

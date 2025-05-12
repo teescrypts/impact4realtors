@@ -61,7 +61,7 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
         textAlign: "center",
         background: `
       linear-gradient(to bottom right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)),
-      url('/images/bg-demo.webp')
+      url('/images/agent-bg.png')
     `,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -77,20 +77,16 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
         >
           <Stack
             direction="column"
-            spacing={4}
+            spacing={2}
             justifyContent="center"
             alignItems="center"
             mb={6}
           >
             <Typography
               variant="h2"
-              fontWeight={800}
               textAlign="center"
               sx={{
-                fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
                 textShadow: "0 2px 4px rgba(0,0,0,0.4)",
-                lineHeight: 1.2,
-                maxWidth: 700,
               }}
             >
               Find Your Dream Property with Ease
@@ -98,9 +94,7 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
             <Typography
               variant="h6"
               sx={{
-                maxWidth: 600,
                 color: "rgba(255, 255, 255, 0.85)",
-                fontWeight: 400,
               }}
             >
               Buy, sell, or rent commercial and residential properties
