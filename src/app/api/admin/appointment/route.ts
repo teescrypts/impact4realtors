@@ -1,7 +1,8 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
-import Appointment from "@/app/model/appointment";
+import Appointment, { IAppointment } from "@/app/model/appointment";
 import { NextRequest, NextResponse } from "next/server";
+import { FilterQuery } from "mongoose";
 
 export async function GET(req: NextRequest) {
   const authResponse = await authMiddleware(req);
@@ -11,22 +12,26 @@ export async function GET(req: NextRequest) {
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const isAgent = admin.agent?.isAgent === true;
+  const isBroker = admin.isBroker;
+
   try {
     const searchParams = req.nextUrl.searchParams;
     const lastCreatedAt = searchParams.get("lastCreatedAt");
-    const status = searchParams.get("status"); // Get the status query param
+    const status = searchParams.get("status");
 
-    const query: { admin: string; createdAt?: { $lt: Date }; status?: string } =
-      {
-        admin: admin._id as string,
-      };
+    // Safe and flexible query object
+    const query: FilterQuery<IAppointment> = {
+      [isAgent ? "agent" : "admin"]: admin._id,
+      ...(isBroker && { agent: admin._id }),
+    };
 
     if (lastCreatedAt) {
       query.createdAt = { $lt: new Date(lastCreatedAt) };
     }
 
     if (status) {
-      query.status = status.trim(); // Ensure it's a clean string
+      query.status = status.trim();
     }
 
     const appointments = await Appointment.find(query)

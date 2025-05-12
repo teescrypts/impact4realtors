@@ -51,6 +51,7 @@ export const LeadStatus = {
 // Define the interface for a Lead document
 export interface ILead extends Document {
   admin: Schema.Types.ObjectId;
+  agent?: Schema.Types.ObjectId;
   type: LeadType;
   status: string;
   firstName: string;
@@ -65,6 +66,7 @@ export interface ILead extends Document {
 const leadSchema = new Schema<ILead>(
   {
     admin: { type: Schema.Types.ObjectId, required: true, ref: "Admin" },
+    agent: { type: Schema.Types.ObjectId, ref: "Admin" },
     type: {
       type: String,
       enum: [

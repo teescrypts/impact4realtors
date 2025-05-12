@@ -12,6 +12,7 @@ const timeSlotSchema = new Schema<ITimeSlot>({
 
 export interface IOpeningHour extends Document {
   admin: mongoose.Types.ObjectId;
+  agent?: mongoose.Types.ObjectId;
   monday: ITimeSlot[];
   tuesday: ITimeSlot[];
   wednesday: ITimeSlot[];
@@ -24,6 +25,7 @@ export interface IOpeningHour extends Document {
 
 const openingHoursSchema = new Schema<IOpeningHour>({
   admin: { type: Schema.Types.ObjectId, required: true, ref: "Admin" },
+  agent: { type: Schema.Types.ObjectId, ref: "Admin" },
   monday: { type: [timeSlotSchema], default: [] },
   tuesday: { type: [timeSlotSchema], default: [] },
   wednesday: { type: [timeSlotSchema], default: [] },

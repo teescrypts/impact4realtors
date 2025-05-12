@@ -4,12 +4,13 @@ import Admin from "@/app/model/admin";
 
 export async function POST(request: Request) {
   try {
-   await connectToDB();
+    await connectToDB();
     const body = await request.json();
 
     const admin = new Admin({
       email: body.email,
       password: "realtyillustrations.live.98",
+      isBroker: body.type === "broker",
     });
 
     await admin.save();

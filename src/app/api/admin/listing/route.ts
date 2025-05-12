@@ -1,5 +1,6 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
+import Agent from "@/app/model/agent";
 import Image from "@/app/model/images";
 import Property from "@/app/model/property";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,8 +14,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
+    let isAgent = false;
+
+    if (admin.agent.isAgent) {
+      isAgent = true;
+    }
+
+    if (admin.isBroker) {
+      const publicProfile = await Agent.findOne({ owner: admin._id });
+
+      if (!publicProfile)
+        return apiResponse(
+          "A public profile is required before adding a new listing",
+          null,
+          400
+        );
+    }
+
     const body = await req.json();
-    const property = new Property({ ...body, admin: admin._id });
+
+    const property = new Property({
+      ...body,
+      admin: isAgent ? admin.agent.admin : admin._id,
+      ...((isAgent || admin.isBroker) && { agent: admin._id }),
+    });
+
     await property.save();
     await Image.updateMany(
       { admin: admin._id, status: "drafted", type: "listing" },
@@ -47,8 +71,14 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const searchQuery = searchParams.get("query");
 
+    const isAgent = admin.agent.isAgent;
+    const isBroker = admin.isBroker;
+
     // Construct filter object
-    const filter: Record<string, unknown> = { admin: admin._id };
+    const filter: Record<string, unknown> = {
+      [isAgent ? "agent" : "admin"]: admin._id,
+      ...(isBroker && status === "yourListings" && { agent: admin._id }),
+    };
 
     if (status && status.trim() !== "") {
       filter.status = status;

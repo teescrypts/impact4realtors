@@ -17,6 +17,7 @@ interface AppointmentRequestBody {
     email: string;
     phone: string;
   };
+  agent?: string;
   propertyId?: string;
 }
 
@@ -43,9 +44,12 @@ export async function POST(req: NextRequest) {
 
     if (!admin) return apiResponse("Admin Required", null, 401);
 
+    const agent = body?.agent;
+
     // Check if the selected time slot is already booked
     const existingAppointment = await Appointment.findOne({
       admin,
+      ...(agent && { agent }),
       date: body.date,
       "bookedTime.from": body.bookedTime.from,
       "bookedTime.to": body.bookedTime.to,
@@ -70,6 +74,7 @@ export async function POST(req: NextRequest) {
 
     const newLead = new Lead({
       admin,
+      ...(agent && { agent }),
       type: leadType,
       status: LeadStatus[leadType][0], // Assign first status dynamically
       firstName: body.customer.firstName,
@@ -83,6 +88,7 @@ export async function POST(req: NextRequest) {
 
     const notification = new Notification({
       admin,
+      ...(agent && { agent }),
       recipientType: "admin",
       type: "new_appointment",
       message: `${body.customer.firstName} ${

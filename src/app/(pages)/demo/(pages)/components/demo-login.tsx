@@ -4,11 +4,14 @@ import { demoLogin } from "@/app/actions/server-actions";
 import { SubmitButton } from "@/app/component/submit-buttton";
 import { ActionStateType } from "@/types";
 import { Box, Grid2, TextField, Typography } from "@mui/material";
+import { useSearchParams } from "next/navigation";
 import React, { useActionState, useEffect, useState } from "react";
 
 const initialValue: ActionStateType = null;
 
 function DemoLogin() {
+  const searchParams = useSearchParams();
+  const type = searchParams.get("type");
   const [state, formAction] = useActionState(demoLogin, initialValue);
   const [message, setMessage] = useState<string>("");
 
@@ -17,6 +20,8 @@ function DemoLogin() {
       if (state?.error) setMessage(state.error);
     }
   }, [state]);
+
+  if (!type) throw new Error("Invalid operation");
 
   return (
     <form action={formAction}>
@@ -36,6 +41,7 @@ function DemoLogin() {
             </Typography>
           </Grid2>
           <Grid2 size={{ xs: 12 }}>
+            <input hidden defaultValue={type} name="type" />
             <TextField
               required
               fullWidth

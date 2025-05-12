@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { format, parse } from "date-fns";
 import {
   ActionStateType,
+  AgentReq,
   AppointmentData,
   AppointmentRequestData,
   AppointmentResponse,
@@ -16,6 +17,7 @@ import {
 } from "@/types";
 import { revalidateTag } from "next/cache";
 import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/page";
+import { AgentType } from "../(pages)/demo/(admin)/agent/dashboard/account/page";
 
 const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
 
@@ -23,11 +25,13 @@ export async function login(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
+  let isAgent;
+
   try {
     const response = await apiRequest<
       {
         message: string;
-        data: { token: string };
+        data: { token: string; isAgent: boolean };
       },
       { email: string; password: string }
     >("public/login", {
@@ -45,6 +49,8 @@ export async function login(formData: FormData) {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: ONE_WEEK_IN_SECONDS,
     });
+
+    isAgent = response.data.isAgent;
   } catch (e) {
     if (e instanceof Error) {
       throw new Error(e.message);
@@ -53,7 +59,11 @@ export async function login(formData: FormData) {
     }
   }
 
-  redirect("/demo/dashboard/home");
+  if (isAgent) {
+    redirect("/demo/agent/dashboard/lead");
+  } else {
+    redirect("/demo/dashboard/home");
+  }
 }
 
 export async function demoLogin(
@@ -61,6 +71,7 @@ export async function demoLogin(
   formData: FormData
 ) {
   const email = formData.get("email") as string;
+  const type = formData.get("type") as string;
 
   try {
     const response = await apiRequest<
@@ -68,10 +79,10 @@ export async function demoLogin(
         message: string;
         data: { token: string };
       },
-      { email: string }
+      { email: string; type: string }
     >("public/sign-up", {
       method: "POST",
-      data: { email },
+      data: { email, type },
     });
 
     if (response.message === "success") {
@@ -100,6 +111,50 @@ export async function demoLogin(
   return { message: "Success" };
 }
 
+export async function authenticateAgent() {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  if (token) {
+    try {
+      const response = await apiRequest<{
+        message: string;
+        data: {
+          user: {
+            _id: string;
+            fname: string;
+            lname: string;
+            email: string;
+            isBroker: boolean;
+            agent: { isAgent: boolean; admin: string };
+          };
+          unreadNotifictaionsCount: number;
+        } | null;
+      }>("admin/authenticate", { token });
+
+      if (response.data) {
+        const user = response.data.user;
+        const unreadNotifictaionsCount = response.data.unreadNotifictaionsCount;
+
+        if (!user.agent.isAgent) throw new Error("Please login as an Agent");
+
+        return {
+          ok: true,
+          user,
+          unreadNotifictaionsCount,
+        };
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        return { error: e.message };
+      } else {
+        return { error: "An unknown error occurred" };
+      }
+    }
+  }
+}
+
 export async function authenticate() {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -110,17 +165,30 @@ export async function authenticate() {
       const response = await apiRequest<{
         message: string;
         data: {
-          user: { _id: string; fname: string; lname: string; email: string };
+          user: {
+            _id: string;
+            fname: string;
+            lname: string;
+            email: string;
+            isBroker: boolean;
+            agent: { isAgent: boolean };
+          };
           unreadNotifictaionsCount: number;
         } | null;
       }>("admin/authenticate", { token });
 
-      if (response.data)
+      if (response.data) {
+        const user = response.data.user;
+        const unreadNotifictaionsCount = response.data.unreadNotifictaionsCount;
+
+        if (user.agent.isAgent) throw new Error("Please login as the admin");
+
         return {
           ok: true,
-          user: response.data.user,
-          unreadNotifictaionsCount: response.data.unreadNotifictaionsCount,
+          user,
+          unreadNotifictaionsCount,
         };
+      }
     } catch (e) {
       if (e instanceof Error) {
         return { error: e.message };
@@ -641,12 +709,20 @@ export async function deleteBlog(id: string) {
   }
 }
 
-export async function fetchAvailabilty(type: string, adminId?: string) {
+export async function fetchAvailabilty(
+  type: string,
+  adminId?: string,
+  agent?: string
+) {
+  const url = agent
+    ? `public/booking/availability?type=${type}&adminId=${adminId}&agent=${agent}`
+    : `public/booking/availability?type=${type}&adminId=${adminId}`;
+
   try {
     const response = await apiRequest<{
       message: string;
       data: { availability: Availability[] };
-    }>(`public/booking/availability?type=${type}&adminId=${adminId}`, {
+    }>(url, {
       tag: "FetchPublicAvailability",
     });
 
@@ -682,6 +758,7 @@ export async function bookAppointment(
     ...(formData.get("propertyTypeToSell") && {
       propertyTypeToSell: formData.get("propertyTypeToSell") as string,
     }),
+    ...(formData.get("agent") && { agent: formData.get("agent") as string }),
   };
 
   try {
@@ -988,6 +1065,246 @@ export async function fetchMoreLeads(type: string, lastCreatedAt: Date | null) {
     }>(url, { token });
 
     return { data: response.data };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function sendAgentForm(email: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }, { email: string }>(
+      "admin/agent/form",
+      {
+        method: "POST",
+        token,
+        data: { email },
+      }
+    );
+
+    revalidateTag("fetchAdminAgents");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function deleteForm(id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }>(
+      `admin/agent/form?id=${id}`,
+      {
+        method: "DELETE",
+        token,
+      }
+    );
+
+    revalidateTag("fetchPendingForms");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function deleteAgent(id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }>(
+      `admin/agent/admin/${id}`,
+      {
+        method: "DELETE",
+        token,
+      }
+    );
+
+    revalidateTag("fetchPendingForms");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function agentSignUp(
+  prevState: ActionStateType,
+  formData: FormData
+) {
+  let success;
+  if (formData.get("password") !== formData.get("cPassword")) {
+    return { error: "Password does not match" };
+  }
+
+  const data = {
+    firstName: formData.get("firstName") as string,
+    lastName: formData.get("lastName") as string,
+    email: formData.get("email") as string,
+    phone: formData.get("phone") as string,
+    licenseNumber: formData.get("licenseNumber") as string,
+    formId: formData.get("formId") as string,
+    password: formData.get("password") as string,
+  };
+
+  try {
+    const response = await apiRequest<{ data: { token: string } }, AgentReq>(
+      "admin/agent",
+      { method: "POST", data }
+    );
+
+    success = true;
+    const cookieStore = cookies();
+    (await cookieStore).set({
+      name: "session-token",
+      value: response.data.token,
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: ONE_WEEK_IN_SECONDS,
+    });
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+
+  if (success) redirect("/demo/agent/dashboard/lead");
+  return { message: "Success" };
+}
+
+export async function uploadProfilePic(formData: FormData) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      { formData: FormData }
+    >("admin/agent/profile-pic", {
+      method: "POST",
+      token,
+      contentType: "multipart/form-data",
+      data: formData,
+    });
+
+    revalidateTag("fetchAgentData");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function updateAgentProfile(data: AgentType) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }, AgentType>(
+      "admin/agent",
+      {
+        method: "PATCH",
+        token,
+        data,
+      }
+    );
+
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function sendSellRequest(
+  prevState: ActionStateType,
+  formData: FormData
+) {
+  const data = {
+    firstName: formData.get("firstName") as string,
+    lastName: formData.get("lastName") as string,
+    email: formData.get("email") as string,
+    phone: formData.get("phone") as string,
+    state: formData.get("state") as string,
+    zipCode: formData.get("zipCode") as string,
+  };
+
+  const adminId = formData.get("admin") as string | undefined;
+  const url = adminId ? `public/connect?adminId=${adminId}` : `public/connect`;
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      {
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+        state: string;
+        zipCode: string;
+      }
+    >(url, { method: "POST", data });
+
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function acceptSellerReq(id: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }>(
+      `admin/connect/${id}`,
+      {
+        method: "PATCH",
+        token,
+      }
+    );
+
+    revalidateTag("fetchAdminConnect");
+    return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
       return { error: e.message };

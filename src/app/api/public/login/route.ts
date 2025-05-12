@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const user = await Admin.findByCredentials(email, password);
     const token = await user.generateAuthToken();
 
-    return apiResponse("Success", { token }, 201);
+    return apiResponse("Success", { token, isAgent: user.agent.isAgent }, 201);
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",

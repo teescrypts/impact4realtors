@@ -158,7 +158,7 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
               <TextField
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by location"
+                placeholder="Search by state, city or zip code"
                 variant="outlined"
                 size="small"
                 sx={{

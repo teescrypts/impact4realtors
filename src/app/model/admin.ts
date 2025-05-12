@@ -1,4 +1,4 @@
-import { Schema, model, models, Document, Model } from "mongoose";
+import { Schema, model, models, Document, Model, Types } from "mongoose";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -10,6 +10,11 @@ export interface IAdmin extends Document {
   email: string;
   password: string;
   tokens: { token: string }[];
+  isBroker: boolean;
+  agent: {
+    isAgent: boolean;
+    admin?: Types.ObjectId;
+  };
   generateAuthToken(): Promise<string>;
   verifyCredentials(password: string): Promise<boolean>;
 }
@@ -52,6 +57,17 @@ const adminSchema = new Schema<IAdmin>(
         token: { type: String, required: true },
       },
     ],
+    isBroker: { type: Boolean, default: false },
+    agent: {
+      isAgent: { type: Boolean, default: false },
+      admin: {
+        type: Schema.Types.ObjectId,
+        ref: "Admin",
+        required: function (this: IAdmin) {
+          return this.agent?.isAgent;
+        },
+      },
+    },
   },
   { timestamps: true }
 );

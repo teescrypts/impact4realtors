@@ -14,7 +14,13 @@ export async function GET(req: NextRequest) {
     if (!admin)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const openingHours = await OpeningHour.findOne({ admin: admin._id });
+    const isAgent = admin.agent?.isAgent === true;
+    const isBroker = admin.isBroker;
+
+    const openingHours = await OpeningHour.findOne({
+      [isAgent ? "agent" : "admin"]: admin._id,
+      ...(isBroker && { agent: admin._id }),
+    });
     const searchParams = req.nextUrl.searchParams;
     const appointmentType = searchParams.get("type");
 
@@ -25,9 +31,10 @@ export async function GET(req: NextRequest) {
         200
       );
 
-    const appointments = await Appointment.find({ admin: admin._id }).select(
-      "date bookedTime"
-    );
+    const appointments = await Appointment.find({
+      [isAgent ? "agent" : "admin"]: admin._id,
+      ...(isBroker && { agent: admin._id }),
+    }).select("date bookedTime");
 
     const leadTimeHours = 1;
     const bookingWindowDays = 30;

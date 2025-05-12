@@ -4,10 +4,12 @@ import mongoose, { Schema, model, Document } from "mongoose";
 export const NOTIFICATION_TYPES = [
   "new_appointment",
   "new_newsletter",
+  "new_connect",
 ] as const;
 
 export interface INotification extends Document {
-  admin: mongoose.Types.ObjectId; 
+  admin: mongoose.Types.ObjectId;
+  agent?: mongoose.Types.ObjectId;
   recipientType: "admin" | "user"; // Specifies if it's for an admin or user
   type: (typeof NOTIFICATION_TYPES)[number]; // Type of notification
   message: string; // Notification content
@@ -20,6 +22,10 @@ const notificationSchema = new Schema<INotification>(
     admin: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "Admin",
+    },
+    agent: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
     },
     recipientType: {

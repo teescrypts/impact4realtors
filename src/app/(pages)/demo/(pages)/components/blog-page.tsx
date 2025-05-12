@@ -63,7 +63,7 @@ function SingleBlogPage({
           sx={{
             position: "relative",
             width: "100%",
-            height: { xs: 500, md: 600 }, // Responsive height
+            height: { xs: 600, md: 750 }, // Responsive height
             borderRadius: 2,
             overflow: "hidden",
           }}

@@ -8,19 +8,23 @@ import { NextRequest } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const admin = await getAdmin(req);
-    const openingHours = await OpeningHour.findOne({ admin });
     const searchParams = req.nextUrl.searchParams;
     const appointmentType = searchParams.get("type");
+    const agent = searchParams.get("agent");
+
+    // Build filter based on agent presence
+    const filter = agent ? { agent } : { admin };
+
+    const openingHours = await OpeningHour.findOne(filter);
 
     if (!openingHours)
       return apiResponse(
-        "We're still getting things ready—please check back late",
+        "We're still getting things ready—please check back later",
         null,
         200
       );
 
-    // fetch existing appointment
-    const appointments = await Appointment.find({ admin }).select(
+    const appointments = await Appointment.find(filter).select(
       "date bookedTime"
     );
 
@@ -32,7 +36,6 @@ export async function GET(req: NextRequest) {
     const bookingWindowEnd = now.plus({ days: bookingWindowDays });
 
     const durationInMinutes = appointmentType === "call" ? 30 : 45;
-
     const availability = [];
 
     for (
@@ -60,7 +63,6 @@ export async function GET(req: NextRequest) {
 
         let currentStart = slotStart;
 
-        // Iterate through time slots and check for conflicts
         while (currentStart.plus({ minutes: durationInMinutes }) <= slotEnd) {
           const proposedInterval = Interval.fromDateTimes(
             currentStart,
@@ -76,12 +78,10 @@ export async function GET(req: NextRequest) {
               `${appointment.date}T${appointment.bookedTime.to}`,
               { zone: timeZone }
             );
-
             const appointmentInterval = Interval.fromDateTimes(
               appointmentStart,
               appointmentEnd
             );
-
             return proposedInterval.overlaps(appointmentInterval);
           });
 
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
             dailyAvailability.push(currentStart.toFormat("HH:mm"));
           }
 
-          currentStart = currentStart.plus({ minutes: 15 }); // Increment by a minimum buffer (e.g., 15 minutes)
+          currentStart = currentStart.plus({ minutes: 15 });
         }
       }
 

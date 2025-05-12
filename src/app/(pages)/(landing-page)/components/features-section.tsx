@@ -8,6 +8,7 @@ import Funnel from "@/app/icons/untitled-ui/duocolor/funnel";
 import HomeSmile from "@/app/icons/untitled-ui/duocolor/home-smile";
 import RealEstateAgent from "@/app/icons/untitled-ui/duocolor/real-estate-agent";
 import StackedEmail from "@/app/icons/untitled-ui/duocolor/stacked-email";
+import User01 from "@/app/icons/untitled-ui/duocolor/user01";
 import {
   Box,
   Container,
@@ -91,6 +92,17 @@ const features = [
     title: "Flawless Designs",
     description: "Stunning and responsive layouts that attract buyers.",
   },
+  {
+    // ✨ New Feature Added
+    icon: (
+      <SvgIcon fontSize="large">
+        <User01 />
+      </SvgIcon>
+    ),
+    title: "Agent Dashboard",
+    description:
+      "Agents get a personalized dashboard to manage listings, appointments, and leads.",
+  },
 ];
 
 const FeaturesSection = () => {
@@ -116,7 +128,7 @@ const FeaturesSection = () => {
 
         <Grid2 container spacing={4}>
           {features.map((feature, index) => (
-            <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+            <Grid2 size={{xs: 12, sm: 6, md: 4}}  key={index}>
               <Card
                 sx={{
                   display: "flex",

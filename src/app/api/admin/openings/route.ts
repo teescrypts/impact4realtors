@@ -2,6 +2,7 @@ import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
 import { NextRequest, NextResponse } from "next/server";
 import OpeningHour, { IOpeningHour } from "@/app/model/opening-hour";
+import Agent from "@/app/model/agent";
 
 // Define valid days as keyof IOpeningHour
 type DayKeys = keyof Pick<
@@ -30,6 +31,12 @@ export async function POST(req: NextRequest) {
       return apiResponse("Please include hour", null, 400);
     }
 
+    let isAgent;
+
+    if (admin.agent.isAgent) {
+      isAgent = true;
+    }
+
     const validDays: DayKeys[] = [
       "monday",
       "tuesday",
@@ -44,10 +51,18 @@ export async function POST(req: NextRequest) {
       return apiResponse("Invalid day specified", null, 400);
     }
 
-    let extOpeningHour = await OpeningHour.findOne({ admin: admin._id });
+    let extOpeningHour = await OpeningHour.findOne({
+      admin: isAgent ? admin.agent.admin : admin._id,
+      ...((isAgent || admin.isBroker) && { agent: admin._id }),
+      ...(admin.isBroker && { agent: admin._id }),
+    });
 
     if (!extOpeningHour) {
-      extOpeningHour = new OpeningHour({ admin: admin._id });
+      extOpeningHour = new OpeningHour({
+        admin: isAgent ? admin.agent.admin : admin._id,
+        ...((isAgent || admin.isBroker) && { agent: admin._id }),
+        ...(admin.isBroker && { agent: admin._id }),
+      });
     }
 
     // Ensure TypeScript recognizes extOpeningHour[day] as an array of time slots
@@ -78,9 +93,18 @@ export async function PATCH(req: NextRequest) {
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const isAgent = admin.agent.isAgent;
+
   try {
     const { availability } = await req.json();
-    await OpeningHour.findOneAndUpdate({ admin: admin._id }, { availability });
+    await OpeningHour.findOneAndUpdate(
+      {
+        admin: admin._id,
+        ...((isAgent || admin.isBroker) && { agent: admin._id }),
+        ...(admin.isBroker && { agent: admin._id }),
+      },
+      { availability }
+    );
 
     return apiResponse(`Availability set to ${availability}`, null, 201);
   } catch (e) {
@@ -114,11 +138,17 @@ export async function DELETE(req: NextRequest) {
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const isAgent = admin.agent.isAgent;
+
   try {
     const { day, timeSlot }: DeleteRequestBody = await req.json();
     const { from, to } = timeSlot;
 
-    const openingHour = await OpeningHour.findOne({ admin: admin._id });
+    const openingHour = await OpeningHour.findOne({
+      admin: admin._id,
+      ...((isAgent || admin.isBroker) && { agent: admin._id }),
+      ...(admin.isBroker && { agent: admin._id }),
+    });
 
     if (!openingHour) {
       return apiResponse("Invalid Operation", null, 400);
@@ -160,10 +190,35 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    let openingHour = await OpeningHour.findOne({ admin: admin._id });
+    let isAgent;
+
+    if (admin.agent.isAgent) {
+      isAgent = true;
+    }
+
+    if (admin.isBroker) {
+      const publicProfile = await Agent.findOne({ owner: admin._id });
+
+      if (!publicProfile)
+        return apiResponse(
+          "You need a public profile before setting up availability",
+          "Public profile required",
+          200
+        );
+    }
+
+    let openingHour = await OpeningHour.findOne({
+      admin: isAgent ? admin.agent.admin : admin._id,
+      ...((isAgent || admin.isBroker) && { agent: admin._id }),
+      ...(admin.isBroker && { agent: admin._id }),
+    });
 
     if (!openingHour) {
-      openingHour = new OpeningHour({ admin: admin._id });
+      openingHour = new OpeningHour({
+        admin: isAgent ? admin.agent.admin : admin._id,
+        ...(isAgent && { agent: admin._id }),
+        ...(admin.isBroker && { agent: admin._id }),
+      });
       const newOpeningHour = await openingHour.save();
       return apiResponse("success", { openingHour: newOpeningHour }, 200);
     } else {

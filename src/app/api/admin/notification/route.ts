@@ -9,32 +9,38 @@ export async function GET(req: NextRequest) {
   if (authResponse instanceof NextResponse) return authResponse;
 
   const admin = authResponse;
-  if (!admin)
+  if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const isAgent = admin.agent?.isAgent;
+  const searchParams = req.nextUrl.searchParams;
+  const lastCreatedAt = searchParams.get("lastCreatedAt");
 
   try {
-    const searchParams = req.nextUrl.searchParams;
-    const lastCreatedAt = searchParams.get("lastCreatedAt");
+    const query: Record<string, unknown> = {};
 
-    // Query object
-    const query: { admin: mongoose.Types.ObjectId; createdAt?: { $lt: Date } } =
-      {
-        admin: admin._id as mongoose.Types.ObjectId, // Admin ID from authMiddleware
-      };
+    // Filter by agent or admin
+    if (admin.isBroker) {
+      query.agent = new mongoose.Types.ObjectId(admin._id as string);
+    } else {
+      query[isAgent ? "agent" : "admin"] = new mongoose.Types.ObjectId(
+        admin._id as string
+      );
+    }
 
+    // Handle pagination via createdAt
     if (lastCreatedAt) {
       const parsedDate = new Date(lastCreatedAt);
       if (!isNaN(parsedDate.getTime())) {
-        query.createdAt = { $lt: parsedDate }; // Fetch notifications older than lastCreatedAt
+        query.createdAt = { $lt: parsedDate };
       }
     }
 
-    // Fetch the latest 10 notifications
     const notifications: INotification[] = await Notification.find(query)
       .sort({ createdAt: -1 })
       .limit(5);
 
-    // Check if there are more notifications
     const hasMore = notifications.length === 5;
 
     return apiResponse(
@@ -54,7 +60,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
-
-
-

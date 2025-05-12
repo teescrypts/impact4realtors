@@ -25,13 +25,15 @@ import {
 import ExpendMore from "@/app/icons/untitled-ui/duocolor/expand-more";
 import Link from "next/link";
 import { PropertyType } from "@/types";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   deleteProperty,
   updatePropertyStatus,
 } from "@/app/actions/server-actions";
 import notify from "@/app/utils/toast";
 import EmptyState from "../../../(pages)/components/empty-state";
+import { useUserData } from "@/app/guards/auth-guard";
+import { useRouter } from "nextjs-toploader/app";
 
 export default function ListingsPage({
   properties,
@@ -69,7 +71,9 @@ export default function ListingsPage({
     }, 1000); // Delay API call by 500ms
 
     return () => clearTimeout(delaySearch);
-  }, [search, filter, router]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, filter]);
 
   // Handle filter change
   const handleFilterChange = (e: SelectChangeEvent<string>) => {
@@ -139,6 +143,8 @@ export default function ListingsPage({
     }
   }, [selectedListing]);
 
+  const admin = useUserData();
+
   return (
     <Box>
       <Box
@@ -160,19 +166,26 @@ export default function ListingsPage({
       {/* Search and Filter Section */}
       <Box display="flex" gap={2} mb={2}>
         <TextField
-          label="Search Listings"
+          label="Search by title, state, bedrooms, bathrooms and square meters"
           variant="outlined"
           fullWidth
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <FormControl variant="outlined" sx={{ minWidth: 200 }}>
-          <InputLabel>Status</InputLabel>
-          <Select value={filter} onChange={handleFilterChange} label="Status">
+          <InputLabel>Filter by</InputLabel>
+          <Select
+            value={filter}
+            onChange={handleFilterChange}
+            label="Filter by"
+          >
             <SelectItem value="">All</SelectItem>
             <SelectItem value="Active">Active</SelectItem>
             <SelectItem value="Pending">Pending</SelectItem>
             <SelectItem value="Sold">Sold</SelectItem>
+            {admin.isBroker && (
+              <SelectItem value="yourListings">Your Listings</SelectItem>
+            )}
           </Select>
         </FormControl>
       </Box>

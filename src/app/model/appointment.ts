@@ -25,6 +25,7 @@ interface ICustomer {
 
 export interface IAppointment extends Document {
   admin: { type: Schema.Types.ObjectId; required: true; ref: "Admin" };
+  agent: { type: Schema.Types.ObjectId; ref: "Admin" };
   type: (typeof APPOINTMENT_TYPES)[number]; // "call" or "house_touring"
   status: (typeof APPOINTMENT_STATUS)[number]; // "upcoming", "completed", "cancelled"
   date: string;
@@ -44,6 +45,7 @@ export interface IAppointment extends Document {
 const appointmentSchema = new Schema<IAppointment>(
   {
     admin: { type: Schema.Types.ObjectId, required: true, ref: "Admin" },
+    agent: { type: Schema.Types.ObjectId, ref: "Admin" },
     type: {
       type: String,
       enum: APPOINTMENT_TYPES,

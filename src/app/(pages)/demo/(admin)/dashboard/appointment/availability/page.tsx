@@ -3,6 +3,8 @@ import Availability from "../../components/availability";
 import { Metadata } from "next/types";
 import { cookies } from "next/headers";
 import apiRequest from "@/app/lib/api-request";
+import { Box } from "@mui/material";
+import RequirePublicProfileNotice from "../../components/required-public-profile";
 
 export const metadata: Metadata = {
   title: "Abailability | Innovative Real Estate Solutions",
@@ -63,11 +65,19 @@ async function Page() {
 
   const response = await apiRequest<{
     message: string;
-    data: { openingHour: OpeningHoursType };
+    data: { openingHour: OpeningHoursType } | string;
   }>("admin/openings", {
     token,
     tag: "fetchOpenings",
   });
+
+  if (typeof response.data === "string") {
+    return (
+      <Box sx={{ mt: 10 }}>
+        <RequirePublicProfileNotice message="A public profile is required before setting up availability" />
+      </Box>
+    );
+  }
 
   const openingHours = response.data.openingHour;
 

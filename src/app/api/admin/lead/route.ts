@@ -2,6 +2,7 @@ import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
 import Lead, { ILead } from "@/app/model/lead";
 import { NextRequest, NextResponse } from "next/server";
+import { FilterQuery } from "mongoose";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -9,36 +10,39 @@ export async function GET(req: NextRequest) {
   const authResponse = await authMiddleware(req);
   if (authResponse instanceof NextResponse) return authResponse;
 
-  const admin = authResponse; // Retrieve user ID
+  const admin = authResponse;
   if (!admin)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const isAgent = admin.agent?.isAgent === true;
 
   try {
     const searchParams = req.nextUrl.searchParams;
     const lastCreatedAt = searchParams.get("lastCreatedAt");
     const type = searchParams.get("type");
 
-    // Ensure admin is always included in the query
-    const query: { admin: string; createdAt?: { $lt: Date }; type?: string } = {
-      admin: admin._id as string,
-    };
-
-    if (lastCreatedAt) {
-      query.createdAt = { $lt: new Date(lastCreatedAt) }; // Load older leads
-    }
-
     if (!type)
       return apiResponse("Type of lead to fetch is required", null, 401);
 
-    query.type = type;
+    // Define query type using Mongoose FilterQuery
+    const query: FilterQuery<ILead> = {
+      [isAgent ? "agent" : "admin"]: admin._id,
+      type,
+    };
+
+    if (lastCreatedAt) {
+      query.createdAt = { $lt: new Date(lastCreatedAt) };
+    }
 
     const leads: ILead[] = await Lead.find(query)
-      .sort({ createdAt: -1 }) // Newest first
+      .sort({ createdAt: -1 })
       .limit(ITEMS_PER_PAGE);
 
-    const leadsCount = await Lead.countDocuments({ admin: admin._id, type });
+    const leadsCount = await Lead.countDocuments({
+      [isAgent ? "agent" : "admin"]: admin._id,
+      type,
+    });
 
-    // Check if more leads exist
     const hasMore =
       leads.length === ITEMS_PER_PAGE && leads.length < leadsCount;
 

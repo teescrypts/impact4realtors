@@ -1,4 +1,5 @@
 import apiResponse from "@/app/lib/api-response";
+import Agent from "@/app/model/agent";
 import BlogPost from "@/app/model/blog";
 import Property from "@/app/model/property";
 import getAdmin from "@/app/utils/get-admin";
@@ -8,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const admin = await getAdmin(req);
 
-    const [forRent, forSale, publishedBlogs] = await Promise.all([
+    const [forRent, forSale, publishedBlogs, agents] = await Promise.all([
       Property.find({
         category: "For Rent",
         admin,
@@ -30,9 +31,18 @@ export async function GET(req: NextRequest) {
         .sort({ createdAt: -1 })
         .limit(3)
         .select("title shortDescription cover.url createdAt"),
+
+      Agent.find({ admin })
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .select("firstName lastName profilePictureUrl email phone owner"),
     ]);
 
-    return apiResponse("success", { forSale, forRent, publishedBlogs }, 201);
+    return apiResponse(
+      "success",
+      { forSale, forRent, publishedBlogs, agents },
+      201
+    );
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",

@@ -19,6 +19,7 @@ const AuthContext = createContext<{
   email: string;
   fname: string;
   lname: string;
+  isBroker: boolean;
   unreadNotifictaionsCount: number;
   setUreadNotifictaionsCount: Dispatch<SetStateAction<number>>;
 } | null>(null);
@@ -29,6 +30,7 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
     email: string;
     fname: string;
     lname: string;
+    isBroker: boolean;
   } | null>(null);
   const [unreadNotifictaionsCount, setUreadNotifictaionsCount] = useState(0);
 
@@ -46,17 +48,18 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
           fname: user.fname,
           lname: user.lname,
           id: user._id,
+          isBroker: user.isBroker,
         });
 
         if (result.unreadNotifictaionsCount > 0) {
           setUreadNotifictaionsCount(result.unreadNotifictaionsCount);
         }
       } else {
-        router.replace("/demo/auth/demo/login");
+        router.replace(`/demo/auth/login?type=broker`);
       }
     } catch (e) {
       console.log(e);
-      router.replace("/demo/auth/demo/login");
+      router.replace(`/demo/auth/login?type=broker`);
     }
   }, [router]);
 
@@ -76,6 +79,7 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
           lname: admin.lname,
           email: admin.email,
           id: admin.id,
+          isBroker: admin.isBroker,
           unreadNotifictaionsCount,
           setUreadNotifictaionsCount,
         }}

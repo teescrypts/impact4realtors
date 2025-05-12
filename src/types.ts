@@ -1,4 +1,5 @@
 import { propertyType } from "./app/(pages)/demo/(pages)/listings/page";
+import { AgentType } from "./app/(pages)/demo/broker/agents/page";
 
 interface actionStateOk {
   ok?: boolean;
@@ -85,6 +86,7 @@ export interface HomepageResponse {
   forRent: propertyType[];
   forSale: propertyType[];
   publishedBlogs: BlogPostResponse[];
+  agents: AgentType[]
 }
 
 export interface Availability {
@@ -209,4 +211,14 @@ export interface NotificationResType {
   message: string; // Notification content
   isRead: boolean; // Read status
   createdAt: Date; // Timestamp
+}
+
+export interface AgentReq {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  licenseNumber: string;
+  password: string;
+  formId: string;
 }

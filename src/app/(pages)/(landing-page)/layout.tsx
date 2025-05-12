@@ -1,6 +1,7 @@
 import React from "react";
 import PagesLayout from "./components/pages-layout";
 import { Metadata } from "next";
+import TopLoader from "../demo/(admin)/dashboard/components/top-loader";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -41,7 +42,12 @@ export const metadata: Metadata = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  return <PagesLayout>{children}</PagesLayout>;
+  return (
+    <PagesLayout>
+      <TopLoader />
+      {children}
+    </PagesLayout>
+  );
 };
 
 export default Layout;

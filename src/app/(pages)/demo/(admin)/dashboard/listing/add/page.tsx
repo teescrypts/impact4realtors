@@ -72,7 +72,7 @@ export default async function AddListing() {
         py: 8,
       }}
     >
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         <Typography variant="h4" sx={{ mb: 2 }}>
           Add New Listing
         </Typography>

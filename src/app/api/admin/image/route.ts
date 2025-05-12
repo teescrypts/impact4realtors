@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
     const fileBuffer = Buffer.from(await file.arrayBuffer());
 
     const optimizedBuffer = await sharp(fileBuffer)
-      .webp({ quality: 50 }) // Adjust quality (e.g., 50 for balance between size & quality)
-      .resize(1024) // Resize to max width 1024px while maintaining aspect ratio
+      .webp({ quality: 50 })
+      .resize(1024)
       .toBuffer();
 
     interface CloudinaryUploadResponse {
