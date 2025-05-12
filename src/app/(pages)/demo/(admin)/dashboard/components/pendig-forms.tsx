@@ -93,7 +93,7 @@ export default function PendingFormsPage({
                         color="primary"
                         sx={{ wordBreak: "break-all" }}
                       >
-                        {`${process.env.NEXT_PUBLIC_BASE_URL}/demo/broker/form/${form._id}`}
+                        {`${process.env.NEXT_PUBLIC_API_URL}/demo/broker/form/${form._id}`}
                       </Typography>
                     </TableCell>
                     <TableCell>{formatDate(form.createdAt)}</TableCell>
@@ -104,7 +104,7 @@ export default function PendingFormsPage({
                             color="primary"
                             onClick={() =>
                               handleCopyLink(
-                                `${process.env.NEXT_PUBLIC_BASE_URL}/demo/broker/form/${form._id}`
+                                `${process.env.NEXT_PUBLIC_API_URL}/demo/broker/form/${form._id}`
                               )
                             }
                           >
