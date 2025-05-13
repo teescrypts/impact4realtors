@@ -146,7 +146,6 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
                 flexDirection: { xs: "column", sm: "row" },
                 alignItems: "center",
                 width: "100%",
-                maxWidth: 600,
               }}
             >
               <TextField
@@ -154,11 +153,12 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by state, city or zip code"
                 variant="outlined"
-                size="small"
+                size="medium"
                 sx={{
                   backgroundColor: "white",
                   borderRadius: 2,
                   flex: 1,
+                  width: "60vw",
                 }}
                 helperText={message ? message : ""}
                 slotProps={{
