@@ -30,7 +30,7 @@ export default function ConnectRequestsTabs({
   const status = searchParams.get("status");
   const [tabIndex, setTabIndex] = useState(0);
 
-  console.log(hasMore, lastCreatedAt)
+  console.log(hasMore, lastCreatedAt);
 
   useEffect(() => {
     if (status === "accepted") {
@@ -150,31 +150,30 @@ function ConnectList({
                   {connect.state}, {connect.zipCode}
                 </Typography>
               </Box>
-              {action === "accept" ||
-                (action === "accept-unmatched" && (
-                  <Button
-                    disabled={loading}
-                    onClick={() => {
-                      setLoading(true);
-                      acceptSellerReq(connect._id).then((res) => {
-                        if (res) {
-                          if (res.error) {
-                            setMessage(res.error);
-                            setLoading(false);
-                          }
-                          if (res.message) {
-                            notify(res.message);
-                            setLoading(false);
-                          }
+              {(action === "accept" || action === "accept-unmatched") && (
+                <Button
+                  disabled={loading}
+                  onClick={() => {
+                    setLoading(true);
+                    acceptSellerReq(connect._id).then((res) => {
+                      if (res) {
+                        if (res.error) {
+                          setMessage(res.error);
+                          setLoading(false);
                         }
-                      });
-                    }}
-                    variant="contained"
-                    color="primary"
-                  >
-                    Accept Request
-                  </Button>
-                ))}
+                        if (res.message) {
+                          notify(res.message);
+                          setLoading(false);
+                        }
+                      }
+                    });
+                  }}
+                  variant="contained"
+                  color="primary"
+                >
+                  Accept Request
+                </Button>
+              )}
             </Stack>
           </Paper>
         ))}
