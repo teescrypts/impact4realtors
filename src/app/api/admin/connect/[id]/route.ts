@@ -17,7 +17,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const agentId = admin._id as string;
-  const isAgent = admin.agent?.isAgent;
+  const isAgent = admin.isBroker ? true : admin.agent?.isAgent;
 
   if (!isAgent) {
     return apiResponse("Only agents can perform this action", null, 403);
@@ -50,6 +50,13 @@ export async function PATCH(
     );
 
     if (!isMatched) {
+      if (admin.isBroker) {
+        connect.connectedAgent = agentId;
+        await connect.save();
+
+        return apiResponse("Connect request accepted", null, 200);
+      }
+
       return apiResponse(
         "You are not matched to this connect request",
         null,

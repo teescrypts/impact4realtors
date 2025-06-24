@@ -17,7 +17,7 @@ function PagesLayout({ children }: { children: ReactNode }) {
         }}
       >
         {/* Navbar with Logo and Name */}
-        <Box sx={{ bgcolor: "white", py: 2 }}>
+        <Box sx={{ py: 2 }}>
           <Container maxWidth="lg">
             <Stack justifyContent={"space-between"} direction={"row"}>
               <Image

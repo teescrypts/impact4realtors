@@ -5,11 +5,13 @@ import { SubmitButton } from "@/app/component/submit-buttton";
 import { ActionStateType } from "@/types";
 import {
   Box,
+  Card,
   Container,
   Grid2,
   Stack,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { useActionState, useEffect, useState } from "react";
 import ConnectSuccessModal from "../connect-success";
@@ -23,6 +25,7 @@ export default function SellWithExpert({ adminId }: { adminId?: string }) {
 
   const [state, formAction] = useActionState(sendSellRequest, initialValue);
   const [message, setMessage] = useState("");
+  const theme = useTheme()
 
   useEffect(() => {
     if (state) {
@@ -43,7 +46,6 @@ export default function SellWithExpert({ adminId }: { adminId?: string }) {
         sx={{
           position: "relative",
           py: { xs: 10, md: 14 },
-          backgroundColor: "#f0f4ff",
           overflow: "hidden",
         }}
       >
@@ -69,7 +71,7 @@ export default function SellWithExpert({ adminId }: { adminId?: string }) {
             style={{ display: "block" }}
           >
             <path
-              fill="#e0f0ff"
+              fill={theme.palette.primary.alpha30}
               fillOpacity="1"
               d="M0,96L48,122.7C96,149,192,203,288,229.3C384,256,480,256,576,218.7C672,181,768,107,864,96C960,85,1056,139,1152,154.7C1248,171,1344,149,1392,138.7L1440,128L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
             />
@@ -105,9 +107,9 @@ export default function SellWithExpert({ adminId }: { adminId?: string }) {
           )}
 
           <form action={formAction}>
-            <Box
+            <Card
               sx={{
-                backgroundColor: "#fff",
+                // backgroundColor: "#fff",
                 borderRadius: 3,
                 boxShadow: 4,
                 px: { xs: 3, sm: 6 },
@@ -196,7 +198,7 @@ export default function SellWithExpert({ adminId }: { adminId?: string }) {
                   and/or email by our local real estate experts.
                 </Typography>
               </Stack>
-            </Box>
+            </Card>
           </form>
         </Container>
       </Box>

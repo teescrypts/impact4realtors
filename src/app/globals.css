@@ -18,6 +18,14 @@
 @import "react-quill-new/dist/quill.snow.css";
 @import "react-toastify/dist/ReactToastify.css";
 
-
-
-
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}

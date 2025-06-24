@@ -9,6 +9,7 @@ import {
   Grid2,
   IconButton,
   Stack,
+  useTheme,
 } from "@mui/material";
 import Twitter from "@/app/icons/untitled-ui/duocolor/twitter";
 import Instagram from "@/app/icons/untitled-ui/duocolor/instaagram";
@@ -24,6 +25,7 @@ const initialState: ActionStateType = null;
 const Footer = () => {
   const [state, formAction] = useActionState(addNewsLetter, initialState);
   const [message, setMessage] = useState("");
+  const theme = useTheme();
 
   useEffect(() => {
     if (state) {
@@ -35,7 +37,10 @@ const Footer = () => {
   }, [state]);
 
   return (
-    <Box component="footer" sx={{ bgcolor: "#212121", color: "white", py: 6 }}>
+    <Box
+      component="footer"
+      sx={{ bgcolor: theme.palette.primary.main, color: "white", py: 6 }}
+    >
       <Container maxWidth="lg">
         <Grid2
           container

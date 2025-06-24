@@ -112,7 +112,7 @@ export default function HeroSection({
             {/* Search Card */}
             <Stack
               direction="column"
-              spacing={3}
+              spacing={4}
               justifyContent="center"
               alignItems="center"
             >
@@ -159,27 +159,42 @@ export default function HeroSection({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by state, city or zip code"
-                  variant="outlined"
-                  size="medium"
+                  variant="standard"
                   sx={{
-                    backgroundColor: "white",
-                    borderRadius: 2,
                     flex: 1,
                     width: isMobile ? "70vw" : "25vw",
-                  }}
-                  helperText={message ? message : ""}
-                  slotProps={{
                     input: {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={handleSearch}>
-                            <Search />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                      color: "#fff", // input text
+                      "::placeholder": {
+                        color: "#fff", // placeholder
+                        opacity: 1, // ensures white is not faded
+                      },
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: "#fff", // underline default
+                    },
+                    "& .MuiInput-underline:hover:before": {
+                      borderBottomColor: "#fff", // underline hover
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: "#fff", // underline active
                     },
                   }}
+                  helperText={message ? message : ""}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          sx={{ color: "#fff" }}
+                          onClick={handleSearch}
+                        >
+                          <Search />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
+
                 <Button
                   variant="contained"
                   size="large"

@@ -20,6 +20,7 @@ import {
   Chip,
   Stack,
   Tooltip,
+  useTheme,
 } from "@mui/material";
 import { useRouter } from "nextjs-toploader/app";
 import SendFormModal from "./send-form-modal";
@@ -97,6 +98,8 @@ export default function AdminAgentManagementPage({
     page * rowsPerPage + rowsPerPage
   );
 
+  const theme = useTheme();
+
   return (
     <Container sx={{ mt: 10 }} maxWidth="lg">
       <Box
@@ -149,8 +152,12 @@ export default function AdminAgentManagementPage({
               <TableRow
                 key={agent.id}
                 sx={{
-                  "&:nth-of-type(odd)": { backgroundColor: "grey.50" },
-                  "&:hover": { backgroundColor: "grey.100" },
+                  "&:nth-of-type(odd)": {
+                    backgroundColor: theme.palette.background.default,
+                  },
+                  "&:hover": {
+                    backgroundColor: theme.palette.background.paper,
+                  },
                 }}
               >
                 <TableCell>

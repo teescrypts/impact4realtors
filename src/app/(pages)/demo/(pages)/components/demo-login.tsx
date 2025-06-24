@@ -3,7 +3,7 @@
 import { demoLogin } from "@/app/actions/server-actions";
 import { SubmitButton } from "@/app/component/submit-buttton";
 import { ActionStateType } from "@/types";
-import { Box, Grid2, TextField, Typography } from "@mui/material";
+import { Card, Grid2, TextField, Typography } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import React, { useActionState, useEffect, useState } from "react";
 
@@ -25,13 +25,12 @@ function DemoLogin() {
 
   return (
     <form action={formAction}>
-      <Box
+      <Card
         sx={{
           mt: 1,
           p: 4,
           borderRadius: 2,
           boxShadow: 3,
-          backgroundColor: "#f7f7f7",
         }}
       >
         <Grid2 container spacing={2}>
@@ -49,12 +48,12 @@ function DemoLogin() {
               name="email"
               type="email"
               variant="outlined"
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
+              sx={{ borderRadius: 1 }}
             />
           </Grid2>
         </Grid2>
         <SubmitButton title="LOGIN" isFullWidth={true} />
-      </Box>
+      </Card>
     </form>
   );
 }

@@ -6,10 +6,7 @@ import { login } from "@/app/actions/server-actions";
 
 const RealtorLogin = () => {
   return (
-    <Container
-      maxWidth="xs"
-      sx={{ mt: 8, mb: 8, fontFamily: "Poppins, sans-serif" }}
-    >
+    <Container maxWidth="xs" sx={{ mt: 8, mb: 8 }}>
       <Motion>
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Typography variant="h4" fontWeight="bold">
@@ -26,7 +23,6 @@ const RealtorLogin = () => {
             p: 4,
             borderRadius: 2,
             boxShadow: 3,
-            backgroundColor: "#f7f7f7",
           }}
         >
           <TextField
@@ -37,7 +33,7 @@ const RealtorLogin = () => {
             type="email"
             margin="normal"
             variant="outlined"
-            sx={{ backgroundColor: "white", borderRadius: 1 }}
+            sx={{ borderRadius: 1 }}
           />
           <TextField
             required
@@ -47,7 +43,7 @@ const RealtorLogin = () => {
             type="password"
             margin="normal"
             variant="outlined"
-            sx={{ backgroundColor: "white", borderRadius: 1 }}
+            sx={{ borderRadius: 1 }}
           />
           <SubmitButton title="LOGIN" isFullWidth={true} />
         </Box>

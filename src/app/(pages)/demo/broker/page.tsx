@@ -28,6 +28,8 @@ async function Page({
   const blogs = response.data.publishedBlogs;
   const agents = response.data.agents;
 
+
+
   return (
     <Fragment>
       <HeroSection adminId={adminId} />

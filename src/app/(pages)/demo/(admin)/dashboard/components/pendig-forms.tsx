@@ -19,6 +19,7 @@ import Copy from "@/app/icons/untitled-ui/duocolor/copy";
 import Delete from "@/app/icons/untitled-ui/duocolor/delete";
 import { deleteForm } from "@/app/actions/server-actions";
 import { useState } from "react";
+import truncateWords from "@/app/utils/truncated-words";
 
 export default function PendingFormsPage({
   forms,
@@ -64,7 +65,7 @@ export default function PendingFormsPage({
       </Typography>
 
       {message && (
-        <Typography variant="subtitle2" color="error" textAlign={"center"}>
+        <Typography variant="subtitle2" color="error" textAlign="center">
           {message}
         </Typography>
       )}
@@ -74,58 +75,64 @@ export default function PendingFormsPage({
       ) : (
         <Card>
           <CardContent>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Form Link</TableCell>
-                  <TableCell>Created At</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {forms.map((form) => (
-                  <TableRow key={form._id}>
-                    <TableCell>{form.email}</TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        color="primary"
-                        sx={{ wordBreak: "break-all" }}
-                      >
-                        {`${process.env.NEXT_PUBLIC_API_URL}/demo/broker/form/${form._id}`}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{formatDate(form.createdAt)}</TableCell>
-                    <TableCell align="center">
-                      <Box display="flex" gap={1} justifyContent="center">
-                        <Tooltip title="Copy Link">
-                          <IconButton
-                            color="primary"
-                            onClick={() =>
-                              handleCopyLink(
-                                `${process.env.NEXT_PUBLIC_API_URL}/demo/broker/form/${form._id}`
-                              )
-                            }
-                          >
-                            <Copy />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete Form">
-                          <IconButton
-                            color="error"
-                            disabled={loading}
-                            onClick={() => handleDeleteForm(form._id)}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
+            {/* Responsive Scroll Container */}
+            <Box sx={{ overflowX: "auto" }}>
+              <Table sx={{ minWidth: 600 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Form Link</TableCell>
+                    <TableCell>Created At</TableCell>
+                    <TableCell align="center">Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {forms.map((form) => (
+                    <TableRow key={form._id}>
+                      <TableCell>{form.email}</TableCell>
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          color="primary"
+                          sx={{ wordBreak: "break-all" }}
+                        >
+                          {truncateWords(
+                            `${process.env.NEXT_PUBLIC_API_URL}/demo/broker/form/${form._id}`,
+                            5
+                          )}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{formatDate(form.createdAt)}</TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" gap={1} justifyContent="center">
+                          <Tooltip title="Copy Link">
+                            <IconButton
+                              color="primary"
+                              onClick={() =>
+                                handleCopyLink(
+                                  `${process.env.NEXT_PUBLIC_API_URL}/demo/broker/form/${form._id}`
+                                )
+                              }
+                            >
+                              <Copy />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete Form">
+                            <IconButton
+                              color="error"
+                              disabled={loading}
+                              onClick={() => handleDeleteForm(form._id)}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
           </CardContent>
         </Card>
       )}

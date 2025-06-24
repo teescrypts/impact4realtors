@@ -30,7 +30,7 @@ export default function ConnectRequestsTabs({
   const status = searchParams.get("status");
   const [tabIndex, setTabIndex] = useState(0);
 
-  console.log(hasMore, lastCreatedAt);
+  console.log(hasMore, lastCreatedAt)
 
   useEffect(() => {
     if (status === "accepted") {

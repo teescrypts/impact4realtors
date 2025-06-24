@@ -107,7 +107,7 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <Box sx={{ py: 10, bgcolor: "#f5f5f5" }}>
+    <Box sx={{ py: 10}}>
       <Container>
         <Typography
           variant="h4"

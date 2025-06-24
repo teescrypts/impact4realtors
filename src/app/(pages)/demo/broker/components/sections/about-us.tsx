@@ -8,6 +8,7 @@ import {
   Grid2,
   Card,
   Button,
+  useTheme,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -15,6 +16,7 @@ import { useRouter } from "nextjs-toploader/app";
 
 export default function AboutSection({ adminId }: { adminId?: string }) {
   const router = useRouter();
+  const theme = useTheme();
 
   return (
     <Box
@@ -24,7 +26,7 @@ export default function AboutSection({ adminId }: { adminId?: string }) {
         position: "relative",
         overflow: "hidden",
         background: (theme) =>
-          `linear-gradient(135deg, ${theme.palette.background.default}, ${theme.palette.grey[100]})`,
+          `linear-gradient(to bottom, ${theme.palette.background.paper}, ${theme.palette.primary.alpha30})`,
       }}
     >
       {/* Decorative SVG Background */}
@@ -80,7 +82,7 @@ export default function AboutSection({ adminId }: { adminId?: string }) {
                 variant="h3"
                 fontWeight="bold"
                 sx={{
-                  background: "linear-gradient(to right, #111, #444)",
+                  background: `linear-gradient(to right, ${theme.palette.primary.dark}, ${theme.palette.primary.light})`,
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -88,20 +90,20 @@ export default function AboutSection({ adminId }: { adminId?: string }) {
                 Redefining Real Estate
               </Typography>
 
-              <Typography variant="h6" color="text.secondary">
+              <Typography variant="h6">
                 At Emperia Realty, we’re not just selling homes — we’re crafting
                 experiences. Our mission is to simplify your real estate journey
                 with elegance, precision, and people-first service.
               </Typography>
 
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1">
                 Our diverse team of real estate professionals brings years of
                 experience across luxury homes, first-time buyers, commercial
                 properties, and investment solutions. We are passionate,
                 data-driven, and committed to helping you succeed.
               </Typography>
 
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1">
                 Whether you’re settling into your first apartment or selling a
                 multimillion-dollar estate, you deserve care, clarity, and a
                 trusted partner. That’s what we deliver — every time.

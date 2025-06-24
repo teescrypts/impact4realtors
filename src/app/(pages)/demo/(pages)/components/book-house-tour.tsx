@@ -233,7 +233,7 @@ function BookHouseTour({
       }
     }
 
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   return (
@@ -315,8 +315,6 @@ function BookHouseTour({
           {/* Promotional Consent */}
           <Box
             sx={{
-              backgroundColor: "#f9f9f9",
-              borderRadius: 2,
               p: 2,
               mt: 2,
               mb: 3,

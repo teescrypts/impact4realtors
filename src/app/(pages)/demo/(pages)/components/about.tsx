@@ -38,7 +38,7 @@ const AboutUs = ({
               color="text.secondary"
               sx={{ my: 2, maxWidth: 600 }}
             >
-              I’m an independent realtor with a passion for connecting people
+              I’m a realtor with a passion for connecting people
               with homes that truly match their dreams. With over a decade of
               experience, I’ve helped buyers, sellers, and renters navigate the
               market with confidence.

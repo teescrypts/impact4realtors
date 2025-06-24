@@ -6,7 +6,7 @@ import {
   Card,
   CardContent,
   Container,
-  Grid,
+  Grid2,
   Typography,
 } from "@mui/material";
 
@@ -63,15 +63,14 @@ export default function Testimonials() {
           investment, or sold with ease.
         </Typography>
 
-        <Grid container spacing={4}>
+        <Grid2 container spacing={4}>
           {testimonials.map((t, i) => (
-            <Grid item xs={12} sm={6} md={4} key={i}>
+            <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={i}>
               <Card
                 sx={{
                   height: "100%",
                   borderRadius: 3,
                   p: 3,
-                  backgroundColor: "#fff",
                   boxShadow: 3,
                   display: "flex",
                   flexDirection: "column",
@@ -99,9 +98,9 @@ export default function Testimonials() {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       </Container>
     </Box>
   );

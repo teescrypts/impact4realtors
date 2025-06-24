@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const Footer = () => {
   return (
-    <Box sx={{ bgcolor: "white", py: 3, borderTop: "1px solid #ddd" }}>
+    <Box sx={{ py: 3, borderTop: "1px solid #ddd" }}>
       <Container maxWidth="lg">
         <Box
           sx={{

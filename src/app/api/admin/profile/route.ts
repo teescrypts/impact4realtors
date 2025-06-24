@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
         phone: "12345678810",
         licenseNumber: "LCI-123456",
       });
+      
       return apiResponse("Agent profile created", { agent }, 201);
     }
 

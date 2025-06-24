@@ -138,16 +138,16 @@ export default function AddListingPage({
 
   return (
     <Box>
+      {admin.isBroker && (
+        <Typography variant="body2" color="info">
+          A public profile is required before adding a new listing{" "}
+          <Link href={"/demo/dashboard/profile"}>Create profile</Link> 
+        </Typography>
+      )}
       <form action={formAction}>
         <Grid2 container spacing={2}>
           <Grid2 size={{ xs: 12 }}>
             <Typography variant="subtitle1">Basic Details</Typography>
-            {admin.isBroker && (
-              <Typography variant="subtitle2" color="info">
-                A public profile is required before adding a new listing{" "}
-                <Link href={"/demo/dashboard/profile"}>Create profile</Link>
-              </Typography>
-            )}
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6 }}>
             <TextField

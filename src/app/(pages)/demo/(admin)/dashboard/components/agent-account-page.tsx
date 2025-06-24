@@ -259,7 +259,8 @@ export default function AgentAccountPage({ agent }: { agent: AgentType }) {
           </Stack>
         </Box>
 
-        <Box>
+        <Stack direction={"column"} spacing={2}>
+
           <FormControl sx={{ minWidth: 200, mr: 2 }}>
             <InputLabel>Country</InputLabel>
             <Select
@@ -309,7 +310,8 @@ export default function AgentAccountPage({ agent }: { agent: AgentType }) {
             }
             disabled={!isEditingProfile}
           />
-        </Box>
+
+        </Stack>
 
         <Button
           disabled={!isEditingProfile}

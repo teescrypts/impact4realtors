@@ -1,9 +1,9 @@
 import { TypographyOptions } from "@mui/material/styles/createTypography";
+import { dmSans, playfairDisplay, inter } from "../font"; 
 
 export const createTypography = (): TypographyOptions => {
   return {
-    fontFamily:
-      '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+    fontFamily: dmSans.style.fontFamily,
 
     body1: {
       fontSize: "1rem",
@@ -18,7 +18,7 @@ export const createTypography = (): TypographyOptions => {
       letterSpacing: "0.2px",
     },
     button: {
-      fontFamily: '"Satoshi", sans-serif',
+      fontFamily: inter.style.fontFamily,
       fontWeight: 600,
       textTransform: "none",
       letterSpacing: "0.5px",
@@ -47,37 +47,37 @@ export const createTypography = (): TypographyOptions => {
       textTransform: "uppercase",
     },
     h1: {
-      fontFamily: "'DM Serif Display', serif",
+      fontFamily: playfairDisplay.style.fontFamily,
       fontWeight: 700,
       fontSize: "3.5rem",
       lineHeight: 1.2,
     },
     h2: {
-      fontFamily: "'DM Serif Display', serif",
+      fontFamily: playfairDisplay.style.fontFamily,
       fontWeight: 700,
       fontSize: "3rem",
       lineHeight: 1.2,
     },
     h3: {
-      fontFamily: "'DM Serif Display', serif",
+      fontFamily: playfairDisplay.style.fontFamily,
       fontWeight: 700,
       fontSize: "2.25rem",
       lineHeight: 1.3,
     },
     h4: {
-      fontFamily: "'DM Serif Display', serif",
+      fontFamily: playfairDisplay.style.fontFamily,
       fontWeight: 700,
       fontSize: "2rem",
       lineHeight: 1.3,
     },
     h5: {
-      fontFamily: "'DM Serif Display', serif",
+      fontFamily: playfairDisplay.style.fontFamily,
       fontWeight: 600,
       fontSize: "1.5rem",
       lineHeight: 1.4,
     },
     h6: {
-      fontFamily: "'DM Serif Display', serif",
+      fontFamily: playfairDisplay.style.fontFamily,
       fontWeight: 600,
       fontSize: "1.25rem",
       lineHeight: 1.5,

@@ -33,7 +33,7 @@ export default function MainAppBar() {
 
   // Determine text color based on route and scroll
   const isHome = pathname === "/demo/broker";
-  const textColor = isHome && !trigger ? "#fff" : "#000";
+  const textColor = isHome && !trigger ? "#fff" : "peimary";
 
   useEffect(() => {
     const adminId = localStorage.getItem("adminId");
@@ -99,7 +99,7 @@ export default function MainAppBar() {
         position="fixed"
         elevation={trigger ? 4 : 0}
         sx={{
-          backgroundColor: trigger ? "#fff" : "transparent",
+          backgroundColor: trigger ? "white" : "transparent",
           transition: "background-color 0.3s ease",
         }}
       >
@@ -112,7 +112,6 @@ export default function MainAppBar() {
               href={adminId ? `/demo/broker?admin=${adminId}` : `/demo/broker`}
               sx={{
                 textDecoration: "none",
-                color: textColor,
                 fontWeight: 600,
                 fontSize: "1.4rem",
               }}

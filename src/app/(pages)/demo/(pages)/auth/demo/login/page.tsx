@@ -42,11 +42,11 @@ async function Page() {
   return (
     <Container
       maxWidth="sm"
-      sx={{ mt: 8, mb: 8, fontFamily: "Poppins, sans-serif" }}
+      sx={{ mt: 8, mb: 8 }}
     >
       <Motion>
         <Box sx={{ textAlign: "center", mb: 4 }}>
-          <Typography variant="h4" fontWeight="bold">
+          <Typography variant="h4">
             Create Your Account
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
