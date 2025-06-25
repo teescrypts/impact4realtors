@@ -28,8 +28,6 @@ async function Page({
   const blogs = response.data.publishedBlogs;
   const agents = response.data.agents;
 
-
-
   return (
     <Fragment>
       <HeroSection adminId={adminId} />
@@ -39,7 +37,7 @@ async function Page({
       <OurAgents agents={agents} adminId={adminId} />
       <LatestBlogs blogs={blogs} adminId={adminId} />
       <Testimonials />
-       <NewsletterPopup />
+      <NewsletterPopup />
     </Fragment>
   );
 }
