@@ -13,6 +13,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const propertyId = (await params).id;
+
   const propertyData = await apiRequest<{
     message: string;
     data: { property: propertyType };
@@ -22,35 +23,60 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const property = propertyData.data.property;
 
+  const title = `${property.propertyTitle} | Realtor Demo Property Details`;
+  const description =
+    property.description ||
+    "Explore this property listed on RealtyIllustration's pagee.";
+  const baseImage =
+    property.images?.[0]?.url ||
+    "https://realtyillustrations.live/images/logo.png";
+  const url = `https://realtyillustrations.live/demo/listings/sale/${propertyId}`;
+
   return {
-    title: `${property.propertyTitle} | Realtor Demo Blog`,
-    description: property.description,
-    keywords: `real estate, trends, realtor demo, independent realtor, blog, real estate technology, property trends, ${property.category}, ${property.price}, ${property.location.addressLine1}, ${property.location.countryName}, ${property.location.stateName}, ${property.location.cityName}`,
+    title,
+    description,
+    keywords: [
+      "real estate",
+      "trends",
+      "realtor demo",
+      "independent realtor",
+      "blog",
+      "real estate technology",
+      "property trends",
+      property.category,
+      property.price.toString(),
+      property.location.addressLine1,
+      property.location.countryName,
+      property.location.stateName,
+      property.location.cityName,
+    ],
     icons: {
-      icon: "/favicon.ico",
+      icon: "/images/logo.png",
       apple: "/apple-touch-icon.png",
     },
     openGraph: {
-      title: "Listings | Innovative Real Estate Solutions",
-      description:
-        "Discover a modern, creative platform designed for independent realtors. Elevate your business with our innovative tools and user-friendly interface.",
-      url: `https://realtyillustrations.live/demo/listings/sale/${propertyId}`, // Replace with your actual domain
-      type: "website",
+      title,
+      description,
+      url,
+      type: "article",
       images: [
         {
-          url: "https://realtyillustrations.live/images/logo.png", // Replace with your actual OG image URL
+          url: baseImage,
           width: 1200,
           height: 630,
-          alt: "Realtor Demo",
+          alt: property.propertyTitle,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Listing | Innovative Real Estate Solutions",
-      description:
-        "Explore our live demo website showcasing modern tools for independent realtors.",
-      images: ["https://realtyillustrations.live/images/logo.png"], // Replace accordingly
+      title,
+      description,
+      images: [baseImage],
+    },
+    metadataBase: new URL("https://realtyillustrations.live"),
+    alternates: {
+      canonical: url,
     },
   };
 }

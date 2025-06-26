@@ -5,6 +5,8 @@ import {
   CardContent,
   Typography,
   Button,
+  Stack,
+  Chip,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -47,9 +49,20 @@ function PropertyCard({
             />
           </CardMedia>
           <CardContent sx={{ flexGrow: 1 }}>
-            <Typography variant="h6" gutterBottom>
-              {property.propertyTitle}
-            </Typography>
+            <Stack direction={"row"} spacing={2}>
+              <Typography variant="h6" gutterBottom>
+                {property.propertyTitle}
+              </Typography>
+
+              {property.status !== "Active" && (
+                <Chip
+                  label={property.status === "Sold" ? "SOLD" : "RENTED"}
+                  color="error"
+                  size="small"
+                />
+              )}
+            </Stack>
+
             <Typography variant="h5" color="primary">
               ${property.price.toLocaleString()}
             </Typography>
@@ -62,26 +75,28 @@ function PropertyCard({
               {property.squareMeters} m²
             </Typography>
           </CardContent>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{
-              borderBottomLeftRadius: "12px",
-              borderBottomRightRadius: "12px",
-            }}
-            href={
-              adminId
-                ? `/demo/broker/listings/${
-                    property.category === "For Sale" ? "sale" : "rent"
-                  }/${property._id}?admin=${adminId}`
-                : `/demo/broker/listings/${
-                    property.category === "For Sale" ? "sale" : "rent"
-                  }/${property._id}`
-            }
-          >
-            View Details
-          </Button>
+          {property.status === "Active" && (
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{
+                borderBottomLeftRadius: "12px",
+                borderBottomRightRadius: "12px",
+              }}
+              href={
+                adminId
+                  ? `/demo/broker/listings/${
+                      property.category === "For Sale" ? "sale" : "rent"
+                    }/${property._id}?admin=${adminId}`
+                  : `/demo/broker/listings/${
+                      property.category === "For Sale" ? "sale" : "rent"
+                    }/${property._id}`
+              }
+            >
+              View Details
+            </Button>
+          )}
         </Card>
       </motion.div>
     </Grid2>

@@ -5,11 +5,17 @@ import Notification from "@/app/model/notification";
 import getAdmin from "@/app/utils/get-admin";
 import { NextRequest } from "next/server";
 
+const sanitize = (str: string) => str?.trim().replace(/\s+/g, " ");
+const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export async function POST(req: NextRequest) {
   try {
     const admin = await getAdmin(req);
     const body = await req.json();
-    const { firstName, lastName, email, phone, state, zipCode } = body;
+    let { firstName, lastName, email, phone, state, zipCode } = body;
+
+    state = escapeRegex(sanitize(state));
+    zipCode = sanitize(zipCode);
 
     // First: match by zip code
     let agents = await Agent.find({
@@ -20,12 +26,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // If no ZIP matches, fall back to state match
-    if (agents.length === 0) {
+    // Fuzzy state fallback
+    if (agents.length === 0 && state) {
       agents = await Agent.find({
         licensedStates: {
           $elemMatch: {
-            state,
+            state: { $regex: state, $options: "i" },
           },
         },
       });

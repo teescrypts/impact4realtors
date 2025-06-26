@@ -10,6 +10,7 @@ import {
   DragOverlay,
   UniqueIdentifier,
   DragEndEvent,
+  TouchSensor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -74,7 +75,17 @@ export default function LeadManagement({
 
   // Drag-and-drop sensors
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Prevents accidental drags from slight mouse movement
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250, // Wait 250ms before activating drag
+        tolerance: 5, // Allow small touch movement (5px) during delay
+      },
+    })
   );
 
   // Handles lead movement between stages

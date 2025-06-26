@@ -24,36 +24,53 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const blog = blogData.data.blog;
 
+  const title = `${blog.title || "Untitled Blog"} | Realtor Demo Blog`;
+  const description =
+    blog.shortDescription ||
+    "Explore real estate trends and innovations on the Realtor Demo Blog.";
+  const coverImage =
+    blog.cover?.url || "https://realtyillustrations.live/images/logo.png";
+  const url = `https://realtyillustrations.live/demo/blog/${blogId}`;
+
   return {
-    title: `${blog.title} | Realtor Demo Blog`,
-    description: blog.shortDescription,
-    keywords:
-      "real estate, trends, realtor demo, independent realtor, blog, real estate technology, property trends",
+    title,
+    description,
+    keywords: [
+      "real estate",
+      "blog",
+      "realtor demo",
+      "property trends",
+      "real estate technology",
+      blog.title || "",
+      blog.author || "",
+    ],
     icons: {
-      icon: "/favicon.ico",
+      icon: "/images/logo.png",
       apple: "/apple-touch-icon.png",
     },
     openGraph: {
-      title: "Realtor Demo | Innovative Real Estate Solutions",
-      description:
-        "Discover a modern, creative platform designed for independent realtors. Elevate your business with our innovative tools and user-friendly interface.",
-      url: `https://realtyillustrations.live/demo/blog/${blogId}`, // Replace with your actual domain
-      type: "website",
+      title,
+      description,
+      url,
+      type: "article",
       images: [
         {
-          url: "https://realtyillustrations.live/images/logo.png", // Replace with your actual OG image URL
+          url: coverImage,
           width: 1200,
           height: 630,
-          alt: "Realtor Demo",
+          alt: blog.title || "Realtor Demo Blog",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Realtor Demo | Innovative Real Estate Solutions",
-      description:
-        "Explore our live demo website showcasing modern tools for independent realtors.",
-      images: ["https://realtyillustrations.live/images/logo.png"], // Replace accordingly
+      title,
+      description,
+      images: [coverImage],
+    },
+    metadataBase: new URL("https://realtyillustrations.live"),
+    alternates: {
+      canonical: url,
     },
   };
 }
@@ -67,7 +84,7 @@ const BlogPage = async ({ params, searchParams }: Props) => {
       tag: "fetchPublicBlogPost",
     }
   );
-
+  
   const blog = response.data.blog;
 
   return (
