@@ -12,16 +12,16 @@ export async function POST(req: NextRequest) {
   try {
     const admin = await getAdmin(req);
     const body = await req.json();
-    let { firstName, lastName, email, phone, state, zipCode } = body;
+    const { firstName, lastName, email, phone, state, zipCode } = body;
 
-    state = escapeRegex(sanitize(state));
-    zipCode = sanitize(zipCode);
+    const istate = escapeRegex(sanitize(state));
+    const izipCode = sanitize(zipCode);
 
     // First: match by zip code
     let agents = await Agent.find({
       licensedStates: {
         $elemMatch: {
-          postalCode: zipCode,
+          postalCode: izipCode,
         },
       },
     });
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       agents = await Agent.find({
         licensedStates: {
           $elemMatch: {
-            state: { $regex: state, $options: "i" },
+            state: { $regex: istate, $options: "i" },
           },
         },
       });

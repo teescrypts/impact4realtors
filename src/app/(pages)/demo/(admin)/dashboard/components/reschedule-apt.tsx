@@ -13,7 +13,6 @@ import {
   Chip,
   Grid2,
   IconButton,
-  useTheme,
 } from "@mui/material";
 import SimpleBarCore from "simplebar-core";
 import { Scrollbar } from "@/app/component/scrollbar";
@@ -65,7 +64,6 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [rescheduling, setRescheduling] = useState(false);
-  const theme = useTheme();
 
   const scrollbarRef = useRef<SimpleBarCore | null>(null);
 
