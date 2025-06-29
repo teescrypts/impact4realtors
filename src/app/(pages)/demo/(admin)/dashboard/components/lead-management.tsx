@@ -82,8 +82,8 @@ export default function LeadManagement({
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250, // Wait 250ms before activating drag
-        tolerance: 5, // Allow small touch movement (5px) during delay
+        delay: 100, 
+        tolerance: 10, 
       },
     })
   );

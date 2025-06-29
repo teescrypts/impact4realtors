@@ -37,7 +37,7 @@ async function Page({
       <OurAgents agents={agents} adminId={adminId} />
       <LatestBlogs blogs={blogs} adminId={adminId} />
       <Testimonials />
-      <NewsletterPopup />
+      <NewsletterPopup adminId={adminId} />
     </Fragment>
   );
 }

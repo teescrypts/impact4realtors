@@ -952,10 +952,11 @@ export async function addNewsLetter(
   formData: FormData
 ) {
   const email = formData.get("email") as string;
+  const admin = formData.get("admin") as string;
 
   try {
     const response = await apiRequest<{ message: string }, { email: string }>(
-      "public/newsletter",
+      `public/newsletter?adminId=${admin}`,
       {
         method: "POST",
         data: { email },

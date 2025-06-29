@@ -21,7 +21,7 @@ import { SubmitButton } from "@/app/component/submit-buttton";
 
 const initialState: ActionStateType = null;
 
-const NewsletterPopup: React.FC = () => {
+function NewsletterPopup({ adminId }: { adminId: string }) {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
 
@@ -91,6 +91,7 @@ const NewsletterPopup: React.FC = () => {
             Stay updated with the latest in real estate news, trends, and
             exclusive offers!
           </Typography>
+          {adminId && <input name="admin" defaultValue={adminId} hidden />}
           <TextField
             fullWidth
             variant="outlined"
@@ -111,6 +112,6 @@ const NewsletterPopup: React.FC = () => {
       </form>
     </Dialog>
   );
-};
+}
 
 export default NewsletterPopup;
