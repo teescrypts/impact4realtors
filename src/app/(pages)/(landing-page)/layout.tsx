@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://realtyillustrations.live /images/logo.png",
+        url: "https://realtyillustrations.live/images/logo.png",
         width: 1200,
         height: 630,
         alt: "Realtor Demo",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     title: "Realtor Demo | Innovative Real Estate Solutions",
     description:
       "Explore our live demo website showcasing modern tools for independent realtors.",
-    images: ["https://realtyillustrations.live /images/logo.png"],
+    images: ["https://realtyillustrations.live/images/logo.png"],
   },
 };
 
