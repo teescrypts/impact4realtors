@@ -1,11 +1,13 @@
 import React from "react";
-import AppointmentManagement from "../components/appointment-mgt";
-import { Box, Button, Container, Stack, Typography } from "@mui/material";
-import Link from "next/link";
 import { Metadata } from "next/types";
 import { cookies } from "next/headers";
 import apiRequest from "@/app/lib/api-request";
 import { AppointmentResponse } from "@/types";
+import { getDateRange } from "@/app/utils/get-date-range";
+import { DateTime } from "luxon";
+import AppointmentView, {
+  AppointmentEventCaledar,
+} from "../components/appointment-view";
 
 export const metadata: Metadata = {
   title: "Appointment | Innovative Real Estate Solutions",
@@ -41,6 +43,17 @@ export const metadata: Metadata = {
   },
 };
 
+export type AppointmentEvent = {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  service: string;
+  client: { fname: string; lname: string };
+  note?: string;
+  status: "pending" | "completed" | "cancelled";
+};
+
 async function Page({
   searchParams,
 }: {
@@ -51,62 +64,60 @@ async function Page({
   const token = tokenObj?.value;
 
   const params = await searchParams;
-  const lastCreatedAtQuery = params.lastCreatedAt as string | undefined;
-  const status = params.status as string | undefined;
+  const calendarView = params.view === "calendar" ? true : false;
 
-  // Build the API request URL dynamically
-  const queryParams = new URLSearchParams();
-  if (lastCreatedAtQuery)
-    queryParams.append("lastCreatedAt", lastCreatedAtQuery);
-  if (status) queryParams.append("status", status);
+  if (calendarView) {
+    const timeZone = "America/New_York";
+    const today = DateTime.now().setZone(timeZone).startOf("day").toJSDate();
+    const { start, end } = getDateRange("timeGridWeek", today);
 
-  const url = `admin/appointment${
-    queryParams.toString() ? `?${queryParams.toString()}` : ""
-  }`;
+    const queryStart = (await searchParams)?.start as string | undefined;
+    const queryEnd = (await searchParams)?.end as string | undefined;
 
-  const response = await apiRequest<{
-    data: {
-      appointments: AppointmentResponse[];
-      hasMore: boolean;
-      lastCreatedAt: Date;
-    };
-  }>(url, { token, tag: "fetchAdminAppointments" });
+    const url = `admin/appointment?viewType=calendar&start=${encodeURIComponent(
+      queryStart || start
+    )}&end=${encodeURIComponent(queryEnd || end)}`;
 
-  const appointments = response.data.appointments;
-  const hasMore = response.data.hasMore;
-  const lastCreatedAt = response.data.lastCreatedAt;
+    const response = await apiRequest<{
+      data: { appointments: AppointmentEventCaledar[] };
+    }>(url, {
+      token,
+      tag: "fetchAdminApt",
+    });
 
-  return (
-    <Box
-      component="main"
-      sx={{
-        flexGrow: 1,
-        py: 8,
-      }}
-    >
-      <Container maxWidth={"xl"}>
-        <Stack spacing={2}>
-          <Stack direction="row" justifyContent="space-between" spacing={4}>
-            <div>
-              <Typography variant="h4">Appointment</Typography>
-            </div>
-            <div>
-              <Stack direction="row" spacing={4}>
-                <Link href={"/demo/agent/dashboard/appointment/availability"}>
-                  <Button variant="contained">Availablity</Button>
-                </Link>
-              </Stack>
-            </div>
-          </Stack>
-          <AppointmentManagement
-            appointments={appointments}
-            hasMore={hasMore}
-            lastCreatedAt={lastCreatedAt}
-          />
-        </Stack>
-      </Container>
-    </Box>
-  );
+    const appointments = response.data.appointments;
+
+    return <AppointmentView view="calendar" calendarEvents={appointments} />;
+  } else {
+    const lastCreatedAtQuery = params.lastCreatedAt as string | undefined;
+    const status = params.status as string | undefined;
+
+    // Build the API request URL dynamically
+    const queryParams = new URLSearchParams();
+    if (lastCreatedAtQuery)
+      queryParams.append("lastCreatedAt", lastCreatedAtQuery);
+    if (status) queryParams.append("status", status);
+
+    const url = `admin/appointment${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+
+    const response = await apiRequest<{
+      data: {
+        appointments: AppointmentResponse[];
+        hasMore: boolean;
+        lastCreatedAt: Date;
+      };
+    }>(url, { token, tag: "fetchAdminAppointments" });
+
+    const appointments = response.data.appointments;
+    const hasMore = response.data.hasMore;
+    const lastCreatedAt = response.data.lastCreatedAt;
+
+    const appt = { appointments, hasMore, lastCreatedAt };
+
+    return <AppointmentView view="list" appointmentInfo={appt} />;
+  }
 }
 
 export default Page;

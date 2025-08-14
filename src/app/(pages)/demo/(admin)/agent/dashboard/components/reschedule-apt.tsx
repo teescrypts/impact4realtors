@@ -13,7 +13,6 @@ import {
   Chip,
   Grid2,
   IconButton,
-  useTheme,
 } from "@mui/material";
 import SimpleBarCore from "simplebar-core";
 import { Scrollbar } from "@/app/component/scrollbar";
@@ -65,7 +64,6 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [rescheduling, setRescheduling] = useState(false);
-  const theme = useTheme();
 
   const scrollbarRef = useRef<SimpleBarCore | null>(null);
 
@@ -269,21 +267,43 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
                         whileTap={{ scale: 0.9 }}
                       >
                         <Card
-                          sx={{
+                          sx={(theme) => ({
                             minWidth: 80,
-                            border: date.slots.length === 0 ? "red" : "",
+                            border:
+                              date.slots.length === 0
+                                ? "2px solid red"
+                                : "1px solid #ccc",
                             cursor:
                               date.slots.length > 0 ? "pointer" : "not-allowed",
-                            background:
+                            backgroundColor:
                               selectedDate?.date === date.date
-                                ? theme.palette.primary.dark
-                                : theme.palette.primary.light,
-                            // color:
-                            //   selectedDate?.date === date.date
-                            //     ? "black"
-                            //     : "white",
+                                ? theme.palette.primary.main
+                                : "#f5f5f5",
+                            color:
+                              selectedDate?.date === date.date
+                                ? "#fff"
+                                : "#333",
+                            boxShadow:
+                              selectedDate?.date === date.date
+                                ? "0 4px 12px rgba(0, 0, 0, 0.2)"
+                                : "none",
+                            borderRadius: 2,
+                            p: 1,
+                            textAlign: "center",
                             transition: "all 0.3s ease",
-                          }}
+                            "&:hover": {
+                              backgroundColor:
+                                date.slots.length > 0 &&
+                                selectedDate?.date !== date.date
+                                  ? theme.palette.primary.dark
+                                  : undefined,
+                              color:
+                                date.slots.length > 0 &&
+                                selectedDate?.date !== date.date
+                                  ? "#fff"
+                                  : undefined,
+                            },
+                          })}
                           onClick={() => handleDateClick(date)}
                         >
                           <CardContent>
@@ -337,18 +357,33 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
                     <Chip
                       label={convertTo12HourFormat(slot)}
                       onClick={() => setSelectedSlot(slot)}
-                      sx={{
+                      sx={(theme) => ({
                         px: 2,
                         py: 1,
                         borderRadius: "20px",
                         cursor: "pointer",
-                        background:
-                          slot === selectedSlot
-                            ? theme.palette.primary.dark
-                            : "",
-                        // color: slot === selectedSlot ? "black" : "white",
                         transition: "all 0.3s ease",
-                      }}
+                        backgroundColor:
+                          slot === selectedSlot
+                            ? theme.palette.primary.main
+                            : "#f5f5f5",
+                        color: slot === selectedSlot ? "#fff" : "#333",
+                        fontWeight: slot === selectedSlot ? "bold" : "normal",
+                        boxShadow:
+                          slot === selectedSlot
+                            ? "0 3px 8px rgba(0,0,0,0.2)"
+                            : "none",
+                        "&:hover": {
+                          backgroundColor:
+                            slot === selectedSlot
+                              ? theme.palette.primary.dark
+                              : "#e0e0e0",
+                        },
+                        border:
+                          slot === selectedSlot
+                            ? `2px solid ${theme.palette.primary.main}`
+                            : "1px solid #ccc",
+                      })}
                     />
                   </Grid2>
                 ))
@@ -359,7 +394,7 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
 
             {/* Show More Button */}
             {visibleSlots < selectedDate.slots.length && (
-              <Button onClick={handleShowMore} sx={{ mt: 2, color: "white" }}>
+              <Button sx={{ mt: 2 }} onClick={handleShowMore}>
                 Show More
               </Button>
             )}

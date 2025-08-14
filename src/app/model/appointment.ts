@@ -35,6 +35,7 @@ export interface IAppointment extends Document {
   houseTouringType?: (typeof HOUSE_TOURING_TYPES)[number]; // "for_sale" or "for_rent"
   callReason?: (typeof CALL_REASONS)[number]; // "selling", "mortgage_enquiry", "general_enquiry"
   propertyTypeToSell?: string; // Only for selling calls
+  datetime?: Date;
   reschedule: {
     isRescheduled: boolean;
     previousDates: [{ date: string; bookedTime: { from: string; to: string } }];
@@ -104,6 +105,7 @@ const appointmentSchema = new Schema<IAppointment>(
       },
       trim: true,
     },
+    datetime: { type: Date, index: true },
     reschedule: {
       isRescheduled: {
         type: Boolean,
@@ -127,6 +129,18 @@ const appointmentSchema = new Schema<IAppointment>(
   },
   { timestamps: true }
 );
+
+// ✅ Pre-save hook to generate datetime from date + bookedTime.from
+appointmentSchema.pre("save", function (next) {
+  const appointment = this as IAppointment;
+
+  if (appointment.date && appointment.bookedTime?.from) {
+    const isoString = `${appointment.date}T${appointment.bookedTime.from}:00`;
+    appointment.datetime = new Date(isoString);
+  }
+
+  next();
+});
 
 // Prevent OverwriteModelError
 const Appointment =

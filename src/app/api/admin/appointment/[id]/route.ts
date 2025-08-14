@@ -5,6 +5,35 @@ import { NextRequest, NextResponse } from "next/server";
 
 const VALID_STATUSES = ["upcoming", "completed", "cancelled", "rescheduled"];
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const authResponse = await authMiddleware(req);
+    if (authResponse instanceof NextResponse) return authResponse;
+
+    const admin = authResponse;
+    if (!admin)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const _id = (await params).id;
+
+    const apt = await Appointment.findById(_id).populate({
+      path: "propertyId",
+      select: "propertyTitle price bedrooms bathrooms squareMeters location",
+    });
+
+    return apiResponse("success", apt, 201);
+  } catch (e) {
+    return apiResponse(
+      e instanceof Error ? e.message : "An unknown error occurred",
+      null,
+      500
+    );
+  }
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

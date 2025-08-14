@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     const leadTimeHours = 1;
     const bookingWindowDays = 30;
-    const timeZone = "America/Chicago";
+    const timeZone = "America/New_York";
 
     const now = DateTime.now().setZone(timeZone).plus({ hours: leadTimeHours });
     const bookingWindowEnd = now.plus({ days: bookingWindowDays });

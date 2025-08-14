@@ -23,6 +23,7 @@ import RescheduleAppointmentModal from "./reschedule-apt";
 import { convertToAmPmFormat } from "@/app/utils/convert-to-am-pm";
 import { formatCreatedAt } from "@/app/utils/format-created-at";
 import notify from "@/app/utils/toast";
+import ConfirmationModal from "./confirmation-modal";
 
 export default function AppointmentManagement({
   appointments,
@@ -65,11 +66,35 @@ export default function AppointmentManagement({
     setCurrentApt(appointments);
   }, [appointments]);
 
+  const [selectedApt, setSelectedApt] = useState<AppointmentResponse | null>(
+    null
+  );
+
+  const handleCanceleBooking = useCallback((appt: AppointmentResponse) => {
+    setUpdating(true);
+    updateAptStatus("cancelled", appt._id).then((result) => {
+      if (result?.error) {
+        setMessage(result.error);
+        setUpdating(false);
+        handleClose();
+      }
+      if (result?.message) {
+        notify(result.message);
+        setUpdating(false);
+        handleClose();
+      }
+    });
+  }, []);
+
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"call" | "house_touring">();
   const [customer, setCustomer] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [currentAptId, setCurrentAptId] = useState("");
+
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const handleOpen = () => setOpenConfirm(true);
+  const handleClose = () => setOpenConfirm(false);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -170,7 +195,7 @@ export default function AppointmentManagement({
               )}
 
               <Box sx={{ mt: 2 }}>
-                {appt.status !== "completed" && (
+                {appt.status !== "completed" && appt.status !== "cancelled" && (
                   <Button
                     disabled={updating}
                     onClick={async () => {
@@ -194,16 +219,9 @@ export default function AppointmentManagement({
                   <Button
                     color="error"
                     disabled={updating}
-                    onClick={async () => {
-                      setUpdating(true);
-                      const result = await updateAptStatus(
-                        "cancelled",
-                        appt._id
-                      );
-
-                      if (result?.error) setMessage(result.error);
-                      if (result?.message) notify(result.message); // Fixed typo "messaage" -> "message"
-                      setUpdating(false);
+                    onClick={() => {
+                      setSelectedApt(appt);
+                      handleOpen();
                     }}
                     sx={{ mr: 1 }}
                   >
@@ -267,6 +285,18 @@ export default function AppointmentManagement({
           customer={customer}
           currentDate={currentDate}
           currentAptId={currentAptId}
+        />
+      )}
+
+      {selectedApt && (
+        <ConfirmationModal
+          open={openConfirm}
+          message="Are you sure you want to cancel this appointment?"
+          confirmText="Yes, Cancel"
+          onClose={handleClose}
+          loading={updating}
+          cancelText="No, don't cancel"
+          onConfirm={() => handleCanceleBooking(selectedApt)}
         />
       )}
     </Box>
