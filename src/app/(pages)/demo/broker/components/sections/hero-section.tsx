@@ -1,5 +1,6 @@
 "use client";
 
+import Locations from "@/app/icons/untitled-ui/duocolor/location";
 import Search from "@/app/icons/untitled-ui/duocolor/search";
 import {
   Box,
@@ -7,7 +8,9 @@ import {
   Container,
   IconButton,
   InputAdornment,
+  Paper,
   Stack,
+  SvgIcon,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -15,6 +18,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { useRouter } from "nextjs-toploader/app";
 import { useEffect, useState } from "react";
@@ -28,11 +32,16 @@ export default function HeroSection({
   const [searchType, setSearchType] = useState<"For Sale" | "For Rent">(
     "For Sale"
   );
-
   const [message, setMessage] = useState("");
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  // Theme-based colors
+  const primary = theme.palette.primary.main;
+  const onPrimary = theme.palette.primary.contrastText;
+  const white80 = alpha(theme.palette.common.white, 0.88);
+  const white60 = alpha(theme.palette.common.white, 0.6);
 
   const handleSearch = () => {
     if (searchQuery) {
@@ -48,91 +57,126 @@ export default function HeroSection({
     event: React.MouseEvent<HTMLElement>,
     newType: "For Sale" | "For Rent" | null
   ) => {
-    if (newType !== null) {
-      setSearchType(newType);
-    }
+    if (newType !== null) setSearchType(newType);
   };
 
   useEffect(() => {
-    if (adminId) {
-      localStorage.setItem("adminId", adminId);
-    }
+    if (adminId) localStorage.setItem("adminId", adminId);
   }, [adminId]);
 
   return (
     <Box
       sx={{
         position: "relative",
-        height: "100vh",
+        height: { xs: "80vh", md: "100vh" },
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        background: `
-         linear-gradient(to bottom right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)),
-         url('/images/broker-bg.png')
-       `,
+        color: white80,
+        px: 3,
+        // background image with theme-aware overlay
+        backgroundImage: `linear-gradient(135deg, ${alpha(
+          theme.palette.primary.dark,
+          0.55
+        )}, ${alpha(
+          theme.palette.secondary.dark ?? primary,
+          0.3
+        )}), url('/images/broker-bg.png')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        color: "white",
-        px: 3,
       }}
     >
-      <Container maxWidth="lg">
+      {/* subtle dark overlay to improve contrast */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(180deg, ${alpha(
+            theme.palette.common.black,
+            0.35
+          )}, ${alpha(theme.palette.common.black, 0.55)})`,
+          pointerEvents: "none",
+        }}
+      />
+
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 2 }}>
         <motion.div
-          initial={{ opacity: 0, y: 60 }}
+          initial={{ opacity: 0, y: 48 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
         >
           <Stack
             direction="column"
-            spacing={2}
+            spacing={3}
             justifyContent="center"
             alignItems="center"
           >
             <Typography
-              variant="h2"
-              textAlign="center"
+              variant={isMobile ? "h4" : "h2"}
+              component="h1"
               sx={{
-                textShadow: "0 2px 4px rgba(0,0,0,0.4)",
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                color: white80,
+                textShadow: `0 6px 20px ${alpha(
+                  theme.palette.common.black,
+                  0.45
+                )}`,
               }}
             >
-              Your Home Journey Starts Here
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                color: "rgba(255, 255, 255, 0.85)",
-              }}
-            >
-              Buy, rent, or sell your home with trusted local experts by your
-              side.
+              Your home journey starts here
             </Typography>
 
-            {/* Search Card */}
-            <Stack
-              direction="column"
-              spacing={4}
-              justifyContent="center"
-              alignItems="center"
+            <Typography
+              variant="subtitle1"
+              sx={{
+                maxWidth: 880,
+                color: white60,
+                fontWeight: 500,
+              }}
+            >
+              Buy, rent, or sell with local experts — discover curated listings
+              and personalised guidance every step of the way.
+            </Typography>
+
+            {/* Card-style search area */}
+            <Paper
+              elevation={6}
+              sx={{
+                mt: 1,
+                px: { xs: 2, sm: 3 },
+                py: { xs: 2, sm: 2.5 },
+                width: "100%",
+                maxWidth: 980,
+                borderRadius: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                backdropFilter: "blur(6px)",
+                background: alpha(theme.palette.background.paper, 0.08),
+                border: `1px solid ${alpha(theme.palette.common.white, 0.06)}`,
+              }}
             >
               <ToggleButtonGroup
                 value={searchType}
                 exclusive
                 onChange={handleSearchTypeChange}
-                color="primary"
                 sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  borderRadius: "999px",
-                  p: 0.5,
+                  borderRadius: 999,
+                  background: alpha(theme.palette.common.white, 0.06),
+                  px: 0.5,
+                  mb: 1.5,
                   "& .MuiToggleButton-root": {
-                    color: "white",
-                    fontWeight: 500,
-                    border: 0,
                     px: 3,
+                    py: 0.6,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: 999,
+                    color: white80,
                     "&.Mui-selected": {
-                      backgroundColor: "white",
-                      color: "#333",
+                      backgroundColor: primary,
+                      color: onPrimary,
                     },
                   },
                 }}
@@ -141,75 +185,80 @@ export default function HeroSection({
                 <ToggleButton value="For Rent">For Rent</ToggleButton>
               </ToggleButtonGroup>
 
-              <Box
-                component="form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSearch();
-                }}
-                sx={{
-                  display: "flex",
-                  gap: 2,
-                  flexDirection: { xs: "column", sm: "row" },
-                  alignItems: "center",
-                  width: "100%",
-                }}
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ width: "100%", alignItems: "center" }}
               >
                 <TextField
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by state, city or zip code"
-                  variant="standard"
-                  sx={{
-                    flex: 1,
-                    width: isMobile ? "70vw" : "25vw",
-                    input: {
-                      color: "#fff", // input text
-                      "::placeholder": {
-                        color: "#fff", // placeholder
-                        opacity: 1, // ensures white is not faded
-                      },
-                    },
-                    "& .MuiInput-underline:before": {
-                      borderBottomColor: "#fff", // underline default
-                    },
-                    "& .MuiInput-underline:hover:before": {
-                      borderBottomColor: "#fff", // underline hover
-                    },
-                    "& .MuiInput-underline:after": {
-                      borderBottomColor: "#fff", // underline active
-                    },
-                  }}
-                  helperText={message ? message : ""}
+                  placeholder="Search by city, state or ZIP code"
+                  variant="outlined"
+                  fullWidth
+                  size={isMobile ? "small" : "medium"}
+                  helperText={message || "Try: Texas, Houston, or 10001"}
                   InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SvgIcon sx={{ color: white60 }}>
+                          <Locations />
+                        </SvgIcon>
+                      </InputAdornment>
+                    ),
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          sx={{ color: "#fff" }}
                           onClick={handleSearch}
+                          aria-label="search"
+                          sx={{
+                            bgcolor: alpha(primary, 0.12),
+                            "&:hover": { bgcolor: alpha(primary, 0.18) },
+                          }}
                         >
-                          <Search />
+                          <SvgIcon sx={{ color: primary }}>
+                            <Search />
+                          </SvgIcon>
                         </IconButton>
                       </InputAdornment>
                     ),
+                    sx: {
+                      color: white80,
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: alpha(theme.palette.common.white, 0.08),
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: alpha(theme.palette.common.white, 0.12),
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: alpha(primary, 0.85),
+                      },
+                      input: {
+                        color: white80,
+                      },
+                      "& .MuiFormHelperText-root": {
+                        color: white60,
+                      },
+                    },
                   }}
                 />
 
                 <Button
                   variant="contained"
-                  size="large"
+                  size={isMobile ? "medium" : "large"}
                   onClick={handleSearch}
                   sx={{
+                    borderRadius: 999,
                     px: 4,
-                    borderRadius: "999px",
                     textTransform: "none",
-                    fontWeight: "bold",
+                    fontWeight: 700,
+                    boxShadow: `0 6px 18px ${alpha(primary, 0.18)}`,
                   }}
                 >
                   Search
                 </Button>
-              </Box>
-            </Stack>
+              </Stack>
+            </Paper>
           </Stack>
         </motion.div>
       </Container>

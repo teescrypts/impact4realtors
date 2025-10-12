@@ -4,12 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  Paper,
   Button,
   MenuItem,
   Select,
   FormControl,
   InputLabel,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Stack,
+  SvgIcon,
 } from "@mui/material";
 import { AppointmentResponse } from "@/types";
 import { useSearchParams } from "next/navigation";
@@ -24,6 +29,9 @@ import { convertToAmPmFormat } from "@/app/utils/convert-to-am-pm";
 import { formatCreatedAt } from "@/app/utils/format-created-at";
 import notify from "@/app/utils/toast";
 import ConfirmationModal from "./confirmation-modal";
+import HomeSmile from "@/app/icons/untitled-ui/duocolor/home-smile";
+import Call from "@/app/icons/untitled-ui/duocolor/call";
+import EventAvailable from "@/app/icons/untitled-ui/duocolor/event-available";
 
 export default function AppointmentManagement({
   appointments,
@@ -126,132 +134,180 @@ export default function AppointmentManagement({
       {/* Appointment List */}
       {currentApt.length > 0 ? (
         currentApt.map((appt) => {
+          const icon =
+            appt.type === "house_touring" ? (
+              <HomeSmile color="primary" />
+            ) : (
+              <Call color="primary" />
+            );
+
+          const formattedDate = formatCreatedAt(appt.date);
+          const formattedTime = convertToAmPmFormat(appt.bookedTime.from);
+
+          const statusColor =
+            appt.status === "completed"
+              ? "success"
+              : appt.status === "cancelled"
+              ? "error"
+              : "info";
+
           return (
-            <Paper
+            <Card
               key={appt._id}
+              variant="outlined"
               sx={{
-                p: 2,
+                borderRadius: 3,
+                boxShadow: 2,
                 mb: 2,
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
+                transition: "0.3s ease",
+                "&:hover": { boxShadow: 5, transform: "translateY(-2px)" },
               }}
             >
-              <Typography variant="subtitle1" fontWeight="bold">
-                {appt.type === "house_touring"
-                  ? "House Touring Appointment"
-                  : "Call Appointment"}
-              </Typography>
-              <Typography variant="body2">
-                {formatCreatedAt(appt.date)} at{" "}
-                {convertToAmPmFormat(appt.bookedTime.from)}
-              </Typography>
-              {appt.reschedule?.isRescheduled && (
-                <Typography variant="body2" color="warning.main">
-                  Rescheduled {appt.reschedule.previousDates.length} times
+              <CardContent>
+                <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+                  {icon}
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    {appt.type === "house_touring"
+                      ? "House Touring Appointment"
+                      : "Call Appointment"}
+                  </Typography>
+                  <Chip
+                    label={appt.status.toUpperCase()}
+                    color={statusColor}
+                    size="small"
+                    sx={{ ml: "auto", fontWeight: 600 }}
+                  />
+                </Stack>
+
+                <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                  <SvgIcon sx={{ fontSize: 18, color: "text.secondary" }}>
+                    <EventAvailable />
+                  </SvgIcon>
+
+                  <Typography variant="body2" color="text.secondary">
+                    {formattedDate} at {formattedTime}
+                  </Typography>
+                </Stack>
+
+                {appt.reschedule?.isRescheduled && (
+                  <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                    <SvgIcon sx={{ fontSize: 18, color: "warning.main" }}>
+                      <EventAvailable />
+                    </SvgIcon>
+
+                    <Typography variant="body2" color="warning.main">
+                      Rescheduled {appt.reschedule.previousDates.length} times
+                    </Typography>
+                  </Stack>
+                )}
+
+                <Divider sx={{ my: 1.5 }} />
+
+                {/* Customer Info */}
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Customer Details
                 </Typography>
-              )}
-              <Typography variant="body2" color="text.secondary">
-                Status: {appt.status}
-              </Typography>
-
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="body2" fontWeight="bold">
-                  Customer Detais
-                </Typography>
-                <Typography variant="body2">{`${appt.customer.firstName} ${appt.customer.lastName}`}</Typography>
-                <Typography variant="body2">{appt.customer.email}</Typography>
-                <Typography variant="body2">{appt.customer.phone}</Typography>
-              </Box>
-
-              {/* House Tour Details */}
-              {appt.type === "house_touring" && appt.propertyId && (
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="body2" fontWeight="bold">
-                    Property: {appt.propertyId.propertyTitle}
-                  </Typography>
-                  <Typography variant="body2">
-                    Price: ${appt.propertyId.price.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2">
-                    {appt.propertyId.bedrooms} Beds |{" "}
-                    {appt.propertyId.bathrooms} Baths |{" "}
-                    {appt.propertyId.squareMeters} m²
-                  </Typography>
-                  <Typography variant="body2">
-                    Location: {appt.propertyId.location.addressLine1},{" "}
-                    {appt.propertyId.location.cityName},{" "}
-                    {appt.propertyId.location.stateName},{" "}
-                    {appt.propertyId.location.countryName}
-                  </Typography>
-                </Box>
-              )}
-
-              {/* Call Reason Details */}
-              {appt.type === "call" && appt.callReason && (
                 <Typography variant="body2">
-                  Call Reason: {appt.callReason}
+                  {appt.customer.firstName} {appt.customer.lastName}
                 </Typography>
-              )}
+                <Typography variant="body2" color="text.secondary">
+                  {appt.customer.email}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  {appt.customer.phone}
+                </Typography>
 
-              <Box sx={{ mt: 2 }}>
-                {appt.status !== "completed" && appt.status !== "cancelled" && (
-                  <Button
-                    disabled={updating}
-                    onClick={async () => {
-                      setUpdating(true);
-                      const result = await updateAptStatus(
-                        "completed",
-                        appt._id
-                      );
-
-                      if (result?.error) setMessage(result.error);
-                      if (result?.message) notify(result.message);
-                      setUpdating(false);
-                    }}
-                    sx={{ mr: 1 }}
-                  >
-                    Mark as Completed
-                  </Button>
-                )}
-                {(appt.status === "upcoming" ||
-                  appt.status === "rescheduled") && (
-                  <Button
-                    color="error"
-                    disabled={updating}
-                    onClick={() => {
-                      setSelectedApt(appt);
-                      handleOpen();
-                    }}
-                    sx={{ mr: 1 }}
-                  >
-                    Cancel
-                  </Button>
+                {/* Property Details */}
+                {appt.type === "house_touring" && appt.propertyId && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      Property Details
+                    </Typography>
+                    <Typography variant="body2">
+                      {appt.propertyId.propertyTitle}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Price: ${appt.propertyId.price.toLocaleString()}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {appt.propertyId.bedrooms} Beds •{" "}
+                      {appt.propertyId.bathrooms} Baths •{" "}
+                      {appt.propertyId.squareMeters} m²
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {appt.propertyId.location.addressLine1},{" "}
+                      {appt.propertyId.location.cityName},{" "}
+                      {appt.propertyId.location.stateName},{" "}
+                      {appt.propertyId.location.countryName}
+                    </Typography>
+                  </Box>
                 )}
 
-                {appt.status !== "completed" && appt.status !== "cancelled" && (
-                  <Button
-                    disabled={updating}
-                    color="primary"
-                    onClick={() => {
-                      setType(appt.type);
-                      setOpen(true);
-                      setCustomer(
-                        `${appt.customer.firstName} ${appt.customer.lastName}`
-                      );
-                      setCurrentDate(
-                        `${formatCreatedAt(appt.date)} at ${convertToAmPmFormat(
-                          appt.bookedTime.from
-                        )}`
-                      );
-                      setCurrentAptId(appt._id);
-                    }}
-                  >
-                    Reschedule
-                  </Button>
+                {/* Call Reason */}
+                {appt.type === "call" && appt.callReason && (
+                  <Typography variant="body2" mt={1}>
+                    <strong>Call Reason:</strong> {appt.callReason}
+                  </Typography>
                 )}
-              </Box>
-            </Paper>
+
+                {/* Actions */}
+                <Stack direction="row" spacing={1.5} mt={2}>
+                  {appt.status !== "completed" &&
+                    appt.status !== "cancelled" && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        disabled={updating}
+                        onClick={async () => {
+                          const result = await updateAptStatus(
+                            "completed",
+                            appt._id
+                          );
+                          if (result?.error) setMessage(result.error);
+                          if (result?.message) notify(result.message);
+                        }}
+                      >
+                        Mark as Completed
+                      </Button>
+                    )}
+                  {(appt.status === "upcoming" ||
+                    appt.status === "rescheduled") && (
+                    <Button
+                      color="error"
+                      variant="outlined"
+                      disabled={updating}
+                      onClick={() => {
+                        setSelectedApt(appt);
+                        handleOpen();
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                  {appt.status !== "completed" &&
+                    appt.status !== "cancelled" && (
+                      <Button
+                        color="primary"
+                        variant="outlined"
+                        disabled={updating}
+                        onClick={() => {
+                          setType(appt.type);
+                          setOpen(true);
+                          setCustomer(
+                            `${appt.customer.firstName} ${appt.customer.lastName}`
+                          );
+                          setCurrentDate(
+                            `${formattedDate} at ${formattedTime}`
+                          );
+                          setCurrentAptId(appt._id);
+                        }}
+                      >
+                        Reschedule
+                      </Button>
+                    )}
+                </Stack>
+              </CardContent>
+            </Card>
           );
         })
       ) : (

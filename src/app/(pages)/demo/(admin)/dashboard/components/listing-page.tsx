@@ -21,6 +21,9 @@ import {
   Menu,
   MenuItem,
   Stack,
+  ListItemIcon,
+  ListItemText,
+  SvgIcon,
 } from "@mui/material";
 import ExpendMore from "@/app/icons/untitled-ui/duocolor/expand-more";
 import Link from "next/link";
@@ -34,6 +37,10 @@ import notify from "@/app/utils/toast";
 import EmptyState from "../../../(pages)/components/empty-state";
 import { useUserData } from "@/app/guards/auth-guard";
 import { useRouter } from "nextjs-toploader/app";
+import Edit from "@/app/icons/untitled-ui/duocolor/edit";
+import CheckCircle from "@/app/icons/untitled-ui/duocolor/checked-circle";
+import Play from "@/app/icons/untitled-ui/duocolor/play";
+import Delete from "@/app/icons/untitled-ui/duocolor/delete";
 
 export default function ListingsPage({
   properties,
@@ -181,7 +188,7 @@ export default function ListingsPage({
           >
             <SelectItem value="">All</SelectItem>
             <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Rented">Rented</SelectItem>
             <SelectItem value="Sold">Sold</SelectItem>
             {admin.isBroker && (
               <SelectItem value="yourListings">Your Listings</SelectItem>
@@ -278,27 +285,70 @@ export default function ListingsPage({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        slotProps={{
+          paper: {
+            elevation: 4,
+            sx: {
+              borderRadius: 2,
+              minWidth: 200,
+              mt: 1,
+              "& .MuiMenuItem-root": {
+                px: 2,
+                py: 1.2,
+              },
+            },
+          },
+        }}
       >
-        <MenuItem onClick={handleMenuClose}>
-          {" "}
-          <Link href={`/demo/dashboard/listing/${selectedListing}`}>
-            Edit Listing
-          </Link>
+        {/* Edit Listing */}
+        <MenuItem
+          onClick={handleMenuClose}
+          component={Link}
+          href={`/demo/dashboard/listing/${selectedListing}`}
+        >
+          <ListItemIcon>
+            <SvgIcon fontSize="small" color="primary">
+              <Edit />
+            </SvgIcon>
+          </ListItemIcon>
+          <ListItemText primary="Edit Listing" />
         </MenuItem>
+
+        {/* Mark as Sold / Relist */}
         {selectedListingStatus === "Active" ? (
           <MenuItem onClick={() => handleUpdateProperty("Sold")}>
-            {selectedListingCategory === "For Rent"
-              ? "Mark as rented"
-              : "Mark as sold"}
+            <ListItemIcon>
+              <SvgIcon fontSize="small" color="success">
+                <CheckCircle />
+              </SvgIcon>
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                selectedListingCategory === "For Rent"
+                  ? "Mark as Rented"
+                  : "Mark as Sold"
+              }
+            />
           </MenuItem>
         ) : (
           <MenuItem onClick={() => handleUpdateProperty("Active")}>
-            Relist Property
+            <ListItemIcon>
+              <SvgIcon fontSize="small" color="primary">
+                <Play />
+              </SvgIcon>
+            </ListItemIcon>
+            <ListItemText primary="Relist Property" />
           </MenuItem>
         )}
 
-        <MenuItem sx={{ color: "red" }} onClick={handleDeleteProperty}>
-          Remove Listing
+        {/* Delete Listing */}
+        <MenuItem sx={{ color: "error.main" }} onClick={handleDeleteProperty}>
+          <ListItemIcon>
+            <SvgIcon fontSize="small" color="error">
+              <Delete />
+            </SvgIcon>
+          </ListItemIcon>
+          <ListItemText primary="Remove Listing" />
         </MenuItem>
       </Menu>
     </Box>

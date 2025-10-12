@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     };
 
     if (status && status.trim() !== "") {
-      filter.status = status;
+      if (status !== "yourListings") filter.status = status;
     }
 
     if (searchQuery && searchQuery.trim() !== "") {
