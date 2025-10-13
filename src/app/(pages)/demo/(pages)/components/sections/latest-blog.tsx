@@ -81,7 +81,7 @@ export default function LatestBlogs({
                         color="text.secondary"
                         sx={{ mb: 2 }}
                       >
-                        {truncateWords(blog.shortDescription, 15)}
+                        {truncateWords(blog.shortDescription, 10)}
                       </Typography>
                       <Box mt="auto">
                         <Link
