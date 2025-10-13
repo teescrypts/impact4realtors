@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import EmptyState from "../empty-state";
 import Image from "next/image";
+import truncateWords from "@/app/utils/truncated-words";
 
 export default function LatestBlogs({
   blogs,
@@ -80,7 +81,7 @@ export default function LatestBlogs({
                         color="text.secondary"
                         sx={{ mb: 2 }}
                       >
-                        {blog.shortDescription}
+                        {truncateWords(blog.shortDescription, 15)}
                       </Typography>
                       <Box mt="auto">
                         <Link
