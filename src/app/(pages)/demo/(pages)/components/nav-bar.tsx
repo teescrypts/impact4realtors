@@ -17,6 +17,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -88,12 +89,14 @@ function Navbar() {
         <Container>
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
             <Link href={adminId ? `/demo?admin=${adminId}` : `/demo`}>
-              <Typography
-                variant="h5"
-                sx={{ fontWeight: "bold", color: textColor }}
-              >
-                RealtorDemo
-              </Typography>
+              <Image
+                src="/images/demo-logo.png"
+                alt="RealtorDemo Logo"
+                width={200}
+                height={80}
+                style={{ cursor: "pointer", objectFit: "contain" }}
+                priority
+              />
             </Link>
 
             {!isMobile ? (

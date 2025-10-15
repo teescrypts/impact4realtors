@@ -20,6 +20,7 @@ import Link from "next/link";
 import Menu from "@/app/icons/untitled-ui/duocolor/menu";
 import { usePathname } from "next/navigation";
 import { ToastContainer, Zoom } from "react-toastify";
+import Image from "next/image";
 
 export default function MainAppBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -106,18 +107,16 @@ export default function MainAppBar() {
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
             {/* Logo */}
-            <Typography
-              variant="h6"
-              component={Link}
-              href={adminId ? `/demo/broker?admin=${adminId}` : `/demo/broker`}
-              sx={{
-                textDecoration: "none",
-                fontWeight: 600,
-                fontSize: "1.4rem",
-              }}
-            >
-              RealtyDemo
-            </Typography>
+            <Link href={adminId ? `/demo?admin=${adminId}` : `/demo`}>
+              <Image
+                src="/images/demo-logo.png"
+                alt="RealtorDemo Logo"
+                width={200}
+                height={80}
+                style={{ cursor: "pointer", objectFit: "contain" }}
+                priority
+              />
+            </Link>
 
             {/* Desktop Nav */}
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
