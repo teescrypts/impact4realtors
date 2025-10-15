@@ -6,7 +6,6 @@ import {
   AppBar,
   Container,
   Toolbar,
-  Typography,
   Box,
   Button,
   MenuItem,

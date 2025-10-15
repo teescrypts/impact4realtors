@@ -6,7 +6,6 @@ import {
   Container,
   IconButton,
   Toolbar,
-  Typography,
   Button,
   Drawer,
   List,
