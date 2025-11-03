@@ -4,6 +4,9 @@ import Appointment from "@/app/model/appointment";
 import Lead, { LeadType, LeadStatus } from "@/app/model/lead";
 import Notification from "@/app/model/notification";
 import getAdmin from "@/app/utils/get-admin";
+import Admin from "@/app/model/admin";
+import { DateTime } from "luxon";
+import { createGoogleEvent } from "@/app/lib/google/create-google-event";
 
 // Define TypeScript Interfaces for Request Data
 interface AppointmentRequestBody {
@@ -46,13 +49,14 @@ export async function POST(req: NextRequest) {
 
     const agent = body?.agent;
 
-    // Check if the selected time slot is already booked
+    // Check if selected time slot is already booked
     const existingAppointment = await Appointment.findOne({
       admin,
       ...(agent && { agent }),
       date: body.date,
       "bookedTime.from": body.bookedTime.from,
       "bookedTime.to": body.bookedTime.to,
+      status: { $nin: ["completed", "cancelled"] },
     });
 
     if (existingAppointment)
@@ -62,21 +66,52 @@ export async function POST(req: NextRequest) {
         409
       );
 
-    // Convert appointment type to lead type
     const leadType = getLeadType(body.type, body.callReason);
     if (!leadType) return apiResponse("Invalid appointment type", null, 400);
 
-    // Create appointment
+    // ✅ Create appointment
     const appointment = new Appointment({ admin, ...body });
+
+    const adminObj = await Admin.findById(agent ? agent : admin)
+      .select("google")
+      .lean();
+
+    if (!adminObj) return apiResponse("Admin Required", null, 401);
+
+    // ✅ If Google calendar is connected, create event
+    if (adminObj.google?.accessToken) {
+      const eventStart = DateTime.fromISO(
+        `${body.date}T${body.bookedTime.from}`,
+        { zone: "America/New_York" }
+      );
+      const eventEnd = DateTime.fromISO(`${body.date}T${body.bookedTime.to}`, {
+        zone: "America/New_York",
+      });
+
+      const googleEvent = await createGoogleEvent(admin, {
+        summary: `${body.type === "call" ? "Call" : "House Tour"} with ${
+          body.customer.firstName
+        } ${body.customer.lastName}`,
+        description: `Customer: ${body.customer.firstName} ${body.customer.lastName}\nPhone: ${body.customer.phone}\nEmail: ${body.customer.email}`,
+        start: eventStart,
+        end: eventEnd,
+        attendeeEmail: body.customer.email,
+      });
+
+      // ✅ Save Google event ID if created successfully
+      if (googleEvent?.id) {
+        appointment.googleEventId = googleEvent.id;
+      }
+    }
+
     await appointment.save();
 
-    // Create lead entry
-
+    // ✅ Create lead
     const newLead = new Lead({
       admin,
       ...(agent && { agent }),
       type: leadType,
-      status: LeadStatus[leadType][0], // Assign first status dynamically
+      status: LeadStatus[leadType][0],
       firstName: body.customer.firstName,
       lastName: body.customer.lastName,
       email: body.customer.email,
@@ -86,6 +121,7 @@ export async function POST(req: NextRequest) {
 
     await newLead.save();
 
+    // ✅ Create notification
     const notification = new Notification({
       admin,
       ...(agent && { agent }),

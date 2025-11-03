@@ -23,6 +23,9 @@ const AuthContext = createContext<{
   agent: { isAgent: boolean; admin: string };
   unreadNotifictaionsCount: number;
   setUreadNotifictaionsCount: Dispatch<SetStateAction<number>>;
+  google: {
+    calendarSyncEnabled: boolean;
+  };
 } | null>(null);
 
 export const AuthGuard = ({ children }: { children: ReactNode }) => {
@@ -33,6 +36,9 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
     lname: string;
     isBroker: boolean;
     agent: { isAgent: boolean; admin: string };
+    google: {
+      calendarSyncEnabled: boolean;
+    };
   } | null>(null);
   const [unreadNotifictaionsCount, setUreadNotifictaionsCount] = useState(0);
 
@@ -52,6 +58,9 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
           id: user._id,
           isBroker: user.isBroker,
           agent: user.agent,
+          google: {
+            calendarSyncEnabled: user.google.calendarSyncEnabled,
+          },
         });
 
         if (result.unreadNotifictaionsCount > 0) {
@@ -86,6 +95,7 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
           agent: admin.agent,
           unreadNotifictaionsCount,
           setUreadNotifictaionsCount,
+          google: admin.google,
         }}
       >
         {children}

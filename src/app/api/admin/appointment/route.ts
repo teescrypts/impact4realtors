@@ -21,6 +21,7 @@ type AppointmentEvent = {
 };
 
 export async function GET(req: NextRequest) {
+  console.log("here-----------------------------------")
   const authResponse = await authMiddleware(req);
   if (authResponse instanceof NextResponse) return authResponse;
 

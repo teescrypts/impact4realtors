@@ -77,7 +77,7 @@ export async function demoLogin(
     const response = await apiRequest<
       {
         message: string;
-        data: { token: string };
+        data: { token: string; isBroker: boolean };
       },
       { email: string; type: string }
     >("public/sign-up", {
@@ -128,6 +128,9 @@ export async function authenticateAgent() {
             email: string;
             isBroker: boolean;
             agent: { isAgent: boolean; admin: string };
+            google: {
+              calendarSyncEnabled: boolean;
+            };
           };
           unreadNotifictaionsCount: number;
         } | null;
@@ -172,6 +175,9 @@ export async function authenticate() {
             email: string;
             isBroker: boolean;
             agent: { isAgent: boolean };
+            google: {
+              calendarSyncEnabled: boolean;
+            };
           };
           unreadNotifictaionsCount: number;
         } | null;
@@ -711,24 +717,36 @@ export async function deleteBlog(id: string) {
 
 export async function fetchAvailabilty(
   type: string,
+  startDate: string | undefined,
   adminId?: string,
   agent?: string
 ) {
   const url = agent
-    ? `public/booking/availability?type=${type}&adminId=${adminId}&agent=${agent}`
-    : `public/booking/availability?type=${type}&adminId=${adminId}`;
+    ? `public/booking/availability?type=${type}&adminId=${adminId}&agent=${agent}&startDate=${
+        startDate ? startDate : undefined
+      }`
+    : `public/booking/availability?type=${type}&adminId=${adminId}&startDate=${
+        startDate ? startDate : undefined
+      }`;
 
   try {
     const response = await apiRequest<{
       message: string;
-      data: { availability: Availability[] };
+      data: {
+        availability: Availability[];
+        timeZone: string;
+        nextStartDate: string;
+      };
     }>(url, {
       tag: "FetchPublicAvailability",
     });
 
     if (response.message === "Success") {
       const availability = response.data.availability;
-      return { availability };
+      const timeZone = response.data.timeZone;
+      const nextStartDate = response.data.nextStartDate;
+
+      return { availability, timeZone, nextStartDate };
     } else {
       return { message: response.message };
     }
@@ -859,20 +877,35 @@ export async function fetchMoreAppointments(
   }
 }
 
-export async function fetchAdminAvailableDates(type: string) {
+export async function fetchAdminAvailableDates(
+  type: string,
+  nextStartDate?: string
+) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
   const token = tokenObj?.value;
 
+  const url = nextStartDate
+    ? `admin/availability?type=${type}&startDate=${nextStartDate}`
+    : `admin/availability?type=${type}`;
+
   try {
     const response = await apiRequest<{
-      data: { availability: { date: string; slots: string[] }[] };
-    }>(`admin/availability?type=${type}`, {
+      data: {
+        availability: Availability[];
+        timeZone: string;
+        nextStartDate: string;
+      };
+    }>(url, {
       token,
       tag: "fetchAdminAvailability",
     });
 
-    return { data: response.data.availability };
+    const availability = response.data.availability;
+    const timeZone = response.data.timeZone;
+    const nextStartDate = response.data.nextStartDate;
+
+    return { data: { availability, timeZone, nextStartDate } };
   } catch (e) {
     if (e instanceof Error) {
       return { error: e.message };
@@ -1306,6 +1339,37 @@ export async function acceptSellerReq(id: string) {
 
     revalidateTag("fetchAdminConnect");
     return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function syncCalendar(origin?: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{
+      message: string;
+      data: {
+        redirected: boolean;
+        url: string;
+      };
+    }>(`admin/google?origin=${encodeURIComponent(origin || "")}`, {
+      method: "GET",
+      token,
+    });
+
+    if (response.data.redirected) {
+      return { url: response.data.url };
+    } else {
+      return { error: response.message };
+    }
   } catch (e) {
     if (e instanceof Error) {
       return { error: e.message };

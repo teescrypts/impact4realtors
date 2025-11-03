@@ -17,7 +17,7 @@ const getAdmin = async (req: NextRequest) => {
       email: "admin@realtyillustrations.live",
     }).select("_id");
 
-    admin = defaultAdmin?._id || null;
+    admin = (defaultAdmin?._id as string) || null;
     return admin;
   }
 };

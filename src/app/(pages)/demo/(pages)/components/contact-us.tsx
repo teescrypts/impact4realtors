@@ -4,13 +4,8 @@ import {
   bookAppointment,
   fetchAvailabilty,
 } from "@/app/actions/server-actions";
-import { Scrollbar } from "@/app/component/scrollbar";
 import { SubmitButton } from "@/app/component/submit-buttton";
-import ChevronLeft from "@/app/icons/untitled-ui/duocolor/chevron-left";
-import ChevronRight from "@/app/icons/untitled-ui/duocolor/chevron-right";
 import addDurationToTime from "@/app/utils/add-duration-to-time";
-import { convertTo12HourFormat } from "@/app/utils/convert-to-12hrs-format";
-import notify from "@/app/utils/toast";
 import { ActionStateType, AppointmentData } from "@/types";
 import {
   Box,
@@ -20,26 +15,21 @@ import {
   TextField,
   Typography,
   Avatar,
-  CircularProgress,
   Stack,
-  Card,
-  CardContent,
-  Chip,
   IconButton,
   useTheme,
   FormControlLabel,
   Checkbox,
+  alpha,
+  Divider,
 } from "@mui/material";
-import { format, parseISO } from "date-fns";
+import { format, parse } from "date-fns";
 import { motion } from "framer-motion";
-import {
-  useActionState,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import SimpleBarCore from "simplebar-core";
+import { useActionState, useCallback, useEffect, useState } from "react";
+import ScheduleDialogUI from "./sell-date-time";
+import { DateTime } from "luxon";
+import Edit from "@/app/icons/untitled-ui/duocolor/edit";
+import AppointmentSuccessModal from "./apt-confirm";
 
 export interface Availability {
   date: string;
@@ -61,90 +51,14 @@ export default function ContactUs({
   adminId?: string;
 }) {
   const [dates, setDates] = useState<DateItem[]>([]);
-  const [selectedDate, setSelectedDate] = useState<DateItem | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [isProgrammaticScroll, setIsProgrammaticScroll] =
-    useState<boolean>(false);
   const [message, setMessage] = useState("");
+  const [open, setOpen] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sendUpdates, setSendUpdates] = useState(false);
-
-  const scrollbarRef = useRef<SimpleBarCore | null>(null);
-
-  const handleDateClick = (date: DateItem) => {
-    if (date.slots.length > 0) {
-      setSelectedDate(date);
-      setSelectedSlot("");
-    }
-  };
-
-  const handleScrollLeft = () => {
-    if (currentIndex > 0) {
-      setIsProgrammaticScroll(true);
-      setCurrentIndex((prev) => prev - 1);
-    }
-  };
-
-  const handleScrollRight = () => {
-    if (currentIndex < dates.length - 1) {
-      setIsProgrammaticScroll(true);
-      setCurrentIndex((prev) => prev + 1);
-    }
-  };
-
-  useEffect(() => {
-    // Programmatically scroll to the correct position when currentIndex changes
-    if (scrollbarRef.current && isProgrammaticScroll) {
-      const scrollbarElement = scrollbarRef.current.getScrollElement();
-
-      if (scrollbarElement) {
-        const itemWidth = scrollbarElement.scrollWidth / dates.length;
-        scrollbarElement.scrollTo({
-          left: currentIndex * itemWidth,
-          behavior: "smooth",
-        });
-      }
-
-      // Reset the flag after the programmatic scroll
-      const timer = setTimeout(() => setIsProgrammaticScroll(false), 300); // Allow smooth scroll to complete
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex, dates.length, isProgrammaticScroll]);
-
-  useEffect(() => {
-    // Update currentIndex based on manual scrolling/swiping
-    const handleScroll = () => {
-      if (isProgrammaticScroll) return; // Skip manual scroll updates during programmatic scroll
-
-      if (scrollbarRef.current) {
-        const scrollbarElement = scrollbarRef.current.getScrollElement();
-
-        let newIndex;
-        if (scrollbarElement) {
-          const itemWidth = scrollbarElement.scrollWidth / dates.length;
-          newIndex = Math.round(scrollbarElement.scrollLeft / itemWidth);
-        }
-
-        if (newIndex && newIndex !== currentIndex) {
-          setCurrentIndex(newIndex);
-        }
-      }
-    };
-
-    const scrollbarElement = scrollbarRef.current?.getScrollElement();
-    scrollbarElement?.addEventListener("scroll", handleScroll);
-
-    return () => {
-      scrollbarElement?.removeEventListener("scroll", handleScroll);
-    };
-  }, [currentIndex, dates.length, isProgrammaticScroll]);
-
-  const [visibleSlots, setVisibleSlots] = useState(10);
-
-  const handleShowMore = () => {
-    setVisibleSlots((prev) => prev + 10);
-  };
+  const [nextStartDate, setNextStartDate] = useState<string | undefined>();
+  const [fullZoneName, setFullZoneName] = useState<string | null>(null);
+  const [offset, setOffset] = useState("");
 
   const [aptData, setAptData] = useState<AppointmentData>({
     type: "call",
@@ -156,16 +70,18 @@ export default function ContactUs({
     callReason: reason === "general" ? "general_enquiry" : "mortgage_enquiry",
   });
 
-  useEffect(() => {
+  const handleUpdateDate = (selectedDate: DateItem) => {
     if (selectedDate) {
       setAptData((prev) => {
         return {
           ...prev,
-          date: selectedDate?.date,
+          date: selectedDate.date,
         };
       });
     }
+  };
 
+  const handleUpdateTime = (selectedSlot: string) => {
     if (selectedSlot) {
       setAptData((prev) => {
         return {
@@ -177,16 +93,73 @@ export default function ContactUs({
         };
       });
     }
-  }, [selectedDate, selectedSlot]);
+  };
+
+  const handleClose = () => setOpen(false);
+
+  const [openCofirm, setOpennConnfirm] = useState(false);
+  const handleOpenConfirm = () => setOpennConnfirm(true);
+  const handleCloseConfirm = () => setOpennConnfirm(false);
+
+  const handleLoadMore = useCallback(async () => {
+    setLoadingMore(true);
+    const result = await fetchAvailabilty("tour", nextStartDate, adminId);
+
+    if (result.availability) {
+      const dates = result.availability;
+      const nextDate = result.nextStartDate;
+
+      setDates((prev) => {
+        if (prev) {
+          return [...prev, ...dates!];
+        } else {
+          return [];
+        }
+      });
+      setNextStartDate(nextDate);
+      setLoadingMore(false);
+    }
+
+    if (result.error) {
+      setMessage(result.error);
+      setLoadingMore(false);
+    }
+
+    if (result.message) {
+      setMessage(result.message);
+      setLoadingMore(false);
+    }
+  }, [nextStartDate, adminId]);
 
   const handleContinue = useCallback(async () => {
     if (!sendUpdates) return alert("Kindly check the box to move forward.");
     setLoading(true);
-    const result = await fetchAvailabilty("call", adminId);
-    if (result.availability) setDates(result.availability);
-    if (result.error) setMessage(result.error);
-    if (result.message) setMessage(result.message);
-    setLoading(false);
+
+    const result = await fetchAvailabilty("call", undefined, adminId);
+
+    if (result.availability) {
+      const dates = result.availability;
+      const timeZone = result.timeZone;
+      const nextDate = result.nextStartDate;
+
+      const now = DateTime.now().setZone(timeZone);
+      setFullZoneName(now.offsetNameLong);
+      setOffset(now.toFormat("ZZZZ"));
+      setDates(dates);
+      setNextStartDate(nextDate);
+      setLoading(false);
+      setOpen(true);
+    }
+
+    if (result.error) {
+      setMessage(result.error);
+      setLoading(false);
+    }
+
+    if (result.message) {
+      setMessage(result.message);
+      setLoading(false);
+    }
   }, [sendUpdates, adminId]);
 
   const bookAppointmentWithData = bookAppointment.bind(null, adminId, aptData);
@@ -199,15 +172,15 @@ export default function ContactUs({
     if (state) {
       if (state?.error) setMessage(state.error);
       if (state?.message) {
-        notify(state.message);
+        handleOpenConfirm();
         setDates([]);
-        setSelectedSlot("");
-        setSelectedDate(null);
       }
     }
   }, [state]);
 
   const theme = useTheme();
+  // theme colors for consistent look
+  const primary = theme.palette.primary.main;
 
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
@@ -217,7 +190,7 @@ export default function ContactUs({
         transition={{ duration: 0.8 }}
       >
         <Grid2 container spacing={4} alignItems="center">
-          <Grid2 size={{ xs: 12, md: 5 }}>
+          <Grid2 size={{ xs: 12, md: 5 }} sx={{ mt: 10 }}>
             <Avatar
               src="/images/agent.jpeg"
               sx={{ width: 200, height: 200, mb: 2 }}
@@ -232,7 +205,7 @@ export default function ContactUs({
               the form below.
             </Typography>
           </Grid2>
-          <Grid2 size={{ xs: 12, md: 7 }}>
+          <Grid2 size={{ xs: 12, md: 7 }} sx={{ mt: 5 }}>
             <form action={formAction}>
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
@@ -295,203 +268,119 @@ export default function ContactUs({
                       </Typography>
                     }
                   />
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
 
-                  {loading && (
-                    <Stack alignItems={"center"}>
-                      <CircularProgress />
-                      <Typography variant="body2" textAlign={"center"}>
-                        Loading Available Dates...
-                      </Typography>
+                  {!aptData.date && !aptData.bookedTime.from && (
+                    <Stack direction="row" gap={2} justifyContent="flex-end">
+                      <Button
+                        variant="contained"
+                        disabled={loading}
+                        sx={{
+                          px: 4,
+                          background: primary,
+                          color: theme.palette.getContrastText(primary),
+                          "&:hover": { background: theme.palette.primary.dark },
+                          boxShadow: `0 10px 30px ${alpha(primary, 0.14)}`,
+                        }}
+                        onClick={handleContinue}
+                      >
+                        Continue
+                      </Button>
                     </Stack>
                   )}
 
-                  {dates.length > 0 && (
-                    <Grid2 container spacing={3} justifyContent="center" mb={4}>
-                      <Box sx={{ p: 2 }}>
-                        {dates[currentIndex] && (
-                          <div>
-                            <Typography
-                              variant="h3"
-                              align="center"
-                              sx={{ my: 2 }}
-                            >
-                              Select Date
-                            </Typography>
-                            <Typography variant="h5" align="center">
-                              {`${format(
-                                parseISO(dates[currentIndex].date),
-                                "MMMM yyyy"
-                              )}`}
-                            </Typography>
-                          </div>
-                        )}
-                      </Box>
+                  <ScheduleDialogUI
+                    open={open}
+                    onContinue={handleClose}
+                    onClose={() => {
+                      setAptData({
+                        type: "call",
+                        date: undefined,
+                        bookedTime: {
+                          to: undefined,
+                          from: undefined,
+                        },
+                        callReason:
+                          reason === "general"
+                            ? "general_enquiry"
+                            : "mortgage_enquiry",
+                      });
+                      handleClose();
+                    }}
+                    dates={dates}
+                    message={message}
+                    onTimeClicked={handleUpdateTime}
+                    onDateClicked={handleUpdateDate}
+                    onLoadMore={handleLoadMore}
+                    loadingMore={loadingMore}
+                    fullZoneName={fullZoneName}
+                    offset={offset}
+                  />
 
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          overflow: "hidden",
-                        }}
+                  {aptData.date && aptData.bookedTime.from && (
+                    <Box
+                      sx={{
+                        p: 2,
+                      }}
+                    >
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        mb={1}
                       >
-                        <IconButton
-                          onClick={handleScrollLeft}
-                          disabled={currentIndex === 0}
-                        >
-                          <ChevronLeft />
+                        <Typography variant="h6" fontWeight={600}>
+                          Appointment Details
+                        </Typography>
+                        <IconButton onClick={handleContinue} color="primary">
+                          <Edit />
                         </IconButton>
+                      </Stack>
 
-                        <Scrollbar
-                          ref={scrollbarRef}
-                          style={{ width: "100%", overflowX: "auto" }}
-                        >
-                          <Grid2 container wrap="nowrap" spacing={2}>
-                            {dates.map((date) => (
-                              <Grid2
-                                key={date.date}
-                                sx={{
-                                  flex: "0 0 auto",
-                                  textAlign: "center",
-                                }}
-                              >
-                                <motion.div
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                >
-                                  <Card
-                                    sx={{
-                                      minWidth: 80,
-                                      cursor:
-                                        date.slots.length > 0
-                                          ? "pointer"
-                                          : "not-allowed",
-                                      backgroundColor:
-                                        date?.slots.length > 0
-                                          ? selectedDate?.date === date.date
-                                            ? theme.palette.success.main
-                                            : theme.palette.primary.alpha50
-                                          : theme.palette.error.alpha50,
-                                      transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => handleDateClick(date)}
-                                  >
-                                    <CardContent>
-                                      <Box>
-                                        <Typography
-                                          color={
-                                            date.slots.length === 0
-                                              ? "error"
-                                              : ""
-                                          }
-                                          variant="subtitle1"
-                                        >
-                                          {format(parseISO(date.date), "d")}
-                                        </Typography>
-                                        <Typography
-                                          color={
-                                            date.slots.length === 0
-                                              ? "error"
-                                              : ""
-                                          }
-                                          variant="subtitle2"
-                                        >
-                                          {format(parseISO(date.date), "EEE")}
-                                        </Typography>
-                                      </Box>
-                                    </CardContent>
-                                  </Card>
-                                </motion.div>
-                              </Grid2>
-                            ))}
-                          </Grid2>
-                        </Scrollbar>
+                      <Divider sx={{ mb: 2 }} />
 
-                        <IconButton
-                          onClick={handleScrollRight}
-                          disabled={currentIndex === dates.length - 1}
-                        >
-                          <ChevronRight />
-                        </IconButton>
+                      <Stack spacing={1}>
+                        <Typography variant="body1">
+                          <strong>Booked Date:</strong>{" "}
+                          {format(new Date(aptData.date), "EEEE, MMMM d, yyyy")}
+                        </Typography>
+                        <Typography variant="body1">
+                          <strong>Booked Time:</strong>{" "}
+                          {format(
+                            parse(aptData.bookedTime.from, "HH:mm", new Date()),
+                            "h:mm a"
+                          )}
+                        </Typography>
+                      </Stack>
+
+                      <Box mt={3}>
+                        <SubmitButton title="Book Call" isFullWidth={true} />
                       </Box>
-                    </Grid2>
-                  )}
-
-                  {selectedDate && (
-                    <Box textAlign="center">
-                      <Typography variant="h6" gutterBottom sx={{ my: 4 }}>
-                        Time slots for{" "}
-                        {format(parseISO(selectedDate.date), "PPPP")}:
-                      </Typography>
-
-                      <Grid2 container spacing={2} justifyContent="center">
-                        {selectedDate.slots.length > 0 ? (
-                          selectedDate.slots
-                            .slice(0, visibleSlots)
-                            .map((slot, index) => (
-                              <Grid2
-                                key={index}
-                                size={{ xs: 6, sm: 4, md: 4 }}
-                                display="flex"
-                                justifyContent="center"
-                              >
-                                <Chip
-                                  label={convertTo12HourFormat(slot)}
-                                  onClick={() => setSelectedSlot(slot)}
-                                  sx={{
-                                    px: 2,
-                                    py: 1,
-                                    borderRadius: "20px",
-                                    cursor: "pointer",
-                                    background:
-                                      slot === selectedSlot
-                                        ? theme.palette.success.main
-                                        : "",
-                                    transition: "all 0.3s ease",
-                                  }}
-                                />
-                              </Grid2>
-                            ))
-                        ) : (
-                          <Typography>No slots available.</Typography>
-                        )}
-                      </Grid2>
-
-                      {/* Show More Button */}
-                      {visibleSlots < selectedDate.slots.length && (
-                        <Button onClick={handleShowMore}>Show More</Button>
-                      )}
                     </Box>
                   )}
-
-                  {message && (
-                    <Typography
-                      color="error"
-                      textAlign={"center"}
-                      variant="subtitle2"
-                    >
-                      {message}
-                    </Typography>
-                  )}
-
-                  <Box
-                    display={selectedDate && selectedSlot ? "block" : "none"}
-                  >
-                    <SubmitButton title="Book Call" isFullWidth={true} />
-                  </Box>
                 </Box>
               </motion.div>
             </form>
           </Grid2>
         </Grid2>
       </motion.div>
+
+      <AppointmentSuccessModal
+        open={openCofirm}
+        onClose={() => {
+          setAptData({
+            type: "call",
+            date: undefined,
+            bookedTime: {
+              to: undefined,
+              from: undefined,
+            },
+            callReason: "selling",
+          });
+          setSendUpdates(false);
+          handleCloseConfirm();
+        }}
+        aptData={aptData}
+      />
     </Container>
   );
 }

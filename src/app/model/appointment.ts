@@ -26,20 +26,21 @@ interface ICustomer {
 export interface IAppointment extends Document {
   admin: { type: Schema.Types.ObjectId; required: true; ref: "Admin" };
   agent: { type: Schema.Types.ObjectId; ref: "Admin" };
-  type: (typeof APPOINTMENT_TYPES)[number]; // "call" or "house_touring"
-  status: (typeof APPOINTMENT_STATUS)[number]; // "upcoming", "completed", "cancelled"
+  type: (typeof APPOINTMENT_TYPES)[number];
+  status: (typeof APPOINTMENT_STATUS)[number];
   date: string;
   bookedTime: { from: string; to: string };
   customer: ICustomer;
-  propertyId?: mongoose.Types.ObjectId; // Optional for calls
-  houseTouringType?: (typeof HOUSE_TOURING_TYPES)[number]; // "for_sale" or "for_rent"
-  callReason?: (typeof CALL_REASONS)[number]; // "selling", "mortgage_enquiry", "general_enquiry"
-  propertyTypeToSell?: string; // Only for selling calls
+  propertyId?: mongoose.Types.ObjectId;
+  houseTouringType?: (typeof HOUSE_TOURING_TYPES)[number];
+  callReason?: (typeof CALL_REASONS)[number];
+  propertyTypeToSell?: string;
   datetime?: Date;
   reschedule: {
     isRescheduled: boolean;
     previousDates: [{ date: string; bookedTime: { from: string; to: string } }];
   };
+  googleEventId?: string; // ✅ Added — store Google Calendar event ID
 }
 
 // Define Schema
@@ -62,14 +63,8 @@ const appointmentSchema = new Schema<IAppointment>(
       required: true,
     },
     bookedTime: {
-      from: {
-        type: String,
-        required: true,
-      },
-      to: {
-        type: String,
-        required: true,
-      },
+      from: { type: String, required: true },
+      to: { type: String, required: true },
     },
     customer: {
       firstName: { type: String, required: true, trim: true },
@@ -107,24 +102,21 @@ const appointmentSchema = new Schema<IAppointment>(
     },
     datetime: { type: Date, index: true },
     reschedule: {
-      isRescheduled: {
-        type: Boolean,
-        required: true,
-        default: false,
-      },
+      isRescheduled: { type: Boolean, required: true, default: false },
       previousDates: [
         {
           date: String,
           bookedTime: {
-            from: {
-              type: String,
-            },
-            to: {
-              type: String,
-            },
+            from: { type: String },
+            to: { type: String },
           },
         },
       ],
+    },
+    googleEventId: {
+      type: String,
+      trim: true,
+      default: null, // ✅ Optional for backward compatibility
     },
   },
   { timestamps: true }

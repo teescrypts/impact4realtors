@@ -20,6 +20,11 @@ import { AppointmentResponse } from "@/types";
 import { useRouter } from "nextjs-toploader/app";
 import Calendar from "./calendar";
 import AppointmentManagement from "./appointment-mgt";
+import { syncCalendar } from "@/app/actions/server-actions";
+import { useUserData } from "@/app/guards/agent-guard";
+import { useState } from "react";
+import CheckCircle from "@/app/icons/untitled-ui/duocolor/checked-circle";
+import Google from "@/app/icons/untitled-ui/duocolor/google";
 
 type Status = "upcoming" | "completed" | "cancelled" | "rescheduled";
 
@@ -52,6 +57,8 @@ export default function AppointmentView({
   view: "calendar" | "list";
 }) {
   const router = useRouter();
+  const [syncing, setSyncing] = useState(false);
+  const [message, setMessage] = useState("");
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -69,6 +76,24 @@ export default function AppointmentView({
     }
   };
 
+  const handleGoogleConnect = async () => {
+    setSyncing(true);
+
+    const origin = window.location.origin; // 👈 get current site domain (e.g. realtyillustration.live)
+    const result = await syncCalendar(origin);
+
+    if (result.url) {
+      window.location.href = result.url;
+    }
+
+    if (result.error) {
+      setMessage(result.error);
+    }
+  };
+
+  const user = useUserData();
+  const isSynced = user.google.calendarSyncEnabled;
+
   return (
     <Box
       component="main"
@@ -79,23 +104,30 @@ export default function AppointmentView({
     >
       <Container maxWidth="xl">
         <Stack spacing={2}>
+          {message && (
+            <Typography textAlign={"center"} color="error" variant="subtitle2">
+              {message}
+            </Typography>
+          )}
           <Stack
             direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
             alignItems={{ xs: "flex-start", sm: "center" }}
             spacing={2}
+            sx={{ mb: 3 }}
           >
-            <Typography variant="h4">Appointment</Typography>
+            <Typography variant="h4" fontWeight="bold">
+              Appointment
+            </Typography>
 
             <Stack
               direction="row"
-              spacing={1}
+              spacing={1.5}
               alignItems="center"
               flexWrap="wrap"
             >
               {/* View Toggle */}
               {isSmallScreen ? (
-                // Icon-only version for mobile
                 <ToggleButtonGroup
                   value={view}
                   exclusive
@@ -115,7 +147,6 @@ export default function AppointmentView({
                   </Tooltip>
                 </ToggleButtonGroup>
               ) : (
-                // Full label version for larger screens
                 <ToggleButtonGroup
                   value={view}
                   exclusive
@@ -143,8 +174,40 @@ export default function AppointmentView({
                 </ToggleButtonGroup>
               )}
 
-              {/* Availability Button */}
+              {/* Google Calendar Sync Button */}
+              <Tooltip
+                title={
+                  isSynced
+                    ? "Google Calendar Synced"
+                    : "Sync with Google Calendar"
+                }
+              >
+                <Button
+                  variant={isSynced ? "contained" : "outlined"}
+                  color={isSynced ? "success" : "inherit"}
+                  onClick={handleGoogleConnect}
+                  size={isSmallScreen ? "small" : "medium"}
+                  disabled={syncing}
+                >
+                  {isSynced ? (
+                    <>
+                      <CheckCircle />
+                      {!isSmallScreen && (
+                        <Typography sx={{ ml: 1 }}>Synced</Typography>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Google width="20px" height="20px" />
+                      {!isSmallScreen && (
+                        <Typography sx={{ ml: 1 }}>Sync</Typography>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </Tooltip>
 
+              {/* Availability Button */}
               <Link
                 href="/demo/agent/dashboard/appointment/availability"
                 passHref

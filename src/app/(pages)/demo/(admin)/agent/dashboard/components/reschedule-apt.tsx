@@ -92,7 +92,7 @@ const RescheduleAppointmentModal: React.FC<RescheduleModalProps> = ({
     const result = await fetchAdminAvailableDates(type);
 
     if (result.data) {
-      setDates(result.data);
+      setDates(result.data.availability);
       setLoading(false);
     }
 

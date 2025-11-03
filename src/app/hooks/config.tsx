@@ -39,7 +39,7 @@ export const useSections = (): MenuSection[] => {
         ),
       },
       {
-        title: "Lead",
+        title: "Leads",
         value: "lead",
         path: paths.lead,
         icon: (
@@ -49,7 +49,7 @@ export const useSections = (): MenuSection[] => {
         ),
       },
       {
-        title: "Appointment",
+        title: "Appointments",
         value: "appointment",
         path: paths.appointment,
         icon: (
@@ -59,7 +59,7 @@ export const useSections = (): MenuSection[] => {
         ),
       },
       {
-        title: "Listing",
+        title: "Listings",
         value: "listing",
         path: paths.listing,
         icon: (
@@ -69,7 +69,7 @@ export const useSections = (): MenuSection[] => {
         ),
       },
       {
-        title: "Blog",
+        title: "Blogs",
         value: "blog",
         path: paths.blog,
         icon: (
@@ -106,7 +106,7 @@ export const useSections = (): MenuSection[] => {
           ),
         },
         {
-          title: "Agent",
+          title: "Agents",
           value: "agent",
           path: paths.agent,
           icon: (

@@ -86,7 +86,7 @@ export interface HomepageResponse {
   forRent: propertyType[];
   forSale: propertyType[];
   publishedBlogs: BlogPostResponse[];
-  agents: AgentType[]
+  agents: AgentType[];
 }
 
 export interface Availability {
@@ -222,3 +222,24 @@ export interface AgentReq {
   password: string;
   formId: string;
 }
+
+// app/component/schedule/types.ts
+
+export type DateItem = {
+  date: string;
+  slots: string[];
+};
+
+export type ScheduleDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  dates: DateItem[];
+  message?: string;
+  onDateClicked: (date: DateItem) => void;
+  onTimeClicked: (slot: string) => void;
+  onContinue: () => void;
+  onLoadMore: () => void;
+  loadingMore: boolean;
+  fullZoneName: string | null;
+  offset: string;
+};

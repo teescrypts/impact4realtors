@@ -7,16 +7,18 @@ export async function POST(request: Request) {
     await connectToDB();
     const body = await request.json();
 
+    const isBroker = body.type === "broker";
+
     const admin = new Admin({
       email: body.email,
       password: "realtyillustrations.live.98",
-      isBroker: body.type === "broker",
+      isBroker,
     });
 
     await admin.save();
     const token = await admin.generateAuthToken();
 
-    return apiResponse("success", { token });
+    return apiResponse("success", { token, isBroker: body.type === "broker" });
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",

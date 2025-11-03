@@ -15,6 +15,12 @@ export interface IAdmin extends Document {
     isAgent: boolean;
     admin?: Types.ObjectId;
   };
+  google: {
+    accessToken: string;
+    refreshToken: string;
+    tokenExpiry: Date | undefined;
+    calendarSyncEnabled: boolean;
+  };
   generateAuthToken(): Promise<string>;
   verifyCredentials(password: string): Promise<boolean>;
 }
@@ -67,6 +73,12 @@ const adminSchema = new Schema<IAdmin>(
           return this.agent?.isAgent;
         },
       },
+    },
+    google: {
+      accessToken: { type: String },
+      refreshToken: { type: String },
+      tokenExpiry: { type: Date },
+      calendarSyncEnabled: { type: Boolean, default: false },
     },
   },
   { timestamps: true }

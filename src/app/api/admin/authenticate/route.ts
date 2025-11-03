@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   try {
     const user = await Admin.findById(admin._id);
     if (!user) return apiResponse("Authorization failed", null, 401);
-    
+
     const unreadNotifictaionsCount = await Notification.countDocuments({
       [isAgent ? "agent" : "admin"]: admin._id,
       ...(admin.isBroker && { agent: admin._id }),

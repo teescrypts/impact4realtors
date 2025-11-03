@@ -32,6 +32,7 @@ import Edit from "@/app/icons/untitled-ui/duocolor/edit";
 import ScheduleDialogUI from "../sell-date-time";
 import Call from "@/app/icons/untitled-ui/duocolor/call";
 import AppointmentSuccessModal from "../apt-confirm";
+import { DateTime } from "luxon";
 
 export interface Availability {
   date: string;
@@ -52,6 +53,10 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [sendUpdates, setSendUpdates] = useState(false);
+  const [nextStartDate, setNextStartDate] = useState<string | undefined>();
+  const [fullZoneName, setFullZoneName] = useState<string | null>(null);
+  const [offset, setOffset] = useState("");
+  const [timeZone, setTimeZone] = useState("");
   const [aptData, setAptData] = useState<AppointmentData>({
     type: "call",
     date: undefined,
@@ -62,7 +67,6 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
     callReason: "selling",
   });
 
-  const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const handleUpdateDate = (selectedDate: DateItem) => {
@@ -90,16 +94,59 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
     }
   };
 
-  const handleContinue = useCallback(async () => {
-    if (!sendUpdates) return alert("Kindly check the box to move forward.");
-    setIsLoading(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-    const result = await fetchAvailabilty("tour", adminId);
+  const handleLoadMore = useCallback(async () => {
+    setLoadingMore(true);
+    const result = await fetchAvailabilty("tour", nextStartDate, adminId);
 
     if (result.availability) {
-      setDates(result.availability);
-      handleOpen();
+      const dates = result.availability;
+      const nextDate = result.nextStartDate;
+
+      setDates((prev) => {
+        if (prev) {
+          return [...prev, ...dates!];
+        } else {
+          return [];
+        }
+      });
+      setNextStartDate(nextDate);
+      setLoadingMore(false);
+    }
+
+    if (result.error) {
+      setMessage(result.error);
+      setLoadingMore(false);
+    }
+
+    if (result.message) {
+      setMessage(result.message);
+      setLoadingMore(false);
+    }
+  }, [nextStartDate, adminId]);
+
+  const handleContinue = useCallback(async () => {
+    if (!sendUpdates) {
+      return alert("Kindly check the box to move forward.");
+    }
+
+    setIsLoading(true);
+    const result = await fetchAvailabilty("tour", undefined, adminId);
+
+    if (result.availability) {
+      const dates = result.availability;
+      const timeZone = result.timeZone;
+      const nextDate = result.nextStartDate;
+
+      const now = DateTime.now().setZone(timeZone);
+      setFullZoneName(now.offsetNameLong);
+      setOffset(now.toFormat("ZZZZ"));
+      setTimeZone(timeZone!);
+      setDates(dates);
+      setNextStartDate(nextDate);
       setIsLoading(false);
+      setOpen(true);
     }
 
     if (result.error) {
@@ -137,6 +184,7 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
   const primary = theme.palette.primary.main;
   const accent = theme.palette.secondary.main;
   const cardBg = alpha(theme.palette.background.paper, 0.06);
+  console.log(timeZone);
 
   return (
     <Box
@@ -500,6 +548,10 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
             message={message}
             onTimeClicked={handleUpdateTime}
             onDateClicked={handleUpdateDate}
+            onLoadMore={handleLoadMore}
+            loadingMore={loadingMore}
+            fullZoneName={fullZoneName}
+            offset={offset}
           />
         </form>
 
