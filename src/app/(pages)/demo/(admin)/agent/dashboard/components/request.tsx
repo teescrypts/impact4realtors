@@ -19,12 +19,12 @@ import notify from "@/app/utils/toast";
 
 export default function ConnectRequestsTabs({
   connects,
-  hasMore,
-  lastCreatedAt,
-}: {
+}: // hasMore,
+// lastCreatedAt,
+{
   connects: ConnectType[];
-  hasMore: boolean;
-  lastCreatedAt: string;
+  // hasMore: boolean;
+  // lastCreatedAt: string;
 }) {
   const searchParams = useSearchParams();
   const status = searchParams.get("status");
@@ -44,8 +44,6 @@ export default function ConnectRequestsTabs({
     const status = newValue === 0 ? "pending" : "accepted";
     router.push(`/demo/agent/dashboard/requests?status=${status}`);
   };
-
-  console.log(hasMore, lastCreatedAt);
 
   return (
     <Box>
@@ -126,6 +124,12 @@ function ConnectList({
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {connect.state}, {connect.zipCode}
+                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Type:{" "}
+                  {connect.type === "homeValuation"
+                    ? "Home Valuation Request"
+                    : "Seller Request"}
                 </Typography>
               </Box>
               {action === "accept" && (

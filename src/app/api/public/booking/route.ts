@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       admin,
       ...(agent && { agent }),
       type: leadType,
-      status: LeadStatus[leadType][0],
+      status: LeadStatus[leadType][body.type === "call" ? 0 : 2],
       firstName: body.customer.firstName,
       lastName: body.customer.lastName,
       email: body.customer.email,

@@ -9,6 +9,7 @@ import NewsletterPopup from "./components/sections/newssletter-popup";
 import apiRequest from "@/app/lib/api-request";
 import { HomepageResponse } from "@/types";
 import AboutUs from "./components/about";
+import HomeEvaluationSection from "./components/sections/home-evaluation";
 
 async function Page({
   searchParams,
@@ -30,7 +31,8 @@ async function Page({
   return (
     <Fragment>
       <HeroSection adminId={adminId} />
-      <AboutUs adminId={adminId} hompage />
+      <AboutUs adminId={adminId} />
+      <HomeEvaluationSection adminId={adminId} />
       <ListingsSection adminId={adminId} forRent={forRent} forSale={forSale} />
       <SellSection adminId={adminId} />
       <LatestBlogs adminId={adminId} blogs={blogs} />

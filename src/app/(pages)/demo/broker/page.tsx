@@ -9,6 +9,7 @@ import apiRequest from "@/app/lib/api-request";
 import { HomepageResponse } from "@/types";
 import AboutSection from "./components/sections/about-us";
 import NewsletterPopup from "../(pages)/components/sections/newssletter-popup";
+import HomeEvaluationSection from "./components/sections/home-evaluation";
 
 async function Page({
   searchParams,
@@ -34,6 +35,7 @@ async function Page({
       <AboutSection adminId={adminId} />
       <RecentListings adminId={adminId} forRent={forRent} forSale={forSale} />
       <SellWithExpert adminId={adminId} />
+      <HomeEvaluationSection adminId={adminId} />
       <OurAgents agents={agents} adminId={adminId} />
       <LatestBlogs blogs={blogs} adminId={adminId} />
       <Testimonials />

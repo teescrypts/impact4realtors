@@ -91,8 +91,8 @@ function Navbar() {
               <Image
                 src="/images/demo-logo.png"
                 alt="RealtorDemo Logo"
-                width={200}
-                height={80}
+                width={300}
+                height={100}
                 style={{ cursor: "pointer", objectFit: "contain" }}
                 priority
               />

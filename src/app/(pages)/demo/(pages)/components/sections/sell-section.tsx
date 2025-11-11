@@ -56,7 +56,6 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
   const [nextStartDate, setNextStartDate] = useState<string | undefined>();
   const [fullZoneName, setFullZoneName] = useState<string | null>(null);
   const [offset, setOffset] = useState("");
-  const [timeZone, setTimeZone] = useState("");
   const [aptData, setAptData] = useState<AppointmentData>({
     type: "call",
     date: undefined,
@@ -142,7 +141,6 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
       const now = DateTime.now().setZone(timeZone);
       setFullZoneName(now.offsetNameLong);
       setOffset(now.toFormat("ZZZZ"));
-      setTimeZone(timeZone!);
       setDates(dates);
       setNextStartDate(nextDate);
       setIsLoading(false);
@@ -184,7 +182,6 @@ const SellSection = ({ adminId }: { adminId?: string }) => {
   const primary = theme.palette.primary.main;
   const accent = theme.palette.secondary.main;
   const cardBg = alpha(theme.palette.background.paper, 0.06);
-  console.log(timeZone);
 
   return (
     <Box

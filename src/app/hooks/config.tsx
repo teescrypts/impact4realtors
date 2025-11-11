@@ -9,6 +9,7 @@ import LayoutAlt02 from "../icons/untitled-ui/duocolor/layout-alt-02";
 import Settings from "../icons/untitled-ui/duocolor/settings";
 import { useUserData } from "../guards/auth-guard";
 import User01 from "../icons/untitled-ui/duocolor/user01";
+import Percentage from "../icons/untitled-ui/duocolor/percentage";
 
 interface MenuItem {
   title: string;
@@ -49,6 +50,16 @@ export const useSections = (): MenuSection[] => {
         ),
       },
       {
+        title: "Listings",
+        value: "listing",
+        path: paths.listing,
+        icon: (
+          <SvgIcon fontSize="small">
+            <RealEstateAgent />
+          </SvgIcon>
+        ),
+      },
+      {
         title: "Appointments",
         value: "appointment",
         path: paths.appointment,
@@ -59,12 +70,12 @@ export const useSections = (): MenuSection[] => {
         ),
       },
       {
-        title: "Listings",
-        value: "listing",
-        path: paths.listing,
+        title: "Home Valuations",
+        value: "valuation",
+        path: paths.home_valuation,
         icon: (
           <SvgIcon fontSize="small">
-            <RealEstateAgent />
+            <Percentage />
           </SvgIcon>
         ),
       },
@@ -93,7 +104,7 @@ export const useSections = (): MenuSection[] => {
     // ✨ If user is a broker, add Agent and Requests menu items
     if (user?.isBroker) {
       baseItems.splice(
-        4,
+        5,
         0, // Insert before "Blog"
         {
           title: "Requests",

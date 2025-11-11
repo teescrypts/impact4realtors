@@ -106,12 +106,12 @@ export default function MainAppBar() {
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
             {/* Logo */}
-            <Link href={adminId ? `/demo?admin=${adminId}` : `/demo`}>
+            <Link href={adminId ? `/demo/broker?admin=${adminId}` : `/demo`}>
               <Image
                 src="/images/demo-logo.png"
                 alt="RealtorDemo Logo"
-                width={200}
-                height={80}
+                width={300}
+                height={100}
                 style={{ cursor: "pointer", objectFit: "contain" }}
                 priority
               />

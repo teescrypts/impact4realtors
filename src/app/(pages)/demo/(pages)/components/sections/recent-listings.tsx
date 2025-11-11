@@ -58,7 +58,7 @@ const ListingsSection = ({
   };
 
   return (
-    <Container sx={{ my: 6 }} maxWidth={"xl"}>
+    <Container sx={{ my: 6 }} maxWidth={"lg"}>
       {/* Header Section */}
       <Stack justifyContent={"center"} alignItems={"center"} mb={4}>
         <Typography variant="h4" fontWeight={600} gutterBottom>

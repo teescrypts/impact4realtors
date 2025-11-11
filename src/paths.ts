@@ -8,6 +8,7 @@ export const paths = {
   requests: "/demo/dashboard/requests",
   account: "/demo/dashboard/account",
   profile: "/demo/dashboard/profile",
+  home_valuation: "/demo/dashboard/valuation",
 };
 
 export const agentPaths = {
@@ -16,4 +17,5 @@ export const agentPaths = {
   listing: "/demo/agent/dashboard/listing",
   requests: "/demo/agent/dashboard/requests",
   account: "/demo/agent/dashboard/account",
+  home_valuation: "/demo/agent/dashboard/valuation",
 };

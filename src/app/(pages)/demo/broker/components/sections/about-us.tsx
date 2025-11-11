@@ -6,7 +6,6 @@ import {
   Stack,
   Typography,
   Grid2,
-  Card,
   Button,
   useTheme,
 } from "@mui/material";
@@ -29,7 +28,7 @@ export default function AboutSection({ adminId }: { adminId?: string }) {
           `linear-gradient(to bottom, ${theme.palette.background.paper}, ${theme.palette.primary.alpha30})`,
       }}
     >
-      {/* Decorative SVG Background */}
+      {/* Decorative SVG Backgrounds */}
       <Box
         component="svg"
         viewBox="0 0 800 600"
@@ -152,37 +151,61 @@ export default function AboutSection({ adminId }: { adminId?: string }) {
             </Stack>
           </Grid2>
 
-          {/* Team Image with Next.js Optimization */}
+          {/* Polygon Image with Overflow */}
           <Grid2 size={{ xs: 12, md: 6 }}>
-            <Card
-              component={motion.div}
-              elevation={4}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7 }}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              sx={{
-                borderRadius: 4,
-                overflow: "hidden",
-              }}
             >
               <Box
                 sx={{
                   position: "relative",
                   width: "100%",
-                  height: { xs: 280, md: 400 },
+                  height: { xs: 300, md: 420 },
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  backgroundColor: "#f9fafb",
+                  clipPath: {
+                    xs: "none",
+                    md: "polygon(18% 0%, 100% 0%, 100% 100%, 0% 100%)",
+                  },
+                  borderRadius: { xs: 4, md: 0 },
+                  overflow: "visible",
+                  boxShadow: "0 10px 28px rgba(0,0,0,0.05)",
                 }}
               >
-                <Image
-                  src="/images/team.jpeg" // Replace with your image path
-                  alt="Our Real Estate Team"
-                  fill
-                  priority
-                  style={{ objectFit: "cover" }}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+                <Box
+                  sx={{
+                    position: "relative",
+                    width: { xs: "100%", md: "105%" },
+                    height: "100%",
+                    overflow: "hidden",
+                    borderRadius: { xs: 4, md: "0 24px 24px 0" },
+                    clipPath: {
+                      xs: "none",
+                      md: "polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%)",
+                    },
+                    transform: { xs: "none", md: "translateX(3%)" },
+                    boxShadow: {
+                      xs: "none",
+                      md: "0 12px 32px rgba(0,0,0,0.1)",
+                    },
+                  }}
+                >
+                  <Image
+                    src="/images/team.jpeg"
+                    alt="Our Real Estate Team"
+                    fill
+                    priority
+                    style={{ objectFit: "cover" }}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </Box>
               </Box>
-            </Card>
+            </motion.div>
           </Grid2>
         </Grid2>
       </Container>

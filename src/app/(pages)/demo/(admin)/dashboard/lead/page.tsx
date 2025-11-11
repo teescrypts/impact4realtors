@@ -82,7 +82,7 @@ async function Page({
         <Container maxWidth={"xl"}>
           <Stack spacing={2}>
             <Stack sx={{ mb: 2 }}>
-              <Typography variant="h4">Lead</Typography>
+              <Typography variant="h4">Leads</Typography>
             </Stack>
             <LeadManagement
               leads={leads}

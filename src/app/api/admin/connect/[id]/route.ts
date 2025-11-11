@@ -3,6 +3,8 @@ import apiResponse from "@/app/lib/api-response";
 import Connect from "@/app/model/connect";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
+import HomeValuationRequest from "@/app/model/home-valuation-request";
+import Lead, { LeadStatus } from "@/app/model/lead";
 
 // PATCH /api/agent/connects/[id]/accept
 export async function PATCH(
@@ -52,7 +54,24 @@ export async function PATCH(
     if (!isMatched) {
       if (admin.isBroker) {
         connect.connectedAgent = agentId;
-        await connect.save();
+        const newConnect = await connect.save();
+
+        if (newConnect.type === "homeValuation") {
+          await HomeValuationRequest.create({
+            admin,
+            address: newConnect.address,
+            bedrooms: newConnect.bedrooms,
+            bathrooms: newConnect.bathrooms,
+            yearBuilt: newConnect.yearBuilt,
+            squareFootage: newConnect.squareFootage,
+            purpose: newConnect.purpose,
+            firstName: newConnect.firstName,
+            lastName: newConnect.lastName,
+            email: newConnect.email,
+            phone: newConnect.phone,
+            status: "Pending",
+          });
+        }
 
         return apiResponse("Connect request accepted", null, 200);
       }
@@ -65,7 +84,40 @@ export async function PATCH(
     }
 
     connect.connectedAgent = agentId;
-    await connect.save();
+    const newConnect = await connect.save();
+
+    if (newConnect.type === "homeValuation") {
+      await HomeValuationRequest.create({
+        admin,
+        address: newConnect.address,
+        bedrooms: newConnect.bedrooms,
+        bathrooms: newConnect.bathrooms,
+        yearBuilt: newConnect.yearBuilt,
+        squareFootage: newConnect.squareFootage,
+        purpose: newConnect.purpose,
+        firstName: newConnect.firstName,
+        lastName: newConnect.lastName,
+        email: newConnect.email,
+        phone: newConnect.phone,
+        status: "Pending",
+      });
+    }
+
+    if (newConnect.type === "seller") {
+      // ✅ Create lead
+      const newLead = new Lead({
+        admin: admin.agent.isAgent ? admin.agent.admin : admin,
+        ...(admin.agent.isAgent && { agent: admin }),
+        type: "Home Seller Leads",
+        status: LeadStatus["Home Seller Leads"][0],
+        firstName: newConnect.firstName,
+        lastName: newConnect.lastName,
+        email: newConnect.email,
+        phone: newConnect.phone,
+      });
+
+      await newLead.save();
+    }
 
     return apiResponse("Connect request accepted", null, 200);
   } catch (err) {

@@ -11,8 +11,16 @@ export interface ConnectType {
   email: string;
   phone: string;
   state: string;
-  connectedAgent: string | null;
   zipCode: string;
+  connectedAgent: string | null;
+  type: "seller" | "homeValuation";
+
+  // Home valuation–specific fields
+  address?: string;
+  bedrooms?: string;
+  bathrooms?: string;
+  yearBuilt?: string;
+  squareFootage?: string;
   createdAt: Date;
 }
 
@@ -37,8 +45,8 @@ async function Page({
   }>(url, { token, tag: "fetchAdminConnect" });
 
   const connects = response.data.connects;
-  const hasMore = response.data.hasMore;
-  const lastCreatedAt = response.data.lastCreatedAt;
+  // const hasMore = response.data.hasMore;
+  // const lastCreatedAt = response.data.lastCreatedAt;
 
   return (
     <Box
@@ -54,8 +62,8 @@ async function Page({
         </Typography>
         <ConnectRequestsTabs
           connects={connects}
-          hasMore={hasMore}
-          lastCreatedAt={lastCreatedAt}
+          // hasMore={hasMore}
+          // lastCreatedAt={lastCreatedAt}
         />
       </Container>
     </Box>

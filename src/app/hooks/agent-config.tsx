@@ -5,6 +5,7 @@ import Funnel from "../icons/untitled-ui/duocolor/funnel";
 import RealEstateAgent from "../icons/untitled-ui/duocolor/real-estate-agent";
 import Time from "../icons/untitled-ui/duocolor/time";
 import Settings from "../icons/untitled-ui/duocolor/settings";
+import Percentage from "../icons/untitled-ui/duocolor/percentage";
 
 interface MenuItem {
   title: string;
@@ -23,12 +24,32 @@ export const useSections = (): MenuSection[] => {
   return useMemo(() => {
     const baseItems: MenuItem[] = [
       {
-        title: "Lead",
+        title: "Leads",
         value: "lead",
         path: paths.lead,
         icon: (
           <SvgIcon fontSize="small">
             <Funnel />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "Listings",
+        value: "listing",
+        path: paths.listing,
+        icon: (
+          <SvgIcon fontSize="small">
+            <RealEstateAgent />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "Appointments",
+        value: "appointment",
+        path: paths.appointment,
+        icon: (
+          <SvgIcon fontSize="small">
+            <Time />
           </SvgIcon>
         ),
       },
@@ -43,22 +64,12 @@ export const useSections = (): MenuSection[] => {
         ),
       },
       {
-        title: "Appointment",
-        value: "appointment",
-        path: paths.appointment,
+        title: "Home Valuations",
+        value: "valuation",
+        path: paths.home_valuation,
         icon: (
           <SvgIcon fontSize="small">
-            <Time />
-          </SvgIcon>
-        ),
-      },
-      {
-        title: "Listing",
-        value: "listing",
-        path: paths.listing,
-        icon: (
-          <SvgIcon fontSize="small">
-            <RealEstateAgent />
+            <Percentage />
           </SvgIcon>
         ),
       },

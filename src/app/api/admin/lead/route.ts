@@ -63,3 +63,59 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  // Authenticate user
+  const authResponse = await authMiddleware(req);
+  if (authResponse instanceof NextResponse) return authResponse;
+
+  const admin = authResponse;
+  if (!admin)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const body = await req.json();
+    const isAgent = admin.agent?.isAgent === true;
+
+    // Destructure fields from body
+    const {
+      type,
+      status,
+      firstName,
+      lastName,
+      email,
+      phone,
+      source,
+      note,
+      propertyId,
+    } = body;
+
+    // Basic validation
+    if (!type || !status || !firstName || !lastName || !email || !phone) {
+      return apiResponse("Missing required fields", null, 400);
+    }
+
+    // Create the lead
+    await Lead.create({
+      admin: isAgent ? admin.agent.admin : admin._id,
+      ...((isAgent || admin.isBroker) && { agent: admin._id }),
+      type,
+      status,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      source: source?.trim() || "",
+      note: note?.trim() || "",
+      propertyId,
+    });
+
+    return apiResponse("Lead added successfully", null, 201);
+  } catch (e) {
+    return apiResponse(
+      e instanceof Error ? e.message : "An unknown error occurred",
+      null,
+      500
+    );
+  }
+}

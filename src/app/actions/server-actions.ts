@@ -16,8 +16,8 @@ import {
   PropertyType,
 } from "@/types";
 import { revalidateTag } from "next/cache";
-import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/page";
 import { AgentType } from "../(pages)/demo/(admin)/agent/dashboard/account/page";
+import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/page";
 
 const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
 
@@ -1323,6 +1323,137 @@ export async function sendSellRequest(
   }
 }
 
+export async function valuationRequest(
+  adminId: string | undefined,
+  data: {
+    address: string;
+    bedrooms?: string;
+    bathrooms?: string;
+    yearBuilt?: string;
+    squareFootage?: string;
+    purpose: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    zipCode: string;
+    state: string;
+    phone: string;
+  }
+  // prevState: ActionStateType
+) {
+  const iData = {
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email,
+    phone: data.phone,
+    address: data.address,
+    purpose: data.purpose,
+    bedrooms: Number(data.bedrooms) as number,
+    bathrooms: Number(data.bathrooms) as number,
+    squareFootage: Number(data.squareFootage) as number,
+    yearBuilt: Number(data.yearBuilt) as number,
+    zipCode: data.zipCode,
+    state: data.state,
+    type: "homeValuation",
+  };
+
+  const url = adminId ? `public/connect?adminId=${adminId}` : `public/connect`;
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      {
+        address: string;
+        bedrooms?: number;
+        bathrooms?: number;
+        yearBuilt?: number;
+        squareFootage?: number;
+        purpose: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+      }
+    >(url, {
+      method: "POST",
+      data: iData,
+    });
+
+    revalidateTag("fetchAdminValuation");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function sendEvaluationReq(
+  adminId: string | undefined,
+  data: {
+    address: string;
+    bedrooms?: string;
+    bathrooms?: string;
+    yearBuilt?: string;
+    squareFootage?: string;
+    purpose: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  },
+  // prevState: ActionStateType
+) {
+  const iData = {
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email,
+    phone: data.phone,
+    address: data.address,
+    purpose: data.purpose,
+    bedrooms: Number(data.bedrooms) as number,
+    bathrooms: Number(data.bathrooms) as number,
+    squareFootage: Number(data.squareFootage) as number,
+    yearBuilt: Number(data.yearBuilt) as number,
+  };
+
+  const url = adminId
+    ? `public/valuation?adminId=${adminId}`
+    : `public/valuation`;
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      {
+        address: string;
+        bedrooms?: number;
+        bathrooms?: number;
+        yearBuilt?: number;
+        squareFootage?: number;
+        purpose: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+      }
+    >(url, {
+      method: "POST",
+      data: iData,
+    });
+
+    revalidateTag("fetchAdminValuation");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
 export async function acceptSellerReq(id: string) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -1370,6 +1501,116 @@ export async function syncCalendar(origin?: string) {
     } else {
       return { error: response.message };
     }
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function updateValuationReq(id: string, status: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{ message: string }, { status: string }>(
+      `admin/valuation/${id}`,
+      {
+        method: "PATCH",
+        token,
+        data: { status },
+      }
+    );
+
+    revalidateTag("fetchAdminValuation");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function searchProperties(query: string, broker?: boolean) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  const url = broker
+    ? `admin/lead/property-search?query=${query}&status=${"yourListings"}`
+    : `admin/lead/property-search?query=${query}`;
+
+  try {
+    const response = await apiRequest<{
+      data: {
+        properties: { _id: string; propertyTitle: string; location: string }[];
+      };
+    }>(url, { token });
+
+    return { message: response.data.properties };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function addLead(
+  data: {
+    type:
+      | "House Tour Leads"
+      | "Home Seller Leads"
+      | "Mortgage Inquiry Leads"
+      | "General Inquiry Leads";
+    status: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    property?: string;
+    source?: string;
+    notes?: string;
+  },
+  // prev: ActionStateType,
+  // formData: FormData
+) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      {
+        type:
+          | "House Tour Leads"
+          | "Home Seller Leads"
+          | "Mortgage Inquiry Leads"
+          | "General Inquiry Leads";
+        status: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+        property?: string;
+        source?: string;
+        notes?: string;
+      }
+    >("admin/lead", {
+      method: "POST",
+      data,
+      token,
+    });
+
+    revalidateTag("fetchAdminLead");
+    return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
       return { error: e.message };

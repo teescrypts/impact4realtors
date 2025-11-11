@@ -202,6 +202,8 @@ export interface AppointmentResponse {
 export const NOTIFICATION_TYPES = [
   "new_appointment",
   "new_newsletter",
+  "new_connect",
+  "new_home_valuation",
 ] as const;
 
 export interface NotificationResType {

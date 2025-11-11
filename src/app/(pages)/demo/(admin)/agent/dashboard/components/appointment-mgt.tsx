@@ -335,7 +335,13 @@ export default function AppointmentManagement({
       {type && (
         <RescheduleAppointmentModal
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => {
+            setOpen(false);
+            setType(undefined);
+            setCustomer("");
+            setCurrentDate("");
+            setCurrentAptId("");
+          }}
           type={type}
           customer={customer}
           currentDate={currentDate}
