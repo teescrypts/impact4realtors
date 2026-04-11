@@ -15,7 +15,7 @@ import {
   NotificationResType,
   PropertyType,
 } from "@/types";
-import { revalidateTag } from "next/cache";
+import { updateTag as nextUpdateTag } from "next/cache";
 // import { AgentType } from "../(pages)/demo/(admin)/agent/dashboard/account/page";
 import {
   CreateTagPayload,
@@ -290,7 +290,7 @@ export async function addHour(prev: ActionStateType, formData: FormData) {
       token,
     });
 
-    revalidateTag("fetchOpenings", "max");
+    nextUpdateTag("fetchOpenings");
     return { ok: true, message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -320,7 +320,7 @@ export async function updateAvailability(
       token,
     });
 
-    revalidateTag("fetchOpenings", "max");
+    nextUpdateTag("fetchOpenings");
     return { ok: true, message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -357,7 +357,7 @@ export async function deleteTimeSlot(
       token,
     });
 
-    revalidateTag("fetchOpenings", "max");
+    nextUpdateTag("fetchOpenings");
     return { ok: true, message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -384,8 +384,8 @@ export async function uploadImage(formData: FormData) {
       data: formData,
     });
 
-    revalidateTag("fetchBlogDraftImg", "max");
-    revalidateTag("fetchistingDraftImgs", "max");
+    nextUpdateTag("fetchBlogDraftImg");
+    nextUpdateTag("fetchistingDraftImgs");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -409,9 +409,9 @@ export async function deleteBlogImage(id: string, blogId?: string) {
       token,
     });
 
-    revalidateTag("fetchBlogDraftImg", "max");
-    revalidateTag("fetchAdminBlogs", "max");
-    revalidateTag("fetchAdminBlog", "max");
+    nextUpdateTag("fetchBlogDraftImg");
+    nextUpdateTag("fetchAdminBlogs");
+    nextUpdateTag("fetchAdminBlog");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -437,8 +437,8 @@ export async function deleteImage(id: string, propertyId?: string) {
       token,
     });
 
-    revalidateTag("fetchistingDraftImgs", "max");
-    revalidateTag("fetchAdminProperty", "max");
+    nextUpdateTag("fetchistingDraftImgs");
+    nextUpdateTag("fetchAdminProperty");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -464,7 +464,7 @@ export async function deleteImages(ids: string[]) {
       data: { imageIds: ids },
     });
 
-    revalidateTag("fetchistingDraftImgs", "max");
+    nextUpdateTag("fetchistingDraftImgs");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -528,7 +528,7 @@ export async function listProperty(
       },
     );
 
-    revalidateTag("fetchAdminProperties", "max");
+    nextUpdateTag("fetchAdminProperties");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -592,8 +592,8 @@ export async function updateProperty(
       },
     );
 
-    revalidateTag("fetchAdminProperty", "max");
-    revalidateTag("fetchAdminProperties", "max");
+    nextUpdateTag("fetchAdminProperty");
+    nextUpdateTag("fetchAdminProperties");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -619,8 +619,8 @@ export async function updatePropertyStatus(id: string, status: string) {
       },
     );
 
-    revalidateTag("fetchAdminProperty", "max");
-    revalidateTag("fetchAdminProperties", "max");
+    nextUpdateTag("fetchAdminProperty");
+    nextUpdateTag("fetchAdminProperties");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -645,8 +645,8 @@ export async function deleteProperty(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminProperty", "max");
-    revalidateTag("fetchAdminProperties", "max");
+    nextUpdateTag("fetchAdminProperty");
+    nextUpdateTag("fetchAdminProperties");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -691,9 +691,9 @@ export async function updateBlog(
       },
     );
 
-    revalidateTag("fetchBlogDraftImg", "max");
-    revalidateTag("fetchAdminBlogs", "max");
-    revalidateTag("fetchAdminBlog", "max");
+    nextUpdateTag("fetchBlogDraftImg");
+    nextUpdateTag("fetchAdminBlogs");
+    nextUpdateTag("fetchAdminBlog");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -738,7 +738,7 @@ export async function uploadBlog(
       },
     );
 
-    revalidateTag("fetchAdminBlogs", "max");
+    nextUpdateTag("fetchAdminBlogs");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -760,7 +760,7 @@ export async function deleteBlog(id: string) {
       token,
     });
 
-    revalidateTag("fetchAdminBlogs", "max");
+    nextUpdateTag("fetchAdminBlogs");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -869,7 +869,7 @@ export async function updateLeadStatus(status: string, id: string) {
       },
     );
 
-    revalidateTag("fetchAdminLead", "max");
+    nextUpdateTag("fetchAdminLead");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -891,7 +891,7 @@ export async function deleteLead(id: string) {
       token,
     });
 
-    revalidateTag("fetchAdminLead", "max");
+    nextUpdateTag("fetchAdminLead");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -999,7 +999,7 @@ export async function rescheduleApt(
       data,
     });
 
-    revalidateTag("fetchAdminAppointments", "max");
+    nextUpdateTag("fetchAdminAppointments");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1025,7 +1025,7 @@ export async function updateAptStatus(status: string, id: string) {
       },
     );
 
-    revalidateTag("fetchAdminAppointments", "max");
+    nextUpdateTag("fetchAdminAppointments");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1104,7 +1104,7 @@ export async function markNotificationAsRead(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminNotification", "max");
+    nextUpdateTag("fetchAdminNotification");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1129,7 +1129,7 @@ export async function deleteNotification(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminNotification", "max");
+    nextUpdateTag("fetchAdminNotification");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1164,156 +1164,129 @@ export async function fetchMoreLeads(type: string, lastCreatedAt: Date | null) {
   }
 }
 
-export async function sendAgentForm(email: string) {
-  const cookieStore = await cookies();
-  const tokenObj = cookieStore.get("session-token");
-  const token = tokenObj?.value;
+// export async function sendAgentForm(email: string) {
+//   const cookieStore = await cookies();
+//   const tokenObj = cookieStore.get("session-token");
+//   const token = tokenObj?.value;
 
-  try {
-    const response = await apiRequest<{ message: string }, { email: string }>(
-      "admin/agent/form",
-      {
-        method: "POST",
-        token,
-        data: { email },
-      },
-    );
+//   try {
+//     const response = await apiRequest<{ message: string }, { email: string }>(
+//       "admin/agent/form",
+//       {
+//         method: "POST",
+//         token,
+//         data: { email },
+//       },
+//     );
 
-    revalidateTag("fetchAdminAgents", "max");
-    return { message: response.message };
-  } catch (e) {
-    if (e instanceof Error) {
-      return { error: e.message };
-    } else {
-      return { error: "An unknown error occurred" };
-    }
-  }
-}
+//     nextUpdateTag("fetchAdminAgents");
+//     return { message: response.message };
+//   } catch (e) {
+//     if (e instanceof Error) {
+//       return { error: e.message };
+//     } else {
+//       return { error: "An unknown error occurred" };
+//     }
+//   }
+// }
 
-export async function deleteForm(id: string) {
-  const cookieStore = await cookies();
-  const tokenObj = cookieStore.get("session-token");
-  const token = tokenObj?.value;
+// export async function deleteForm(id: string) {
+//   const cookieStore = await cookies();
+//   const tokenObj = cookieStore.get("session-token");
+//   const token = tokenObj?.value;
 
-  try {
-    const response = await apiRequest<{ message: string }>(
-      `admin/agent/form?id=${id}`,
-      {
-        method: "DELETE",
-        token,
-      },
-    );
+//   try {
+//     const response = await apiRequest<{ message: string }>(
+//       `admin/agent/form?id=${id}`,
+//       {
+//         method: "DELETE",
+//         token,
+//       },
+//     );
 
-    revalidateTag("fetchPendingForms", "max");
-    return { message: response.message };
-  } catch (e) {
-    if (e instanceof Error) {
-      return { error: e.message };
-    } else {
-      return { error: "An unknown error occurred" };
-    }
-  }
-}
+//     nextUpdateTag("fetchPendingForms");
+//     return { message: response.message };
+//   } catch (e) {
+//     if (e instanceof Error) {
+//       return { error: e.message };
+//     } else {
+//       return { error: "An unknown error occurred" };
+//     }
+//   }
+// }
 
-export async function deleteAgent(id: string) {
-  const cookieStore = await cookies();
-  const tokenObj = cookieStore.get("session-token");
-  const token = tokenObj?.value;
+// export async function deleteAgent(id: string) {
+//   const cookieStore = await cookies();
+//   const tokenObj = cookieStore.get("session-token");
+//   const token = tokenObj?.value;
 
-  try {
-    const response = await apiRequest<{ message: string }>(
-      `admin/agent/admin/${id}`,
-      {
-        method: "DELETE",
-        token,
-      },
-    );
+//   try {
+//     const response = await apiRequest<{ message: string }>(
+//       `admin/agent/admin/${id}`,
+//       {
+//         method: "DELETE",
+//         token,
+//       },
+//     );
 
-    revalidateTag("fetchPendingForms", "max");
-    return { message: response.message };
-  } catch (e) {
-    if (e instanceof Error) {
-      return { error: e.message };
-    } else {
-      return { error: "An unknown error occurred" };
-    }
-  }
-}
+//     nextUpdateTag("fetchPendingForms");
+//     return { message: response.message };
+//   } catch (e) {
+//     if (e instanceof Error) {
+//       return { error: e.message };
+//     } else {
+//       return { error: "An unknown error occurred" };
+//     }
+//   }
+// }
 
-export async function agentSignUp(
-  prevState: ActionStateType,
-  formData: FormData,
-) {
-  let success;
-  if (formData.get("password") !== formData.get("cPassword")) {
-    return { error: "Password does not match" };
-  }
+// export async function agentSignUp(
+//   prevState: ActionStateType,
+//   formData: FormData,
+// ) {
+//   let success;
+//   if (formData.get("password") !== formData.get("cPassword")) {
+//     return { error: "Password does not match" };
+//   }
 
-  const data = {
-    firstName: formData.get("firstName") as string,
-    lastName: formData.get("lastName") as string,
-    email: formData.get("email") as string,
-    phone: formData.get("phone") as string,
-    licenseNumber: formData.get("licenseNumber") as string,
-    formId: formData.get("formId") as string,
-    password: formData.get("password") as string,
-  };
+//   const data = {
+//     firstName: formData.get("firstName") as string,
+//     lastName: formData.get("lastName") as string,
+//     email: formData.get("email") as string,
+//     phone: formData.get("phone") as string,
+//     licenseNumber: formData.get("licenseNumber") as string,
+//     formId: formData.get("formId") as string,
+//     password: formData.get("password") as string,
+//   };
 
-  try {
-    const response = await apiRequest<{ data: { token: string } }, AgentReq>(
-      "admin/agent",
-      { method: "POST", data },
-    );
+//   try {
+//     const response = await apiRequest<{ data: { token: string } }, AgentReq>(
+//       "admin/agent",
+//       { method: "POST", data },
+//     );
 
-    success = true;
-    const cookieStore = cookies();
-    (await cookieStore).set({
-      name: "session-token",
-      value: response.data.token,
-      path: "/",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: ONE_WEEK_IN_SECONDS,
-    });
-  } catch (e) {
-    if (e instanceof Error) {
-      return { error: e.message };
-    } else {
-      return { error: "An unknown error occurred" };
-    }
-  }
+//     success = true;
+//     const cookieStore = cookies();
+//     (await cookieStore).set({
+//       name: "session-token",
+//       value: response.data.token,
+//       path: "/",
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+//       maxAge: ONE_WEEK_IN_SECONDS,
+//     });
+//   } catch (e) {
+//     if (e instanceof Error) {
+//       return { error: e.message };
+//     } else {
+//       return { error: "An unknown error occurred" };
+//     }
+//   }
 
-  if (success) redirect("/demo/agent/dashboard/lead");
-  return { message: "Success" };
-}
-
-export async function uploadProfilePic(formData: FormData) {
-  const cookieStore = await cookies();
-  const tokenObj = cookieStore.get("session-token");
-  const token = tokenObj?.value;
-
-  try {
-    const response = await apiRequest<
-      { message: string },
-      { formData: FormData }
-    >("admin/agent/profile-pic", {
-      method: "POST",
-      token,
-      contentType: "multipart/form-data",
-      data: formData,
-    });
-
-    revalidateTag("fetchAgentData", "max");
-    return { message: response.message };
-  } catch (e) {
-    if (e instanceof Error) {
-      return { error: e.message };
-    } else {
-      return { error: "An unknown error occurred" };
-    }
-  }
-}
+//   if (success) redirect("/demo/agent/dashboard/lead");
+//   return { message: "Success" };
+// }
 
 // export async function updateAgentProfile(data: AgentType) {
 //   const cookieStore = await cookies();
@@ -1339,6 +1312,33 @@ export async function uploadProfilePic(formData: FormData) {
 //     }
 //   }
 // }
+
+export async function uploadProfilePic(formData: FormData) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      { formData: FormData }
+    >("admin/agent/profile-pic", {
+      method: "POST",
+      token,
+      contentType: "multipart/form-data",
+      data: formData,
+    });
+
+    nextUpdateTag("fetchAgentData");
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
 
 export async function sendSellRequest(
   prevState: ActionStateType,
@@ -1435,7 +1435,7 @@ export async function valuationRequest(
       data: iData,
     });
 
-    revalidateTag("fetchAdminValuation", "max");
+    nextUpdateTag("fetchAdminValuation");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1499,7 +1499,7 @@ export async function sendEvaluationReq(
       data: iData,
     });
 
-    revalidateTag("fetchAdminValuation", "max");
+    nextUpdateTag("fetchAdminValuation");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1524,7 +1524,7 @@ export async function acceptSellerReq(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminConnect", "max");
+    nextUpdateTag("fetchAdminConnect");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1581,7 +1581,7 @@ export async function updateValuationReq(id: string, status: string) {
       },
     );
 
-    revalidateTag("fetchAdminValuation", "max");
+    nextUpdateTag("fetchAdminValuation");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1665,7 +1665,7 @@ export async function addLead(
       token,
     });
 
-    revalidateTag("fetchAdminLead", "max");
+    nextUpdateTag("fetchAdminLead");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }
