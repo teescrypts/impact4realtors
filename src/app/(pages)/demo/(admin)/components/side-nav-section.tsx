@@ -16,10 +16,12 @@ const renderItems = ({
   depth = 0,
   items,
   pathname,
+  isCollapsed = false,
 }: {
   depth?: number;
   items: MenuItem[];
   pathname: string;
+  isCollapsed?: boolean;
 }): ReactNode[] =>
   items.reduce(
     (acc, item) =>
@@ -28,8 +30,9 @@ const renderItems = ({
         depth,
         item,
         pathname,
+        isCollapsed,
       }),
-    [] as ReactNode[] // Ensure type safety for acc
+    [] as ReactNode[]
   );
 
 // Reduce child routes and render SideNavItems
@@ -38,11 +41,13 @@ const reduceChildRoutes = ({
   depth,
   item,
   pathname,
+  isCollapsed = false,
 }: {
   acc: ReactNode[];
   depth: number;
   item: MenuItem;
   pathname: string;
+  isCollapsed?: boolean;
 }): ReactNode[] => {
   const checkPath = !!(item.path && pathname);
   const partialMatch = checkPath ? pathname.includes(item.path || "") : false;
@@ -59,6 +64,7 @@ const reduceChildRoutes = ({
         label={item.label}
         open={partialMatch}
         title={item.title}
+        isCollapsed={isCollapsed}
       >
         <Stack
           component="ul"
@@ -73,6 +79,7 @@ const reduceChildRoutes = ({
             depth: depth + 1,
             items: item.items,
             pathname,
+            isCollapsed,
           })}
         </Stack>
       </SideNavItem>
@@ -89,6 +96,7 @@ const reduceChildRoutes = ({
         label={item.label}
         path={item.path}
         title={item.title}
+        isCollapsed={isCollapsed}
       />
     );
   }
@@ -100,11 +108,13 @@ function SideNavSection({
   items = [],
   pathname,
   subheader = "",
+  isCollapsed = false,
   ...other
 }: {
   items: MenuItem[];
   pathname: string;
   subheader?: string | ReactNode;
+  isCollapsed?: boolean;
 }) {
   return (
     <Stack
@@ -117,7 +127,7 @@ function SideNavSection({
       }}
       {...other}
     >
-      {subheader && (
+      {subheader && !isCollapsed && (
         <Box
           component="li"
           sx={{
@@ -134,7 +144,7 @@ function SideNavSection({
           {subheader}
         </Box>
       )}
-      {renderItems({ items, pathname })}
+      {renderItems({ items, pathname, isCollapsed })}
     </Stack>
   );
 }

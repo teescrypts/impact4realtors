@@ -16,10 +16,66 @@ import {
   PropertyType,
 } from "@/types";
 import { revalidateTag } from "next/cache";
-import { AgentType } from "../(pages)/demo/(admin)/agent/dashboard/account/page";
-import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/page";
+// import { AgentType } from "../(pages)/demo/(admin)/agent/dashboard/account/page";
+import {
+  CreateTagPayload,
+  ReorderTagsPayload,
+  UpdateTagPayload,
+} from "../(pages)/demo/(admin)/dashboard/components/tag/types/tag";
+import {
+  CreateJourneyPayload,
+  UpdateJourneyPayload,
+} from "../(pages)/demo/(admin)/dashboard/components/journey/types/api";
+import { Progress } from "../(pages)/demo/(admin)/dashboard/components/lead/lead-detail-panel";
+import { IScheduledAction } from "../model/journey/ScheduledAction";
+import { ILead } from "../model/lead";
 
 const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
+
+export async function sendBuyerPdf(prev: ActionStateType, formData: FormData) {
+  const firstName = formData.get("firstName") as string;
+  const lastName = formData.get("lastName") as string;
+  const email = formData.get("email") as string;
+  const buyerType = formData.get("buyerType") as string;
+  const phone = formData.get("phone") as string;
+  const admin = formData.get("admin") as string;
+
+  try {
+    const response = await apiRequest<
+      { message: string },
+      {
+        to: string;
+        subject: string;
+        message: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        buyerType: string;
+        phone: string;
+      }
+    >(`public/buyer-guide?adminId=${admin}`, {
+      method: "POST",
+      data: {
+        to: email,
+        subject: "Buyer Guide from realty illustration",
+        message: "Here is your Buyer Guide",
+        firstName,
+        lastName,
+        email,
+        buyerType,
+        phone,
+      },
+    });
+
+    return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(e.message);
+    } else {
+      throw new Error("An unknown error occurred");
+    }
+  }
+}
 
 export async function login(formData: FormData) {
   const email = formData.get("email") as string;
@@ -68,7 +124,7 @@ export async function login(formData: FormData) {
 
 export async function demoLogin(
   prevState: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   const email = formData.get("email") as string;
   const type = formData.get("type") as string;
@@ -246,7 +302,7 @@ export async function addHour(prev: ActionStateType, formData: FormData) {
 }
 
 export async function updateAvailability(
-  availability: "available" | "unavailable"
+  availability: "available" | "unavailable",
 ) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -280,7 +336,7 @@ export async function deleteTimeSlot(
   timeSlot: {
     from: string;
     to: string;
-  }
+  },
 ) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -423,7 +479,7 @@ export async function listProperty(
   features: string[],
   draftImages: { url: string; imageId: string; fileName: string }[],
   prev: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -469,7 +525,7 @@ export async function listProperty(
         method: "POST",
         token,
         data,
-      }
+      },
     );
 
     revalidateTag("fetchAdminProperties");
@@ -487,7 +543,7 @@ export async function updateProperty(
   features: string[],
   draftImages: { url: string; imageId: string; fileName: string }[],
   prev: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -533,7 +589,7 @@ export async function updateProperty(
         method: "PATCH",
         token,
         data,
-      }
+      },
     );
 
     revalidateTag("fetchAdminProperty");
@@ -560,7 +616,7 @@ export async function updatePropertyStatus(id: string, status: string) {
         method: "PATCH",
         token,
         data: { status },
-      }
+      },
     );
 
     revalidateTag("fetchAdminProperty");
@@ -586,7 +642,7 @@ export async function deleteProperty(id: string) {
       {
         method: "DELETE",
         token,
-      }
+      },
     );
 
     revalidateTag("fetchAdminProperty");
@@ -605,7 +661,7 @@ export async function updateBlog(
   cover: { url: string; imageId: string; fileName: string } | null,
   status: "Draft" | "Published",
   prevState: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   if (!cover) {
     return { error: "Please add a blog image" };
@@ -632,7 +688,7 @@ export async function updateBlog(
         method: "PATCH",
         token,
         data,
-      }
+      },
     );
 
     revalidateTag("fetchBlogDraftImg");
@@ -652,7 +708,7 @@ export async function uploadBlog(
   cover: { url: string; imageId: string; fileName: string } | null,
   status: "Draft" | "Published",
   prevState: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   if (!cover) {
     return { error: "Please add a blog image" };
@@ -679,7 +735,7 @@ export async function uploadBlog(
         method: "POST",
         token,
         data,
-      }
+      },
     );
 
     revalidateTag("fetchAdminBlogs");
@@ -719,7 +775,7 @@ export async function fetchAvailabilty(
   type: string,
   startDate: string | undefined,
   adminId?: string,
-  agent?: string
+  agent?: string,
 ) {
   const url = agent
     ? `public/booking/availability?type=${type}&adminId=${adminId}&agent=${agent}&startDate=${
@@ -763,7 +819,7 @@ export async function bookAppointment(
   adminId: string | undefined,
   appointmentData: AppointmentData,
   prevState: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   const data = {
     ...appointmentData,
@@ -810,7 +866,7 @@ export async function updateLeadStatus(status: string, id: string) {
         method: "PATCH",
         token,
         data: { status },
-      }
+      },
     );
 
     revalidateTag("fetchAdminLead");
@@ -848,7 +904,7 @@ export async function deleteLead(id: string) {
 
 export async function fetchMoreAppointments(
   lastCreatedAt: Date,
-  status?: string
+  status?: string,
 ) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -879,7 +935,7 @@ export async function fetchMoreAppointments(
 
 export async function fetchAdminAvailableDates(
   type: string,
-  nextStartDate?: string
+  nextStartDate?: string,
 ) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -919,7 +975,7 @@ export async function rescheduleApt(
   date: string,
   from: string,
   to: string,
-  id: string
+  id: string,
 ) {
   const cookieStore = await cookies();
   const tokenObj = cookieStore.get("session-token");
@@ -966,7 +1022,7 @@ export async function updateAptStatus(status: string, id: string) {
         method: "PATCH",
         token,
         data: { status },
-      }
+      },
     );
 
     revalidateTag("fetchAdminAppointments");
@@ -982,7 +1038,7 @@ export async function updateAptStatus(status: string, id: string) {
 
 export async function addNewsLetter(
   prevState: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   const email = formData.get("email") as string;
   const admin = formData.get("admin") as string;
@@ -993,7 +1049,7 @@ export async function addNewsLetter(
       {
         method: "POST",
         data: { email },
-      }
+      },
     );
 
     return { message: response.message };
@@ -1045,7 +1101,7 @@ export async function markNotificationAsRead(id: string) {
       {
         method: "PATCH",
         token,
-      }
+      },
     );
 
     revalidateTag("fetchAdminNotification");
@@ -1070,7 +1126,7 @@ export async function deleteNotification(id: string) {
       {
         method: "DELETE",
         token,
-      }
+      },
     );
 
     revalidateTag("fetchAdminNotification");
@@ -1095,7 +1151,7 @@ export async function fetchMoreLeads(type: string, lastCreatedAt: Date | null) {
 
   try {
     const response = await apiRequest<{
-      data: { leads: LeadType[]; hasMore: boolean; lastCreatedAt: Date | null };
+      data: { leads: ILead[]; hasMore: boolean; lastCreatedAt: Date | null };
     }>(url, { token });
 
     return { data: response.data };
@@ -1120,7 +1176,7 @@ export async function sendAgentForm(email: string) {
         method: "POST",
         token,
         data: { email },
-      }
+      },
     );
 
     revalidateTag("fetchAdminAgents");
@@ -1145,7 +1201,7 @@ export async function deleteForm(id: string) {
       {
         method: "DELETE",
         token,
-      }
+      },
     );
 
     revalidateTag("fetchPendingForms");
@@ -1170,7 +1226,7 @@ export async function deleteAgent(id: string) {
       {
         method: "DELETE",
         token,
-      }
+      },
     );
 
     revalidateTag("fetchPendingForms");
@@ -1186,7 +1242,7 @@ export async function deleteAgent(id: string) {
 
 export async function agentSignUp(
   prevState: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   let success;
   if (formData.get("password") !== formData.get("cPassword")) {
@@ -1206,7 +1262,7 @@ export async function agentSignUp(
   try {
     const response = await apiRequest<{ data: { token: string } }, AgentReq>(
       "admin/agent",
-      { method: "POST", data }
+      { method: "POST", data },
     );
 
     success = true;
@@ -1259,34 +1315,34 @@ export async function uploadProfilePic(formData: FormData) {
   }
 }
 
-export async function updateAgentProfile(data: AgentType) {
-  const cookieStore = await cookies();
-  const tokenObj = cookieStore.get("session-token");
-  const token = tokenObj?.value;
+// export async function updateAgentProfile(data: AgentType) {
+//   const cookieStore = await cookies();
+//   const tokenObj = cookieStore.get("session-token");
+//   const token = tokenObj?.value;
 
-  try {
-    const response = await apiRequest<{ message: string }, AgentType>(
-      "admin/agent",
-      {
-        method: "PATCH",
-        token,
-        data,
-      }
-    );
+//   try {
+//     const response = await apiRequest<{ message: string }, AgentType>(
+//       "admin/agent",
+//       {
+//         method: "PATCH",
+//         token,
+//         data,
+//       },
+//     );
 
-    return { message: response.message };
-  } catch (e) {
-    if (e instanceof Error) {
-      return { error: e.message };
-    } else {
-      return { error: "An unknown error occurred" };
-    }
-  }
-}
+//     return { message: response.message };
+//   } catch (e) {
+//     if (e instanceof Error) {
+//       return { error: e.message };
+//     } else {
+//       return { error: "An unknown error occurred" };
+//     }
+//   }
+// }
 
 export async function sendSellRequest(
   prevState: ActionStateType,
-  formData: FormData
+  formData: FormData,
 ) {
   const data = {
     firstName: formData.get("firstName") as string,
@@ -1338,7 +1394,7 @@ export async function valuationRequest(
     zipCode: string;
     state: string;
     phone: string;
-  }
+  },
   // prevState: ActionStateType
 ) {
   const iData = {
@@ -1465,7 +1521,7 @@ export async function acceptSellerReq(id: string) {
       {
         method: "PATCH",
         token,
-      }
+      },
     );
 
     revalidateTag("fetchAdminConnect");
@@ -1522,7 +1578,7 @@ export async function updateValuationReq(id: string, status: string) {
         method: "PATCH",
         token,
         data: { status },
-      }
+      },
     );
 
     revalidateTag("fetchAdminValuation");
@@ -1611,6 +1667,363 @@ export async function addLead(
 
     revalidateTag("fetchAdminLead");
     return { message: response.message };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function listJourneys(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "GET",
+      token,
+      tag: "fetchAdminJourneys",
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function listJourney(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "GET",
+      token,
+      tag: "fetchAdminJourney",
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function createJourney(
+  url: string,
+  payload: CreateJourneyPayload,
+) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "POST",
+      data: payload,
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function updateJourney(
+  url: string,
+  payload: UpdateJourneyPayload,
+) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "PATCH",
+      data: payload,
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function deleteJourney(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "DELETE",
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function activateJourney(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "POST",
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function deactivateJourney(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "POST",
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function duplicateJourney(url: string, name?: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "POST",
+      ...(name && { data: { name } }),
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function geJourneytStats(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "GET",
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function listTags(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "GET",
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function getTag(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "GET",
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function createTag(url: string, payload: CreateTagPayload) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "POST",
+      data: payload,
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function updateTag(url: string, payload: UpdateTagPayload) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "PATCH",
+      data: payload,
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function deleteTag(url: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "DELETE",
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function reorderTags(url: string, payload: ReorderTagsPayload) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest(url, {
+      method: "PATCH",
+      data: payload,
+      token,
+    });
+
+    return response;
+  } catch (e) {
+    if (e instanceof Error) {
+      return { error: e.message };
+    } else {
+      return { error: "An unknown error occurred" };
+    }
+  }
+}
+
+export async function fetchLeadProgress(leadId: string) {
+  const cookieStore = await cookies();
+  const tokenObj = cookieStore.get("session-token");
+  const token = tokenObj?.value;
+
+  try {
+    const response = await apiRequest<{
+      message: string;
+      data: {
+        progress: Progress | null;
+        nextScheduledAction: IScheduledAction | null;
+      };
+    }>(`/admin/progress?leadId=${leadId}`, {
+      method: "GET",
+      token,
+      tag: "fetchAdminProgress",
+    });
+
+    return { message: response.data };
   } catch (e) {
     if (e instanceof Error) {
       return { error: e.message };

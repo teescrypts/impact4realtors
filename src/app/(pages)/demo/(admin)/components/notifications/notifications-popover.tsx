@@ -13,6 +13,7 @@ import {
   SvgIcon,
   Tooltip,
   Typography,
+  alpha,
 } from "@mui/material";
 import React, {
   Dispatch,
@@ -33,6 +34,7 @@ import {
 import { NotificationResType } from "@/types";
 import Time from "@/app/icons/untitled-ui/duocolor/time";
 import notify from "@/app/utils/toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PropsType {
   anchorEl: HTMLDivElement | null;
@@ -43,14 +45,15 @@ interface PropsType {
 
 const renderContent = (notification: NotificationResType) => {
   const createdAt = format(notification.createdAt, "MMM dd, h:mm a");
-  const isUnread = !notification.isRead; // Determine if it's unread
+  const isUnread = !notification.isRead;
 
   return (
     <>
       <ListItemAvatar sx={{ mt: 0.5 }}>
         <Avatar
           sx={{
-            bgcolor: isUnread ? "primary.main" : "grey.400", // Change avatar color based on read status
+            bgcolor: isUnread ? "primary.main" : alpha("primary.main", 0.3),
+            transition: "all 0.2s",
           }}
         >
           <SvgIcon>
@@ -66,37 +69,46 @@ const renderContent = (notification: NotificationResType) => {
               alignItems: "center",
               display: "flex",
               flexWrap: "wrap",
+              gap: 0.5,
             }}
           >
             {/* Read/Unread Indicator */}
             <Box
               sx={{
-                width: 8,
-                height: 8,
-                bgcolor: isUnread ? "error.main" : "grey.500",
+                width: 6,
+                height: 6,
+                bgcolor: isUnread ? "error.main" : "transparent",
                 borderRadius: "50%",
                 display: "inline-block",
-                mr: 1,
+                transition: "all 0.2s",
               }}
             />
             {/* Notification Type */}
-            <Typography variant="subtitle2" sx={{ mr: 0.5 }}>
+            <Typography 
+              variant="subtitle2" 
+              component="span"
+              sx={{ fontWeight: 600 }}
+            >
               {notification.type === "new_appointment"
-                ? "New Appointment!"
-                : "New Subscription!"}
+                ? "New Appointment"
+                : "New Subscription"}
             </Typography>
-            {/* Message */}
-            <Typography variant="body2">{notification.message}</Typography>
           </Box>
         }
         secondary={
-          <Typography color="text.secondary" variant="caption">
-            {createdAt}
-          </Typography>
+          <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+            <Typography variant="body2" color="text.primary">
+              {notification.message}
+            </Typography>
+            <Typography color="text.secondary" variant="caption">
+              {createdAt}
+            </Typography>
+          </Stack>
         }
         sx={{
           my: 0,
-          opacity: isUnread ? 1 : 0.6, // Reduce opacity for read notifications
+          opacity: isUnread ? 1 : 0.7,
+          transition: "opacity 0.2s",
         }}
       />
     </>
@@ -121,9 +133,9 @@ function NotificationPopover({
 
   useEffect(() => {
     if (open) {
-      setLoading(true); // Reset loading state
-      setLastCreatedAt(undefined); // Reset pagination
-      setNotifications([]); // Clear previous notifications
+      setLoading(true);
+      setLastCreatedAt(undefined);
+      setNotifications([]);
 
       fetchNotifications(undefined).then((result) => {
         if (result?.error) {
@@ -183,147 +195,198 @@ function NotificationPopover({
       setNotifications(updatedNotification);
       setUreadNotifictaionsCount(0);
     } else {
-      alert("All notifications have been marked as read");
+      notify("All notifications are already read");
     }
   }, [notifications, setUreadNotifictaionsCount]);
 
   const isEmpty = notifications.length === 0;
 
   return (
-    <Popover
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        horizontal: "left",
-        vertical: "bottom",
-      }}
-      disableScrollLock
-      onClose={onClose}
-      open={open}
-      slotProps={{
-        paper: {
-          sx: { width: 380 },
-        },
-      }}
-      {...other}
-    >
-      <Stack
-        alignItems="center"
-        direction="row"
-        justifyContent="space-between"
-        spacing={2}
-        sx={{
-          px: 3,
-          py: 2,
-        }}
-      >
-        <Typography color="inherit" variant="h6">
-          Notifications
-        </Typography>
-        <Tooltip title="Mark all as read">
-          <IconButton onClick={handleMarkRead} size="small" color="inherit">
-            <SvgIcon>
-              <Mail04 />
-            </SvgIcon>
-          </IconButton>
-        </Tooltip>
-      </Stack>
-
-      {loading && (
-        <Stack justifyContent={"center"} alignItems={"center"} sx={{ my: 4 }}>
-          <CircularProgress />
-        </Stack>
-      )}
-
-      {isEmpty && !loading ? (
-        <Box sx={{ p: 2 }}>
-          <Typography variant="subtitle2">
-            There are no notifications
-          </Typography>
-        </Box>
-      ) : (
-        <Scrollbar sx={{ maxHeight: 400 }}>
-          <List disablePadding>
-            {notifications.map((notification) => (
-              <ListItem
-                divider
-                key={notification._id}
-                sx={{
-                  alignItems: "flex-start",
-                  "&:hover": {
-                    backgroundColor: "action.hover",
-                  },
-                  "& .MuiListItemSecondaryAction-root": {
-                    top: "24%",
-                  },
-                }}
-                secondaryAction={
-                  <Tooltip title="Remove">
-                    <IconButton
-                      edge="end"
-                      onClick={() => {
-                        deleteNotification(notification._id).then((result) => {
-                          if (result?.error) setMessaage(result.error);
-                          if (result?.message) notify(result.message);
-
-                          const updatedNotification = notifications.filter(
-                            (prevNotification) =>
-                              prevNotification._id !== notification._id
-                          );
-
-                          setNotifications(updatedNotification);
-                        });
-                      }}
-                      size="small"
-                    >
-                      <SvgIcon>
-                        <Close />
-                      </SvgIcon>
-                    </IconButton>
-                  </Tooltip>
-                }
-              >
-                {renderContent(notification)}
-              </ListItem>
-            ))}
-          </List>
-        </Scrollbar>
-      )}
-
-      {message && (
-        <Typography color="error" textAlign={"center"} variant="subtitle2">
-          {message}
-        </Typography>
-      )}
-
-      {hasMore && (
-        <Button
-          disabled={isLoadingMore}
-          color="inherit"
-          sx={{
-            position: "relative",
-            minWidth: "120px", // Ensures consistent width
-            height: "40px",
-            my: 4,
+    <AnimatePresence>
+      {open && (
+        <Popover
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            horizontal: "right",
+            vertical: "bottom",
           }}
-          onClick={handleLoadMore}
+          transformOrigin={{
+            horizontal: "right",
+            vertical: "top",
+          }}
+          disableScrollLock
+          onClose={onClose}
+          open={open}
+          slotProps={{
+            paper: {
+              sx: { 
+                width: 400,
+                mt: 1.5,
+                borderRadius: 2,
+                boxShadow: (theme) => `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`,
+              },
+            },
+          }}
+          {...other}
         >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-              position: "absolute",
-              opacity: isLoadingMore ? 0 : 1,
-              transition: "opacity 0.2s ease-in-out",
-            }}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
           >
-            Load More
-          </Box>
-          {isLoadingMore && <CircularProgress size={24} />}
-        </Button>
+            <Stack
+              alignItems="center"
+              direction="row"
+              justifyContent="space-between"
+              spacing={2}
+              sx={{
+                px: 3,
+                py: 2,
+                borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Typography variant="h6" fontWeight={700}>
+                Notifications
+              </Typography>
+              <Tooltip title="Mark all as read" arrow>
+                <IconButton 
+                  onClick={handleMarkRead} 
+                  size="small"
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    },
+                  }}
+                >
+                  <SvgIcon fontSize="small">
+                    <Mail04 />
+                  </SvgIcon>
+                </IconButton>
+              </Tooltip>
+            </Stack>
+
+            {loading && (
+              <Stack justifyContent="center" alignItems="center" sx={{ py: 6 }}>
+                <CircularProgress size={32} />
+              </Stack>
+            )}
+
+            {isEmpty && !loading ? (
+              <Box sx={{ p: 4, textAlign: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  No notifications yet
+                </Typography>
+              </Box>
+            ) : (
+              <Scrollbar sx={{ maxHeight: 420 }}>
+                <List disablePadding>
+                  {notifications.map((notification, index) => (
+                    <motion.div
+                      key={notification._id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <ListItem
+                        divider
+                        sx={{
+                          alignItems: "flex-start",
+                          transition: "all 0.2s",
+                          "&:hover": {
+                            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                          },
+                          "& .MuiListItemSecondaryAction-root": {
+                            top: "24%",
+                          },
+                        }}
+                        secondaryAction={
+                          <Tooltip title="Remove" arrow>
+                            <IconButton
+                              edge="end"
+                              onClick={() => {
+                                deleteNotification(notification._id).then((result) => {
+                                  if (result?.error) setMessaage(result.error);
+                                  if (result?.message) notify(result.message);
+
+                                  const updatedNotification = notifications.filter(
+                                    (prevNotification) =>
+                                      prevNotification._id !== notification._id
+                                  );
+
+                                  setNotifications(updatedNotification);
+                                });
+                              }}
+                              size="small"
+                              sx={{
+                                "&:hover": {
+                                  color: "error.main",
+                                  backgroundColor: (theme) => alpha(theme.palette.error.main, 0.08),
+                                },
+                              }}
+                            >
+                              <SvgIcon fontSize="small">
+                                <Close />
+                              </SvgIcon>
+                            </IconButton>
+                          </Tooltip>
+                        }
+                      >
+                        {renderContent(notification)}
+                      </ListItem>
+                    </motion.div>
+                  ))}
+                </List>
+              </Scrollbar>
+            )}
+
+            {message && (
+              <Typography 
+                color="error" 
+                textAlign="center" 
+                variant="body2"
+                sx={{ p: 2 }}
+              >
+                {message}
+              </Typography>
+            )}
+
+            {hasMore && (
+              <Box sx={{ p: 2, borderTop: (theme) => `1px solid ${theme.palette.divider}` }}>
+                <Button
+                  disabled={isLoadingMore}
+                  color="primary"
+                  fullWidth
+                  variant="text"
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 600,
+                    position: "relative",
+                    minHeight: 36,
+                  }}
+                  onClick={handleLoadMore}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                      position: "absolute",
+                      opacity: isLoadingMore ? 0 : 1,
+                      transition: "opacity 0.2s",
+                    }}
+                  >
+                    Load More
+                  </Box>
+                  {isLoadingMore && <CircularProgress size={20} />}
+                </Button>
+              </Box>
+            )}
+          </motion.div>
+        </Popover>
       )}
-    </Popover>
+    </AnimatePresence>
   );
 }
 

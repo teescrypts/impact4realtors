@@ -1,10 +1,10 @@
 import React, { useState, useCallback, ReactNode } from "react";
-import { Box, ButtonBase, Collapse, SvgIcon } from "@mui/material";
+import { Box, ButtonBase, Collapse, SvgIcon, Tooltip } from "@mui/material";
 import { RouterLink } from "@/app/component/router-link";
 import ChevronRight from "@/app/icons/untitled-ui/duocolor/chevron-right";
 import DownArrow from "@/app/icons/untitled-ui/duocolor/down-arrow";
+import { motion } from "framer-motion";
 
-// Define the types for props
 interface SideNavItemProps {
   active: boolean;
   children?: ReactNode;
@@ -16,6 +16,7 @@ interface SideNavItemProps {
   open?: boolean;
   path?: string;
   title: string;
+  isCollapsed?: boolean;
 }
 
 const SideNavItem: React.FC<SideNavItemProps> = ({
@@ -28,6 +29,7 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
   open: openProp,
   path,
   title,
+  isCollapsed = false,
 }) => {
   const [open, setOpen] = useState(!!openProp);
 
@@ -45,7 +47,7 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
       <Box
         sx={{
           alignItems: "center",
-          display: "center",
+          display: "flex",
           height: 20,
           justifyContent: "center",
           width: 20,
@@ -58,6 +60,7 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
             height: 4,
             opacity: 0,
             width: 4,
+            transition: "all 0.2s",
             ...(active && {
               backgroundColor: "var(--nav-item-icon-active-color)",
               height: 6,
@@ -72,31 +75,55 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
 
   const offset = depth === 0 ? 0 : (depth - 1) * 16;
 
-  // Render branch items (with children)
-  if (children) {
+  const baseButtonStyles = {
+    alignItems: "center",
+    borderRadius: 2,
+    display: "flex",
+    justifyContent: isCollapsed && depth === 0 ? "center" : "flex-start",
+    pl: isCollapsed && depth === 0 ? 0 : `${16 + offset}px`,
+    pr: isCollapsed && depth === 0 ? 0 : "16px",
+    py: 1,
+    textAlign: "left",
+    width: "100%",
+    position: "relative",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    ...(active &&
+      depth === 0 && {
+        backgroundColor: "var(--nav-item-active-bg)",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          left: 0,
+          top: "50%",
+          transform: "translateY(-50%)",
+          height: "60%",
+          width: 3,
+          backgroundColor: "var(--nav-item-icon-active-color)",
+          borderRadius: "0 4px 4px 0",
+        },
+      }),
+    "&:hover": {
+      backgroundColor: "var(--nav-item-hover-bg)",
+    },
+  } as const;
+
+  // When collapsed, hide nested items
+  if (isCollapsed && depth > 0) {
+    return null;
+  }
+
+  // Render branch items (with children) - but collapse when sidebar is collapsed
+  if (children && !isCollapsed) {
     return (
-      <li>
+      <motion.li
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.2 }}
+      >
         <ButtonBase
           disabled={disabled}
           onClick={handleToggle}
-          sx={{
-            alignItems: "center",
-            borderRadius: 1,
-            display: "flex",
-            justifyContent: "flex-start",
-            pl: `${16 + offset}px`,
-            pr: "16px",
-            py: "6px",
-            textAlign: "left",
-            width: "100%",
-            ...(active &&
-              depth === 0 && {
-                backgroundColor: "var(--nav-item-active-bg)",
-              }),
-            "&:hover": {
-              backgroundColor: "var(--nav-item-hover-bg)",
-            },
-          }}
+          sx={baseButtonStyles}
         >
           {startIcon && (
             <Box
@@ -107,6 +134,7 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
                 display: "inline-flex",
                 justifyContent: "center",
                 mr: 2,
+                transition: "color 0.2s",
                 ...(active && {
                   color: "var(--nav-item-icon-active-color)",
                 }),
@@ -126,8 +154,10 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
               fontWeight: depth > 0 ? 500 : 600,
               lineHeight: "24px",
               whiteSpace: "nowrap",
+              transition: "color 0.2s",
               ...(active && {
                 color: "var(--nav-item-active-color)",
+                fontWeight: 600,
               }),
               ...(disabled && {
                 color: "var(--nav-item-disabled-color)",
@@ -136,45 +166,40 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
           >
             {title}
           </Box>
-          <SvgIcon
-            sx={{
-              color: "var(--nav-item-chevron-color)",
-              fontSize: 16,
-              ml: 2,
-            }}
+          <motion.div
+            animate={{ rotate: open ? 0 : 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {open ? <DownArrow /> : <ChevronRight />}
-          </SvgIcon>
+            <SvgIcon
+              sx={{
+                color: "var(--nav-item-chevron-color)",
+                fontSize: 16,
+                ml: 2,
+                transition: "all 0.2s",
+              }}
+            >
+              {open ? <DownArrow /> : <ChevronRight />}
+            </SvgIcon>
+          </motion.div>
         </ButtonBase>
-        <Collapse in={open} sx={{ mt: 0.5 }}>
-          {children}
+        <Collapse in={open} timeout={200}>
+          <Box sx={{ mt: 0.5 }}>{children}</Box>
         </Collapse>
-      </li>
+      </motion.li>
     );
   }
 
-  return (
-    <li>
+  // Regular nav item (or collapsed parent)
+  const navItem = (
+    <motion.li
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.2 }}
+      whileHover={{ x: depth === 0 && !isCollapsed ? 2 : 0 }}
+    >
       <ButtonBase
         disabled={disabled}
-        sx={{
-          alignItems: "center",
-          borderRadius: 1,
-          display: "flex",
-          justifyContent: "flex-start",
-          pl: `${16 + offset}px`,
-          pr: "16px",
-          py: "6px",
-          textAlign: "left",
-          width: "100%",
-          ...(active &&
-            depth === 0 && {
-              backgroundColor: "var(--nav-item-active-bg)",
-            }),
-          "&:hover": {
-            backgroundColor: "var(--nav-item-hover-bg)",
-          },
-        }}
+        sx={baseButtonStyles}
         href={path!}
         LinkComponent={RouterLink}
       >
@@ -186,7 +211,8 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
               color: "var(--nav-item-icon-color)",
               display: "inline-flex",
               justifyContent: "center",
-              mr: 2,
+              mr: isCollapsed && depth === 0 ? 0 : 2,
+              transition: "color 0.2s",
               ...(active && {
                 color: "var(--nav-item-icon-active-color)",
               }),
@@ -196,35 +222,64 @@ const SideNavItem: React.FC<SideNavItemProps> = ({
           </Box>
         )}
 
-        <Box
-          component="span"
-          sx={{
-            color: "var(--nav-item-color)",
-            flexGrow: 1,
-            fontFamily: (theme) => theme.typography.fontFamily,
-            fontSize: depth > 0 ? 13 : 14,
-            fontWeight: depth > 0 ? 500 : 600,
-            lineHeight: "24px",
-            whiteSpace: "nowrap",
-            ...(active && {
-              color: "var(--nav-item-active-color)",
-            }),
-            ...(disabled && {
-              color: "var(--nav-item-disabled-color)",
-            }),
-          }}
-        >
-          {title}
-        </Box>
+        {!isCollapsed && (
+          <>
+            <Box
+              component="span"
+              sx={{
+                color: "var(--nav-item-color)",
+                flexGrow: 1,
+                fontFamily: (theme) => theme.typography.fontFamily,
+                fontSize: depth > 0 ? 13 : 14,
+                fontWeight: depth > 0 ? 500 : 600,
+                lineHeight: "24px",
+                whiteSpace: "nowrap",
+                transition: "color 0.2s",
+                ...(active && {
+                  color: "var(--nav-item-active-color)",
+                  fontWeight: 600,
+                }),
+                ...(disabled && {
+                  color: "var(--nav-item-disabled-color)",
+                }),
+              }}
+            >
+              {title}
+            </Box>
 
-        {label && (
-          <Box component="span" sx={{ ml: 2 }}>
-            {label}
-          </Box>
+            {label && (
+              <Box 
+                component="span" 
+                sx={{ 
+                  ml: 2,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  px: 1,
+                  py: 0.25,
+                  borderRadius: 1,
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                }}
+              >
+                {label}
+              </Box>
+            )}
+          </>
         )}
       </ButtonBase>
-    </li>
+    </motion.li>
   );
+
+  // Wrap with Tooltip when collapsed
+  if (isCollapsed && depth === 0) {
+    return (
+      <Tooltip title={title} placement="right" arrow>
+        {navItem}
+      </Tooltip>
+    );
+  }
+
+  return navItem;
 };
 
 export default SideNavItem;

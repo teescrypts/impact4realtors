@@ -10,6 +10,7 @@ import Settings from "../icons/untitled-ui/duocolor/settings";
 import { useUserData } from "../guards/auth-guard";
 import User01 from "../icons/untitled-ui/duocolor/user01";
 import Percentage from "../icons/untitled-ui/duocolor/percentage";
+import Automation from "../icons/untitled-ui/duocolor/automation";
 
 interface MenuItem {
   title: string;
@@ -36,6 +37,16 @@ export const useSections = (): MenuSection[] => {
         icon: (
           <SvgIcon fontSize="small">
             <HomeSmile />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "Automations",
+        value: "automations",
+        path: paths.automations,
+        icon: (
+          <SvgIcon fontSize="small">
+            <Automation />
           </SvgIcon>
         ),
       },

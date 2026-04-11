@@ -7,125 +7,316 @@ import {
   Typography,
   Grid2,
   Container,
-  Paper,
-  useTheme,
+  Stack,
+  Chip,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import { ArrowRightIcon } from "@mui/x-date-pickers";
 import CheckCircle from "@/app/icons/untitled-ui/duocolor/checked-circle";
 import Percentage from "@/app/icons/untitled-ui/duocolor/percentage";
 import User01 from "@/app/icons/untitled-ui/duocolor/user01";
 import EvaluationDialogue from "../evaluation-dialogue";
 
+const features = [
+  {
+    title: "Fast & Free",
+    desc: "Get your home value report in minutes — no cost, no strings attached.",
+    icon: CheckCircle,
+  },
+  {
+    title: "Accurate Data",
+    desc: "Powered by real market data and recent comparable sales in your area.",
+    icon: Percentage,
+  },
+  {
+    title: "Expert Support",
+    desc: "Our team is ready to walk you through every number, anytime.",
+    icon: User01,
+  },
+];
+
 export default function HomeEvaluation({ adminId }: { adminId?: string }) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
-  const handleClose = () => setOpen(false);
+
+  const secondary = theme.palette.secondary.main;
+  const contrastText = theme.palette.primary.contrastText;
 
   return (
     <Box
+      component="section"
       sx={{
-        background: `linear-gradient(135deg, ${theme.palette.primary.darkest}, ${theme.palette.primary.dark})`,
-        py: { xs: 8, md: 10 },
-        px: 2,
-        color: theme.palette.primary.contrastText,
-        textAlign: "center",
+        position: "relative",
+        overflow: "hidden",
+        py: { xs: 9, md: 13 },
+        background: `linear-gradient(140deg, ${theme.palette.primary.darkest ?? theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 60%, ${alpha(secondary, 0.25)} 100%)`,
+        color: contrastText,
       }}
     >
-      <Container maxWidth="md">
-        <Box>
-          <Typography
-            variant="h3"
-            fontWeight="bold"
-            gutterBottom
-            sx={{ color: theme.palette.primary.contrastText }}
-          >
-            What’s Your Home Worth?
-          </Typography>
-
-          <Typography
-            variant="h6"
-            sx={{
-              opacity: 0.9,
-              mb: 4,
-              color: theme.palette.primary.contrastText,
-            }}
-          >
-            Get a free, no-obligation home value report based on current market
-            data and recent sales in your area.
-          </Typography>
-
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => setOpen(true)}
-            endIcon={<ArrowRightIcon />}
-            sx={{
-              px: 6,
-              py: 2,
-              fontSize: "1.1rem",
-              borderRadius: 3,
-              boxShadow: theme.shadows[6],
-              backgroundColor: theme.palette.secondary.main,
-              color: theme.palette.secondary.contrastText,
-              "&:hover": {
-                backgroundColor: theme.palette.secondary.dark,
-              },
-            }}
-          >
-            Get Started
-          </Button>
-        </Box>
-
-        {/* --- DIALOG --- */}
-        <EvaluationDialogue
-          adminId={adminId}
-          open={open}
-          onClose={handleClose}
+      {/* Background texture layers */}
+      <Box
+        aria-hidden
+        sx={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      >
+        {/* Noise grain overlay */}
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            opacity: 0.04,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            backgroundSize: "128px 128px",
+          }}
         />
+        {/* Glow orbs */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: "-20%",
+            left: "60%",
+            width: 600,
+            height: 600,
+            borderRadius: "50%",
+            background: `radial-gradient(circle, ${alpha(secondary, 0.2)} 0%, transparent 65%)`,
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: "-25%",
+            left: "-10%",
+            width: 480,
+            height: 480,
+            borderRadius: "50%",
+            background: `radial-gradient(circle, ${alpha(contrastText, 0.05)} 0%, transparent 65%)`,
+          }}
+        />
+        {/* Thin diagonal lines */}
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            opacity: 0.06,
+            backgroundImage: `repeating-linear-gradient(
+              -45deg,
+              transparent,
+              transparent 40px,
+              ${contrastText} 40px,
+              ${contrastText} 41px
+            )`,
+          }}
+        />
+      </Box>
 
-        {/* --- Feature Cards --- */}
-        <Grid2 container spacing={3} sx={{ mt: 8 }}>
-          {[
-            {
-              title: "Fast & Free",
-              desc: "Get your home value report in minutes, completely free.",
-              icon: <CheckCircle color="secondary" />,
-            },
-            {
-              title: "Accurate Data",
-              desc: "Based on real market data and recent comparable sales.",
-              icon: <Percentage color="secondary" />,
-            },
-            {
-              title: "Expert Support",
-              desc: "Our team is here to answer any questions you have.",
-              icon: <User01 color="secondary" />,
-            },
-          ].map((f, i) => (
-            <Grid2 size={{ xs: 12, md: 4 }} key={i}>
-              <Paper
-                elevation={3}
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+        <Stack spacing={10}>
+          {/* ── HERO TEXT + CTA ── */}
+          <Stack alignItems="center" spacing={4} textAlign="center">
+            {/* Eyebrow badge */}
+            <Chip
+              label="Instant Home Valuation"
+              size="small"
+              sx={{
+                bgcolor: alpha(contrastText, 0.12),
+                color: contrastText,
+                fontWeight: 700,
+                fontSize: "0.7rem",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                border: `1px solid ${alpha(contrastText, 0.2)}`,
+                borderRadius: 1,
+                height: 26,
+              }}
+            />
+
+            <Box>
+              <Typography
+                variant="h2"
+                fontWeight={900}
+                lineHeight={1.08}
+                letterSpacing="-0.035em"
                 sx={{
-                  p: 3,
-                  borderRadius: 3,
-                  textAlign: "center",
-                  height: "100%",
-                  bgcolor: theme.palette.background.paper,
-                  boxShadow: theme.shadows[2],
+                  fontSize: { xs: "2.2rem", sm: "3rem", md: "3.75rem" },
+                  color: contrastText,
+                  mb: 2.5,
                 }}
               >
-                <Box sx={{ mb: 2 }}>{f.icon}</Box>
-                <Typography variant="h6" fontWeight="bold">
-                  {f.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {f.desc}
-                </Typography>
-              </Paper>
-            </Grid2>
-          ))}
-        </Grid2>
+                What&apos;s your home
+                <Box
+                  component="span"
+                  sx={{
+                    display: "block",
+                    color: secondary,
+                    // subtle text shadow for legibility on gradient
+                    textShadow: `0 0 40px ${alpha(secondary, 0.4)}`,
+                  }}
+                >
+                  worth today?
+                </Box>
+              </Typography>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  opacity: 0.8,
+                  maxWidth: 520,
+                  mx: "auto",
+                  fontSize: { xs: "1rem", md: "1.1rem" },
+                  lineHeight: 1.7,
+                  color: contrastText,
+                }}
+              >
+                Get a free, no-obligation home value report based on live market
+                data and recent comparable sales in your neighborhood.
+              </Typography>
+            </Box>
+
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems="center"
+            >
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => setOpen(true)}
+                endIcon={<ArrowRightIcon />}
+                sx={{
+                  px: 5,
+                  py: 1.625,
+                  fontSize: "1rem",
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  bgcolor: secondary,
+                  color: theme.palette.secondary.contrastText,
+                  boxShadow: `0 8px 28px ${alpha(secondary, 0.4)}`,
+                  "&:hover": {
+                    bgcolor: theme.palette.secondary.dark,
+                    boxShadow: `0 10px 36px ${alpha(secondary, 0.5)}`,
+                    transform: "translateY(-1px)",
+                  },
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Get My Free Report
+              </Button>
+
+              <Typography
+                variant="caption"
+                sx={{ opacity: 0.55, color: contrastText, fontSize: "0.78rem" }}
+              >
+                No sign-up required · Takes 60 seconds
+              </Typography>
+            </Stack>
+          </Stack>
+
+          {/* ── FEATURE CARDS ── */}
+          <Grid2 container spacing={2.5}>
+            {features.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <Grid2 size={{ xs: 12, md: 4 }} key={i}>
+                  <Box
+                    sx={{
+                      p: { xs: 3, md: 3.5 },
+                      height: "100%",
+                      borderRadius: 3.5,
+                      border: `1px solid ${alpha(contrastText, 0.1)}`,
+                      bgcolor: alpha(contrastText, 0.05),
+                      backdropFilter: "blur(12px)",
+                      transition:
+                        "background-color 0.2s ease, transform 0.2s ease",
+                      "&:hover": {
+                        bgcolor: alpha(contrastText, 0.09),
+                        transform: "translateY(-3px)",
+                      },
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                    }}
+                  >
+                    {/* Icon container */}
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        bgcolor: alpha(secondary, 0.18),
+                        border: `1px solid ${alpha(secondary, 0.3)}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon color="secondary" />
+                    </Box>
+
+                    <Box>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        color={contrastText}
+                        gutterBottom
+                        letterSpacing="-0.01em"
+                      >
+                        {f.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          opacity: 0.65,
+                          color: contrastText,
+                          lineHeight: 1.65,
+                        }}
+                      >
+                        {f.desc}
+                      </Typography>
+                    </Box>
+
+                    {/* Bottom accent line */}
+                    <Box
+                      sx={{
+                        mt: "auto",
+                        pt: 2,
+                        borderTop: `1px solid ${alpha(contrastText, 0.08)}`,
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: secondary,
+                          fontWeight: 700,
+                          fontSize: "0.72rem",
+                          letterSpacing: "0.05em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {i === 0
+                          ? "Instant results"
+                          : i === 1
+                            ? "Live MLS data"
+                            : "Real agents"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid2>
+              );
+            })}
+          </Grid2>
+        </Stack>
       </Container>
+
+      <EvaluationDialogue
+        adminId={adminId}
+        open={open}
+        onClose={() => setOpen(false)}
+      />
     </Box>
   );
 }

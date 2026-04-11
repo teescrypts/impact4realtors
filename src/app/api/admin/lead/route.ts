@@ -3,8 +3,10 @@ import apiResponse from "@/app/lib/api-response";
 import Lead, { ILead } from "@/app/model/lead";
 import { NextRequest, NextResponse } from "next/server";
 import { FilterQuery } from "mongoose";
+import { handleTagAssignment } from "@/app/lib/execution-engine/entry-handler";
+import { capitalizeFirst } from "@/app/utils/capitalize-first-letter";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 500;
 
 export async function GET(req: NextRequest) {
   const authResponse = await authMiddleware(req);
@@ -27,7 +29,7 @@ export async function GET(req: NextRequest) {
     // Define query type using Mongoose FilterQuery
     const query: FilterQuery<ILead> = {
       [isAgent ? "agent" : "admin"]: admin._id,
-      type,
+      category: type,
     };
 
     if (lastCreatedAt) {
@@ -53,13 +55,13 @@ export async function GET(req: NextRequest) {
         hasMore,
         lastCreatedAt: leads.at(-1)?.createdAt || null,
       },
-      200
+      200,
     );
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }
@@ -79,27 +81,38 @@ export async function POST(req: NextRequest) {
 
     // Destructure fields from body
     const {
-      type,
+      category,
       status,
       firstName,
       lastName,
+      intent,
       email,
       phone,
       source,
       note,
       propertyId,
+      buyerProfile,
     } = body;
 
     // Basic validation
-    if (!type || !status || !firstName || !lastName || !email || !phone) {
+    if (
+      !status ||
+      !firstName ||
+      !lastName ||
+      !email ||
+      !phone ||
+      !intent ||
+      !category
+    ) {
       return apiResponse("Missing required fields", null, 400);
     }
 
     // Create the lead
-    await Lead.create({
+    const newLead = await Lead.create({
       admin: isAgent ? admin.agent.admin : admin._id,
       ...((isAgent || admin.isBroker) && { agent: admin._id }),
-      type,
+      category: capitalizeFirst(category),
+      intent,
       status,
       firstName: firstName.trim(),
       lastName: lastName.trim(),
@@ -107,15 +120,18 @@ export async function POST(req: NextRequest) {
       phone: phone.trim(),
       source: source?.trim() || "",
       note: note?.trim() || "",
-      propertyId,
+      ...(propertyId && { propertyId }),
+      ...(buyerProfile && { buyerProfile }),
     });
+
+    await handleTagAssignment(newLead._id.toString(), status);
 
     return apiResponse("Lead added successfully", null, 201);
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }

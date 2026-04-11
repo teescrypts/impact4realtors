@@ -2,23 +2,24 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { deleteLead, fetchMoreLeads } from "@/app/actions/server-actions";
-import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/page";
+import { ILead } from "../model/lead";
+// import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/former-page";
 
 export default function useLeadData({
   leads,
   hasMore,
   lastCreatedAt,
-  notify
-}: 
-{
-  leads: LeadType[];
+  notify,
+}: {
+  leads: ILead[];
   hasMore: boolean;
   lastCreatedAt: Date | null;
   notify: (message: string) => void;
 }) {
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>("House Tour Leads");
-  const [currentLeads, setCurrentLeads] = useState<LeadType[]>(leads);
+  const [selectedCategory, setSelectedCategory] = useState<"Buyer" | "Seller">(
+    "Buyer"
+  );
+  const [currentLeads, setCurrentLeads] = useState<ILead[]>(leads);
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [currentHasMore, setCurrentHasMore] = useState<boolean>(hasMore);
   const [currentLastCreated, setCurrentLastCreated] = useState<Date | null>(

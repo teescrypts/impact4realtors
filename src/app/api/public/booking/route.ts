@@ -1,12 +1,13 @@
 import { NextRequest } from "next/server";
 import apiResponse from "@/app/lib/api-response";
 import Appointment from "@/app/model/appointment";
-import Lead, { LeadType, LeadStatus } from "@/app/model/lead";
+import Lead from "@/app/model/lead";
 import Notification from "@/app/model/notification";
 import getAdmin from "@/app/utils/get-admin";
 import Admin from "@/app/model/admin";
 import { DateTime } from "luxon";
 import { createGoogleEvent } from "@/app/lib/google/create-google-event";
+import { handleTagAssignment } from "@/app/lib/execution-engine/entry-handler";
 
 // Define TypeScript Interfaces for Request Data
 interface AppointmentRequestBody {
@@ -25,16 +26,46 @@ interface AppointmentRequestBody {
 }
 
 // Helper function to determine lead type
-const getLeadType = (type: string, callReason?: string): LeadType | null => {
-  if (type === "house_touring") return "House Tour Leads";
+const getLeadIntent = (type: string, callReason?: string) => {
+  if (type === "house_touring") return "House Tour";
   if (type === "call") {
     switch (callReason) {
       case "selling":
-        return "Home Seller Leads";
+        return "Sell Call Appointment";
       case "mortgage_enquiry":
-        return "Mortgage Inquiry Leads";
+        return "Mortgage Inquiry";
       case "general_enquiry":
-        return "General Inquiry Leads";
+        return "General Inquiry";
+    }
+  }
+  return null;
+};
+
+const getLeadCategory = (type: string, callReason?: string) => {
+  if (type === "house_touring") return "Buyer";
+  if (type === "call") {
+    switch (callReason) {
+      case "selling":
+        return "Seller";
+      case "mortgage_enquiry":
+        return "Buyer";
+      case "general_enquiry":
+        return "Inquiry";
+    }
+  }
+  return null;
+};
+
+const getLeadStatus = (type: string, callReason?: string) => {
+  if (type === "house_touring") return "property viewing scheduled";
+  if (type === "call") {
+    switch (callReason) {
+      case "selling":
+        return "new lead";
+      case "mortgage_enquiry":
+        return "needs consultation";
+      case "general_enquiry":
+        return "new lead";
     }
   }
   return null;
@@ -63,11 +94,11 @@ export async function POST(req: NextRequest) {
       return apiResponse(
         "Sorry, selected Time slot is no longer available",
         null,
-        409
+        409,
       );
 
-    const leadType = getLeadType(body.type, body.callReason);
-    if (!leadType) return apiResponse("Invalid appointment type", null, 400);
+    // const leadType = getLeadType(body.type, body.callReason);
+    // if (!leadType) return apiResponse("Invalid appointment type", null, 400);
 
     // ✅ Create appointment
     const appointment = new Appointment({ admin, ...body });
@@ -82,7 +113,7 @@ export async function POST(req: NextRequest) {
     if (adminObj.google?.accessToken) {
       const eventStart = DateTime.fromISO(
         `${body.date}T${body.bookedTime.from}`,
-        { zone: "America/New_York" }
+        { zone: "America/New_York" },
       );
       const eventEnd = DateTime.fromISO(`${body.date}T${body.bookedTime.to}`, {
         zone: "America/New_York",
@@ -104,22 +135,30 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await appointment.save();
+    const newApt = await appointment.save();
 
     // ✅ Create lead
     const newLead = new Lead({
       admin,
       ...(agent && { agent }),
-      type: leadType,
-      status: LeadStatus[leadType][body.type === "call" ? 0 : 2],
+      category: getLeadCategory(body.type, body.callReason),
+      intent: getLeadIntent(body.type, body.callReason),
+      status: getLeadStatus(body.type, body.callReason),
       firstName: body.customer.firstName,
       lastName: body.customer.lastName,
       email: body.customer.email,
       phone: body.customer.phone,
-      ...(leadType === "House Tour Leads" && { propertyId: body.propertyId }),
+      appointmentId: newApt._id,
+      ...(body.type === "house_touring" && { propertyId: body.propertyId }),
+      source: "website",
     });
 
     await newLead.save();
+
+    await handleTagAssignment(
+      newLead._id,
+      getLeadStatus(body.type, body.callReason)!,
+    );
 
     // ✅ Create notification
     const notification = new Notification({
@@ -141,7 +180,7 @@ export async function POST(req: NextRequest) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }

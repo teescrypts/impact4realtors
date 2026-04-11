@@ -8,7 +8,6 @@ import {
 } from "@dnd-kit/core";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { updateLeadStatus } from "@/app/actions/server-actions";
-import { LeadType } from "../(pages)/demo/(admin)/dashboard/lead/page";
 
 export default function useLeadDragDrop({
   setUpdatingLeads,
@@ -16,7 +15,7 @@ export default function useLeadDragDrop({
   notify,
 }: {
   setUpdatingLeads: Dispatch<SetStateAction<boolean>>;
-  setCurrentLeads: Dispatch<SetStateAction<LeadType[]>>;
+  setCurrentLeads: Dispatch<SetStateAction<any[]>>;
   notify: (message: string) => void;
 }) {
   const [activeLead, setActiveLead] = useState<string | null>(null);

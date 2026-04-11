@@ -1,5 +1,5 @@
+// import { AgentType } from "./app/(pages)/demo/(admin)/dashboard/profile/page";
 import { propertyType } from "./app/(pages)/demo/(pages)/listings/page";
-import { AgentType } from "./app/(pages)/demo/broker/agents/page";
 
 interface actionStateOk {
   ok?: boolean;
@@ -86,7 +86,7 @@ export interface HomepageResponse {
   forRent: propertyType[];
   forSale: propertyType[];
   publishedBlogs: BlogPostResponse[];
-  agents: AgentType[];
+  // agents: AgentType[];
 }
 
 export interface Availability {

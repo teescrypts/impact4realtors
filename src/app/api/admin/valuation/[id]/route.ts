@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import HomeValuationRequest from "@/app/model/home-valuation-request";
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
-import Lead, { LeadStatus } from "@/app/model/lead";
+import Lead from "@/app/model/lead";
+import { handleTagChange } from "@/app/lib/execution-engine/entry-handler";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const authResponse = await authMiddleware(req);
   if (authResponse instanceof NextResponse) return authResponse;
@@ -25,30 +26,33 @@ export async function PATCH(
 
     const _id = (await params).id;
 
+    console.log(_id);
+
     const updated = await HomeValuationRequest.findOneAndUpdate(
       { _id, admin: admin._id },
       { status },
-      { new: true }
+      { new: true },
     );
+
+    console.log(updated);
 
     if (!updated) {
       return apiResponse("Request not found or unauthorized", null, 404);
     }
 
     if (status === "Done") {
-      // ✅ Create lead
-      const newLead = new Lead({
-        admin: admin.agent.isAgent ? admin.agent.admin : admin,
-        ...(admin.agent.isAgent && { agent: admin }),
-        type: "Home Seller Leads",
-        status: LeadStatus["Home Seller Leads"][3],
-        firstName: updated.firstName,
-        lastName: updated.lastName,
-        email: updated.email,
-        phone: updated.phone,
-      });
+      const oldLead = await Lead.findById(updated.lead);
+      const updatedLead = await Lead.findByIdAndUpdate(
+        updated.lead,
+        { status: "valuation report sent" },
+        { new: true },
+      );
 
-      await newLead.save();
+      await handleTagChange(
+        oldLead._id.toString(),
+        oldLead.status,
+        updatedLead.status,
+      );
     }
 
     return apiResponse("Status updated successfully", null, 200);
@@ -56,7 +60,7 @@ export async function PATCH(
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }

@@ -1,11 +1,12 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
+import { handleTagChange } from "@/app/lib/execution-engine/entry-handler";
 import Lead from "@/app/model/lead";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const authResponse = await authMiddleware(req);
   if (authResponse instanceof NextResponse) return authResponse;
@@ -18,21 +19,36 @@ export async function PATCH(
     const _id = (await params).id;
     const body = await req.json();
     const { status } = body;
-    await Lead.findByIdAndUpdate(_id, { status });
+    const oldLead = await Lead.findById(_id);
+    const updatedLead = await Lead.findByIdAndUpdate(
+      _id,
+      { status },
+      { new: true },
+    );
+
+    console.log("here-----------------------");
+
+    await handleTagChange(
+      oldLead._id.toString(),
+      oldLead.status,
+      updatedLead.status,
+    );
+
+    console.log("here 2-----------------------");
 
     return apiResponse(`Lead Updated to ${status}`, null, 201);
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const authResponse = await authMiddleware(req);
   if (authResponse instanceof NextResponse) return authResponse;
@@ -49,7 +65,7 @@ export async function DELETE(
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }

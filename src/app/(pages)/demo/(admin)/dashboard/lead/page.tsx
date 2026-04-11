@@ -1,9 +1,18 @@
-import React from "react";
-import LeadManagement from "../components/lead-management";
-import { Box, Container, Stack, Typography } from "@mui/material";
-import { Metadata } from "next/types";
-import { cookies } from "next/headers";
-import apiRequest from "@/app/lib/api-request";
+/**
+ * Lead Management Page - Server Component
+ * 
+ * Fetches initial data on the server, then passes to client component
+ * Uses Next.js Server Components for optimal performance
+ */
+
+import { Suspense } from "react";
+import { Metadata } from "next";
+import { Box, Container, CircularProgress, Typography } from "@mui/material";
+import { getLeads } from "@/app/actions/lead-actions";
+import { getTags } from "@/app/actions/tag-actions";
+import { DUMMY_LEADS } from "../components/lead/data/dummy-leads";
+import { DUMMY_TAGS } from "../components/lead/data/tag-data";
+import LeadManagementContainer from "./lead-management-container";
 
 export const metadata: Metadata = {
   title: "Leads | Innovative Real Estate Solutions",
@@ -39,61 +48,86 @@ export const metadata: Metadata = {
   },
 };
 
-export interface LeadType {
-  _id: string;
-  type: string;
-  status: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  propertyId?: string;
-  createdAt: Date;
+
+// Loading fallback
+function LeadManagementLoading() {
+  return (
+    <Container maxWidth="xl">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60vh",
+          gap: 2,
+        }}
+      >
+        <CircularProgress size={48} />
+        <Typography variant="h6" color="text.secondary">
+          Loading leads...
+        </Typography>
+      </Box>
+    </Container>
+  );
 }
 
-async function Page({
+// Main page component
+export default async function LeadManagementPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const cookieStore = await cookies();
-  const tokenObj = cookieStore.get("session-token");
-  const token = tokenObj?.value;
-  const leadType = (await searchParams).type as string | undefined;
-  const type = leadType ? leadType : "House Tour Leads";
+  const params = await searchParams;
+  const categoryParam = params.category as string | undefined;
+  const initialCategory = categoryParam === "seller" || categoryParam === "inquiry" 
+    ? categoryParam 
+    : "buyer";
 
-  const response = await apiRequest<{
-    data: { leads: LeadType[]; hasMore: boolean; lastCreatedAt: Date | null };
-  }>(`admin/lead?type=${type}`, { token, tag: "fetchAdminLead" });
+  // Fetch data on server
+  let leads = DUMMY_LEADS;
+  let tags = DUMMY_TAGS;
+  let error: string | null = null;
 
-  const leads = response.data.leads;
-  const hasMore = response.data.hasMore;
-  const lastCreatedAt = response.data.lastCreatedAt;
+  try {
+    // Fetch in parallel for better performance
+    const [tagsResponse, leadsResponse] = await Promise.all([
+      getTags().catch((err) => {
+        console.error("Failed to fetch tags:", err);
+        return { data:  DUMMY_TAGS }; // Fallback to dummy data
+      }),
+      getLeads(initialCategory).catch((err) => {
+        console.error("Failed to fetch leads:", err);
+        return { data: { leads: DUMMY_LEADS, hasMore: false, lastCreatedAt: null } };
+      }),
+    ]);
+
+    tags = tagsResponse.data;
+    leads = leadsResponse.data.leads;
+  } catch (err: any) {
+    console.error("Error fetching data:", err);
+    error = err.message || "Failed to load data";
+    // Will use dummy data as fallback
+  }
 
   return (
-    <div>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth={"xl"}>
-          <Stack spacing={2}>
-            <Stack sx={{ mb: 2 }}>
-              <Typography variant="h4">Leads</Typography>
-            </Stack>
-            <LeadManagement
-              leads={leads}
-              hasMore={hasMore}
-              lastCreatedAt={lastCreatedAt}
-            />
-          </Stack>
-        </Container>
-      </Box>
-    </div>
+    <Suspense fallback={<LeadManagementLoading />}>
+      <LeadManagementContainer
+        initialLeads={leads}
+        initialTags={tags}
+        initialCategory={initialCategory}
+        error={error}
+      />
+    </Suspense>
   );
 }
 
-export default Page;
+// GET /api/admin/lead?type={category}
+// POST /api/admin/lead
+// PATCH /api/admin/lead/[id]
+// DELETE /api/admin/lead/[id]
+// GET /api/admin/tags
+
+
+// POST /api/admin/lead/[id]/journey/pause
+// POST /api/admin/lead/[id]/journey/resume

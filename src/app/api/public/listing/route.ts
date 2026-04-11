@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest } from "next/server";
 import Property from "@/app/model/property";
 import apiResponse from "@/app/lib/api-response";
@@ -83,7 +81,7 @@ export async function GET(req: NextRequest) {
       .skip(skip)
       .limit(limit)
       .select(
-        "propertyTitle bedrooms bathrooms squareMeters status price location images category createdAt"
+        "propertyTitle bedrooms bathrooms squareMeters status price location images category createdAt",
       );
 
     const totalCount = await Property.countDocuments(filterConditions);
@@ -95,13 +93,13 @@ export async function GET(req: NextRequest) {
         totalPages: Math.ceil(totalCount / limit),
         currentPage: query.page,
       },
-      200
+      200,
     );
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }

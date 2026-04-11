@@ -9,6 +9,7 @@ export const paths = {
   account: "/demo/dashboard/account",
   profile: "/demo/dashboard/profile",
   home_valuation: "/demo/dashboard/valuation",
+  automations: "/demo/dashboard/automations",
 };
 
 export const agentPaths = {

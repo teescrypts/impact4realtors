@@ -1,7 +1,7 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
 import Appointment from "@/app/model/appointment";
-import Lead, { LeadStatus } from "@/app/model/lead";
+import Lead from "@/app/model/lead";
 import Property from "@/app/model/property";
 import { DateTime } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       Property.countDocuments({ admin: admin._id }),
       Appointment.countDocuments({ status: "upcoming", admin: admin._id }),
       Lead.countDocuments({
-        status: { $in: Object.values(LeadStatus).map((s) => s[0]) },
+        status: { $in: Object.values("new lead").map((s) => s[0]) },
         admin: admin._id,
       }),
       Lead.aggregate([

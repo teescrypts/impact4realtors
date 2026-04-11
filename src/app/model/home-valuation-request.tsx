@@ -1,6 +1,8 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 interface IHomeValuationRequest extends Document {
+  admin?: Types.ObjectId;
+  lead: Types.ObjectId;
   address: string;
   bedrooms?: number;
   bathrooms?: number;
@@ -18,7 +20,6 @@ interface IHomeValuationRequest extends Document {
   email: string;
   phone: string;
   status: "Pending" | "Done";
-  admin?: Schema.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +32,13 @@ const HomeValuationRequestSchema = new Schema<IHomeValuationRequest>(
       type: String,
       required: true,
       trim: true,
+    },
+
+    lead: {
+      type: Schema.Types.ObjectId,
+      ref: "Lead",
+      required: true,
+      index: true,
     },
 
     bedrooms: {
@@ -99,14 +107,14 @@ const HomeValuationRequestSchema = new Schema<IHomeValuationRequest>(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const HomeValuationRequest =
   mongoose.models.HomeValuationRequest ||
   mongoose.model<IHomeValuationRequest>(
     "HomeValuationRequest",
-    HomeValuationRequestSchema
+    HomeValuationRequestSchema,
   );
 
 export default HomeValuationRequest;
