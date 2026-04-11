@@ -16,6 +16,7 @@ import replaceTemplateVariables from "@/app/utils/replace-template";
 import Admin from "@/app/model/admin";
 import Appointment from "@/app/model/appointment";
 import HomeValuationRequest from "@/app/model/home-valuation-request";
+import { capitalizeFirst } from "@/app/utils/capitalize-first-letter";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
@@ -77,7 +78,7 @@ export async function executeSendEmail(
     const isDev = process.env.NODE_ENV === "development";
     const emailDomain = isDev
       ? `Acme <onboarding@resend.dev>`
-      : `<${agentDetails.fname} @realtyillustration.com>`;
+      : `<${capitalizeFirst(agentDetails.fname)} <support@realtyillustration.com>`;
 
     const progressId = progress._id as ObjectId;
 
