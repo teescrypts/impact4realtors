@@ -130,8 +130,8 @@ export async function createCustomTag(tagData: {
     );
 
     // Revalidate tag cache
-    revalidateTag(CACHE_TAGS.allTags);
-    revalidateTag(CACHE_TAGS.tags);
+    revalidateTag(CACHE_TAGS.allTags, "max");
+    revalidateTag(CACHE_TAGS.tags, "max");
 
     return {
       success: true,
@@ -164,8 +164,8 @@ export async function updateCustomTag(tagId: string, updates: Partial<Tag>) {
     );
 
     // Revalidate tag cache
-    revalidateTag(CACHE_TAGS.allTags);
-    revalidateTag(CACHE_TAGS.tags);
+    revalidateTag(CACHE_TAGS.allTags, "max");
+    revalidateTag(CACHE_TAGS.tags, "max");
 
     return {
       success: true,
@@ -194,8 +194,8 @@ export async function deleteCustomTag(tagId: string) {
     });
 
     // Revalidate tag cache
-    revalidateTag(CACHE_TAGS.allTags);
-    revalidateTag(CACHE_TAGS.tags);
+    revalidateTag(CACHE_TAGS.allTags, "max");
+    revalidateTag(CACHE_TAGS.tags, "max");
 
     return {
       success: true,
@@ -218,6 +218,6 @@ export async function deleteCustomTag(tagId: string) {
  * Manually revalidate tag caches
  */
 export async function revalidateTags() {
-  revalidateTag(CACHE_TAGS.allTags);
-  revalidateTag(CACHE_TAGS.tags);
+  revalidateTag(CACHE_TAGS.allTags, "max");
+  revalidateTag(CACHE_TAGS.tags, "max");
 }

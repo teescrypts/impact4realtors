@@ -115,8 +115,8 @@ export async function createLead(payload: CreateLeadPayload) {
     );
 
     // Revalidate all lead caches
-    revalidateTag(CACHE_TAGS.allLeads);
-    revalidateTag(CACHE_TAGS.leads(payload.category));
+    revalidateTag(CACHE_TAGS.allLeads, "max");
+    revalidateTag(CACHE_TAGS.leads(payload.category), "max");
     revalidatePath("/dashboard/lead");
 
     return {
@@ -155,8 +155,8 @@ export async function updateLeadStatus(
     );
 
     // Revalidate caches
-    revalidateTag(CACHE_TAGS.allLeads);
-    revalidateTag(CACHE_TAGS.leads(category));
+    revalidateTag(CACHE_TAGS.allLeads, "max");
+    revalidateTag(CACHE_TAGS.leads(category), "max");
     revalidatePath("/dashboard/lead");
 
     return {
@@ -194,8 +194,8 @@ export async function updateLead(
     );
 
     // Revalidate caches
-    revalidateTag(CACHE_TAGS.allLeads);
-    revalidateTag(CACHE_TAGS.leads(category));
+    revalidateTag(CACHE_TAGS.allLeads, "max");
+    revalidateTag(CACHE_TAGS.leads(category), "max");
     revalidatePath("/dashboard/lead");
 
     return {
@@ -225,8 +225,8 @@ export async function deleteLead(leadId: string, category: LeadCategory) {
     });
 
     // Revalidate caches
-    revalidateTag(CACHE_TAGS.allLeads);
-    revalidateTag(CACHE_TAGS.leads(category));
+    revalidateTag(CACHE_TAGS.allLeads, "max");
+    revalidateTag(CACHE_TAGS.leads(category), "max");
     revalidatePath("/dashboard/lead");
 
     return {
@@ -266,8 +266,8 @@ export async function bulkDeleteLeads(
     const failCount = results.filter((r) => r.status === "rejected").length;
 
     // Revalidate caches
-    revalidateTag(CACHE_TAGS.allLeads);
-    revalidateTag(CACHE_TAGS.leads(category));
+    revalidateTag(CACHE_TAGS.allLeads, "max");
+    revalidateTag(CACHE_TAGS.leads(category), "max");
     revalidatePath("/dashboard/lead");
 
     return {
@@ -308,8 +308,8 @@ export async function pauseLeadJourney(leadId: string, category: LeadCategory) {
     );
 
     // Revalidate caches
-    revalidateTag(CACHE_TAGS.allLeads);
-    revalidateTag(CACHE_TAGS.leads(category));
+    revalidateTag(CACHE_TAGS.allLeads, "max");
+    revalidateTag(CACHE_TAGS.leads(category), "max");
     revalidatePath("/dashboard/lead");
 
     return {
@@ -345,8 +345,8 @@ export async function resumeLeadJourney(
     );
 
     // Revalidate caches
-    revalidateTag(CACHE_TAGS.allLeads);
-    revalidateTag(CACHE_TAGS.leads(category));
+    revalidateTag(CACHE_TAGS.allLeads, "max");
+    revalidateTag(CACHE_TAGS.leads(category), "max");
     revalidatePath("/dashboard/lead");
 
     return {
@@ -373,9 +373,9 @@ export async function resumeLeadJourney(
  */
 export async function revalidateLeads(category?: LeadCategory) {
   if (category) {
-    revalidateTag(CACHE_TAGS.leads(category));
+    revalidateTag(CACHE_TAGS.leads(category), "max");
   } else {
-    revalidateTag(CACHE_TAGS.allLeads);
+    revalidateTag(CACHE_TAGS.allLeads, "max");
   }
   revalidatePath("/dashboard/lead");
 }

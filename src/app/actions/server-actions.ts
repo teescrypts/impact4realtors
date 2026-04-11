@@ -290,7 +290,7 @@ export async function addHour(prev: ActionStateType, formData: FormData) {
       token,
     });
 
-    revalidateTag("fetchOpenings");
+    revalidateTag("fetchOpenings", "max");
     return { ok: true, message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -320,7 +320,7 @@ export async function updateAvailability(
       token,
     });
 
-    revalidateTag("fetchOpenings");
+    revalidateTag("fetchOpenings", "max");
     return { ok: true, message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -357,7 +357,7 @@ export async function deleteTimeSlot(
       token,
     });
 
-    revalidateTag("fetchOpenings");
+    revalidateTag("fetchOpenings", "max");
     return { ok: true, message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -384,8 +384,8 @@ export async function uploadImage(formData: FormData) {
       data: formData,
     });
 
-    revalidateTag("fetchBlogDraftImg");
-    revalidateTag("fetchistingDraftImgs");
+    revalidateTag("fetchBlogDraftImg", "max");
+    revalidateTag("fetchistingDraftImgs", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -409,9 +409,9 @@ export async function deleteBlogImage(id: string, blogId?: string) {
       token,
     });
 
-    revalidateTag("fetchBlogDraftImg");
-    revalidateTag("fetchAdminBlogs");
-    revalidateTag("fetchAdminBlog");
+    revalidateTag("fetchBlogDraftImg", "max");
+    revalidateTag("fetchAdminBlogs", "max");
+    revalidateTag("fetchAdminBlog", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -437,8 +437,8 @@ export async function deleteImage(id: string, propertyId?: string) {
       token,
     });
 
-    revalidateTag("fetchistingDraftImgs");
-    revalidateTag("fetchAdminProperty");
+    revalidateTag("fetchistingDraftImgs", "max");
+    revalidateTag("fetchAdminProperty", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -464,7 +464,7 @@ export async function deleteImages(ids: string[]) {
       data: { imageIds: ids },
     });
 
-    revalidateTag("fetchistingDraftImgs");
+    revalidateTag("fetchistingDraftImgs", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -528,7 +528,7 @@ export async function listProperty(
       },
     );
 
-    revalidateTag("fetchAdminProperties");
+    revalidateTag("fetchAdminProperties", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -592,8 +592,8 @@ export async function updateProperty(
       },
     );
 
-    revalidateTag("fetchAdminProperty");
-    revalidateTag("fetchAdminProperties");
+    revalidateTag("fetchAdminProperty", "max");
+    revalidateTag("fetchAdminProperties", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -619,8 +619,8 @@ export async function updatePropertyStatus(id: string, status: string) {
       },
     );
 
-    revalidateTag("fetchAdminProperty");
-    revalidateTag("fetchAdminProperties");
+    revalidateTag("fetchAdminProperty", "max");
+    revalidateTag("fetchAdminProperties", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -645,8 +645,8 @@ export async function deleteProperty(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminProperty");
-    revalidateTag("fetchAdminProperties");
+    revalidateTag("fetchAdminProperty", "max");
+    revalidateTag("fetchAdminProperties", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -691,9 +691,9 @@ export async function updateBlog(
       },
     );
 
-    revalidateTag("fetchBlogDraftImg");
-    revalidateTag("fetchAdminBlogs");
-    revalidateTag("fetchAdminBlog");
+    revalidateTag("fetchBlogDraftImg", "max");
+    revalidateTag("fetchAdminBlogs", "max");
+    revalidateTag("fetchAdminBlog", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -738,7 +738,7 @@ export async function uploadBlog(
       },
     );
 
-    revalidateTag("fetchAdminBlogs");
+    revalidateTag("fetchAdminBlogs", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -760,7 +760,7 @@ export async function deleteBlog(id: string) {
       token,
     });
 
-    revalidateTag("fetchAdminBlogs");
+    revalidateTag("fetchAdminBlogs", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -869,7 +869,7 @@ export async function updateLeadStatus(status: string, id: string) {
       },
     );
 
-    revalidateTag("fetchAdminLead");
+    revalidateTag("fetchAdminLead", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -891,7 +891,7 @@ export async function deleteLead(id: string) {
       token,
     });
 
-    revalidateTag("fetchAdminLead");
+    revalidateTag("fetchAdminLead", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -999,7 +999,7 @@ export async function rescheduleApt(
       data,
     });
 
-    revalidateTag("fetchAdminAppointments");
+    revalidateTag("fetchAdminAppointments", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1025,7 +1025,7 @@ export async function updateAptStatus(status: string, id: string) {
       },
     );
 
-    revalidateTag("fetchAdminAppointments");
+    revalidateTag("fetchAdminAppointments", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1104,7 +1104,7 @@ export async function markNotificationAsRead(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminNotification");
+    revalidateTag("fetchAdminNotification", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1129,7 +1129,7 @@ export async function deleteNotification(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminNotification");
+    revalidateTag("fetchAdminNotification", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1179,7 +1179,7 @@ export async function sendAgentForm(email: string) {
       },
     );
 
-    revalidateTag("fetchAdminAgents");
+    revalidateTag("fetchAdminAgents", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1204,7 +1204,7 @@ export async function deleteForm(id: string) {
       },
     );
 
-    revalidateTag("fetchPendingForms");
+    revalidateTag("fetchPendingForms", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1229,7 +1229,7 @@ export async function deleteAgent(id: string) {
       },
     );
 
-    revalidateTag("fetchPendingForms");
+    revalidateTag("fetchPendingForms", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1304,7 +1304,7 @@ export async function uploadProfilePic(formData: FormData) {
       data: formData,
     });
 
-    revalidateTag("fetchAgentData");
+    revalidateTag("fetchAgentData", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1435,7 +1435,7 @@ export async function valuationRequest(
       data: iData,
     });
 
-    revalidateTag("fetchAdminValuation");
+    revalidateTag("fetchAdminValuation", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1499,7 +1499,7 @@ export async function sendEvaluationReq(
       data: iData,
     });
 
-    revalidateTag("fetchAdminValuation");
+    revalidateTag("fetchAdminValuation", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1524,7 +1524,7 @@ export async function acceptSellerReq(id: string) {
       },
     );
 
-    revalidateTag("fetchAdminConnect");
+    revalidateTag("fetchAdminConnect", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1581,7 +1581,7 @@ export async function updateValuationReq(id: string, status: string) {
       },
     );
 
-    revalidateTag("fetchAdminValuation");
+    revalidateTag("fetchAdminValuation", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {
@@ -1665,7 +1665,7 @@ export async function addLead(
       token,
     });
 
-    revalidateTag("fetchAdminLead");
+    revalidateTag("fetchAdminLead", "max");
     return { message: response.message };
   } catch (e) {
     if (e instanceof Error) {

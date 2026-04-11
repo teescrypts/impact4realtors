@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
-    "lint": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next lint",
+    "lint": "cross-env NODE_OPTIONS=--max-old-space-size=4096 eslint .",
     "type-check": "cross-env NODE_OPTIONS=--max-old-space-size=4096 tsc --noEmit",
     "start": "next start"
   },
@@ -39,11 +39,11 @@
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.5.0",
     "mongoose": "^8.10.1",
-    "next": "15.1.6",
+    "next": "16.2.3",
     "nextjs-toploader": "^3.7.15",
-    "react": "^19.0.0",
+    "react": "19.2.5",
     "react-apexcharts": "^1.7.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "19.2.5",
     "react-dropzone": "^14.3.5",
     "react-quill-new": "^3.3.3",
     "react-slick": "^0.30.3",
@@ -56,13 +56,16 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "cross-env": "^10.1.0",
     "eslint": "^9",
-    "eslint-config-next": "15.1.6",
+    "eslint-config-next": "16.2.3",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
   }
 }
