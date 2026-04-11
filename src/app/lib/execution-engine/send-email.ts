@@ -78,7 +78,7 @@ export async function executeSendEmail(
     const isDev = process.env.NODE_ENV === "development";
     const emailDomain = isDev
       ? `Acme <onboarding@resend.dev>`
-      : `<${capitalizeFirst(agentDetails.fname)} <support@realtyillustration.com>`;
+      : `${capitalizeFirst(agentDetails.fname)} <support@realtyillustration.com>`;
 
     const progressId = progress._id as ObjectId;
 
