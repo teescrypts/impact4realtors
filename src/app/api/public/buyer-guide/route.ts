@@ -6,6 +6,7 @@ import path from "path";
 import Lead from "@/app/model/lead";
 import apiResponse from "@/app/lib/api-response";
 import getAdmin from "@/app/utils/get-admin";
+import { handleTagAssignment } from "@/app/lib/execution-engine/entry-handler";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -25,18 +26,6 @@ export async function POST(req: NextRequest) {
       buyerType,
       phone,
     } = await req.json();
-
-    console.log({
-      to,
-      subject,
-      message,
-      agent,
-      firstName,
-      lastName,
-      email,
-      buyerType,
-      phone,
-    });
 
     const isAgent = agent ? true : false;
 
@@ -63,7 +52,7 @@ export async function POST(req: NextRequest) {
     const pdfBuffer = fs.readFileSync(pdfPath);
 
     const { data, error } = await resend.emails.send({
-      from: "Acme <onboarding@resend.dev>", // Must be a verified domain in Resend
+      from: "Buyer Guide <support@realtyillustration.com>", // Must be a verified domain in Resend
       to: Array.isArray(to) ? to : [to],
       subject,
       html: `
@@ -121,6 +110,8 @@ export async function POST(req: NextRequest) {
     });
 
     await newLead.save();
+
+    await handleTagAssignment(newLead._id, newLead.status);
 
     return NextResponse.json(
       { success: true, emailId: data?.id, message: "Success" },

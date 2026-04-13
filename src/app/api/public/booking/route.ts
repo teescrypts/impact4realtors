@@ -80,6 +80,8 @@ export async function POST(req: NextRequest) {
 
     const agent = body?.agent;
 
+    console.log(body);
+
     // Check if selected time slot is already booked
     const existingAppointment = await Appointment.findOne({
       admin,

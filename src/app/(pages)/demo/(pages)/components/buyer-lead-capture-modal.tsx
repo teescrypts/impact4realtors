@@ -4,12 +4,9 @@ import {
   Box,
   Typography,
   TextField,
-
   Modal,
   Paper,
-
   IconButton,
-
 } from "@mui/material";
 import Close from "@/app/icons/untitled-ui/duocolor/close";
 import CheckCircle from "@/app/icons/untitled-ui/duocolor/checked-circle";
@@ -32,28 +29,20 @@ export const LeadCaptureModal = ({
   onClose,
   buyerType,
 }: LeadCaptureModalProps) => {
-  // const [email, setEmail] = useState("");
-  // const [name, setName] = useState("");
-  // const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
   const [state, formAction] = useActionState(sendBuyerPdf, initialState);
 
-  useEffect(() => {
-    if (state) {
-      if (state.message) {
-        console.log(state);
-        setIsSuccess(true);
-      } else {
-        setIsSuccess(false);
-      }
+  // Remove the isSuccess useState and its useEffect entirely.
+  // Derive it directly:
+  const isSuccess = !!state?.message;
 
-      setTimeout(() => {
-        setIsSuccess(false);
-        onClose();
-      }, 3000);
-    }
-  }, [state, onClose]);
+useEffect(() => {
+  if (state?.message) {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }
+}, [state]);
 
   return (
     <Modal open={isOpen} onClose={onClose}>
@@ -64,7 +53,7 @@ export const LeadCaptureModal = ({
           left: "50%",
           transform: "translate(-50%, -50%)",
           p: { xs: 3, md: 6 },
-          width: { xs: 300, md: 400 },
+          width: { xs: 350, md: 400 },
           borderRadius: 3,
           outline: "none",
         }}
@@ -109,8 +98,8 @@ export const LeadCaptureModal = ({
               Get Your Free Guide
             </Typography>
             <Typography color="text.secondary" mb={3}>
-              Enter your details below and we&apos;ll send the guide straight to your
-              inbox.
+              Enter your details below and we&apos;ll send the guide straight to
+              your inbox.
             </Typography>
 
             <form action={formAction}>

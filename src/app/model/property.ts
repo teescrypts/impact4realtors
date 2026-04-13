@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface IProperty extends Document {
+export interface IProperty extends Document {
   admin: mongoose.Types.ObjectId;
   agent?: mongoose.Types.ObjectId;
   propertyTitle: string;

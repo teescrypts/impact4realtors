@@ -17,6 +17,7 @@ import Admin from "@/app/model/admin";
 import Appointment from "@/app/model/appointment";
 import HomeValuationRequest from "@/app/model/home-valuation-request";
 import { capitalizeFirst } from "@/app/utils/capitalize-first-letter";
+import { IProperty } from "@/app/model/property";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
@@ -48,43 +49,50 @@ export async function executeSendEmail(
 
     console.log(`Sending email "${config.subject}" to ${lead.email}`);
 
-    const agentDetails = await Admin.findById(progress.admin);
-    const appointmentDetails = await Appointment.findById(
-      lead.appointmentId,
-    ).populate("propertyId");
+    const agentDetails = await Admin.findById(lead.admin);
+
+    let appointmentDetails;
+    if (lead.appointmentId) {
+      appointmentDetails = (await Appointment.findById(lead.appointmentId)
+        .select("propertyId date bookedTime")
+        .populate("propertyId")) as {
+        propertyId?: IProperty;
+        date: string;
+        bookedTime: { from: string; to: string };
+      };
+    }
+
     const valuation = await HomeValuationRequest.findOne({ lead: lead._id });
 
     if (!agentDetails) return;
 
     // ✅ REPLACE TEMPLATE VARIABLES
-    const replacedSubject = replaceTemplateVariables(
+    const replacedSubject = await replaceTemplateVariables(
       agentDetails,
-      appointmentDetails,
       config.subject,
       lead,
       progress,
       valuation ? valuation : undefined,
+      appointmentDetails,
     );
 
-    const replacedContent = replaceTemplateVariables(
+    const replacedContent = await replaceTemplateVariables(
       agentDetails,
-      appointmentDetails,
       config.emailContent,
       lead,
       progress,
       valuation ? valuation : undefined,
+      appointmentDetails,
     );
 
-    const isDev = process.env.NODE_ENV === "development";
-    const emailDomain = isDev
-      ? `Acme <onboarding@resend.dev>`
-      : `${capitalizeFirst(agentDetails.fname)} <support@realtyillustration.com>`;
-
+    const emailDomain = `${capitalizeFirst(agentDetails.fname)} <support@realtyillustration.com>`;
     const progressId = progress._id as ObjectId;
 
     // Send email via Resend
     const emailResult = await resend.emails.send({
-      from: config.fromName ? `${config.fromName} ${emailDomain}` : emailDomain,
+      from: config.fromName
+        ? `${config.fromName} <support@realtyillustration.com>`
+        : emailDomain,
       to: lead.email,
       subject: replacedSubject, // ✅ Use replaced subject
       html: replacedContent, // ✅ Use replaced content

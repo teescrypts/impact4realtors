@@ -2,6 +2,7 @@ import React from "react";
 import ContactUs from "../../components/contact-us";
 import FAQsSection from "../../components/sections/faqs";
 import { Metadata } from "next";
+import { Box } from "@mui/material";
 
 export const metadata: Metadata = {
   title: "Contact Us | Innovative Real Estate Solutions",
@@ -48,10 +49,10 @@ async function Page({
   const adminId = (await searchParams).admin as string;
 
   return (
-    <div>
+    <Box sx={{ my: 10 }}>
       <ContactUs reason={reason} adminId={adminId} />
       <FAQsSection />
-    </div>
+    </Box>
   );
 }
 

@@ -48,7 +48,7 @@ export async function handleTagAssignment(
       admin: lead.admin,
       ...(lead?.agent && { agent: lead.agent }),
       contactType: lead.category,
-      leadIntent: lead.intent,
+      leadIntent: lead.intent === "General Inquiry" ? null : lead.intent,
       isActive: true,
       "entryAction.tagAction.type": "assign",
       "entryAction.tagAction.tagName": tagName,
@@ -105,7 +105,7 @@ export async function handleTagChange(
       return;
     }
 
-    console.log(lead)
+    console.log(lead);
 
     // 🔒 STRICT MODE: Check if lead already in active journey
     const existingProgress = await LeadJourneyProgress.findOne({
@@ -145,7 +145,7 @@ export async function handleTagChange(
       "entryAction.tagAction.type": "change",
       "entryAction.tagAction.tagName": oldTag,
       "entryAction.tagAction.newTagName": newTag,
-    })
+    });
 
     if (matchingJourneys.length === 0) {
       console.log(

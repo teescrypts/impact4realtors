@@ -1,5 +1,7 @@
+import { ObjectId } from "mongoose";
 import { IAdmin } from "../model/admin";
 import { IAppointment } from "../model/appointment";
+import Property, { IProperty } from "../model/property";
 import { convertToAmPmFormat } from "./convert-to-am-pm";
 import { formatCreatedAt } from "./format-created-at";
 
@@ -7,16 +9,32 @@ import { formatCreatedAt } from "./format-created-at";
  * Replace template variables in email content
  * Supports: {{firstName}}, {{lastName}}, {{email}}, {{phone}}, {{agentName}}, etc.
  */
-export default function replaceTemplateVariables(
+export default async function replaceTemplateVariables(
   agentDetails: IAdmin,
-  appointmentDetails: IAppointment | null,
   template: string,
   lead: any,
   progress: any,
   valuation?: any,
-): string {
+  appointmentDetails?: {
+    propertyId?: IProperty;
+    date: string;
+    bookedTime: { from: string; to: string };
+  },
+): Promise<string> {
   let result = template;
-  const property = appointmentDetails?.propertyId as any;
+
+  let propertyAddress;
+
+  if (valuation) {
+    propertyAddress = valuation.address;
+  } else if (appointmentDetails) {
+    const bookedProperty = appointmentDetails?.propertyId;
+
+    if (bookedProperty)
+      propertyAddress = `${bookedProperty.location.addressLine1}, ${bookedProperty.location.cityName}, ${bookedProperty.location.stateName}, ${bookedProperty.location.countryName}`;
+  }
+
+  console.log("Address", propertyAddress);
 
   // Lead variables
   const leadVars = {
@@ -37,9 +55,7 @@ export default function replaceTemplateVariables(
       appointmentTime: convertToAmPmFormat(appointmentDetails.bookedTime.from),
     }),
 
-    propertyAddress: valuation
-      ? valuation.address
-      : `${property.location.addressLine1}, {property.location.cityName}, {property.location.stateName}, {property.location.countryName}`,
+    propertyAddress,
   };
 
   // Agent variables (if agent exists)

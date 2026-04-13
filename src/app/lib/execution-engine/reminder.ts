@@ -6,15 +6,13 @@
  */
 
 import Admin from "@/app/model/admin";
-import {
-  IJourneyNode,
-  ScheduledAction,
-} from "@/app/model/journey";
+import { IJourneyNode, ScheduledAction } from "@/app/model/journey";
 import { ILead } from "@/app/model/lead";
 import { Resend } from "resend";
 import { validateNodeConfig, moveToNextNode, handleExecutionError } from ".";
 import replaceTemplateVariables from "@/app/utils/replace-template";
 import Appointment, { IAppointment } from "@/app/model/appointment";
+import { IProperty } from "@/app/model/property";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
@@ -55,38 +53,44 @@ export async function executeReminder(
       `Sending ${config.type} to agent ${admin.email} about lead ${lead.email}`,
     );
 
-    const appointmentDetails = await Appointment.findById(
-      lead.appointmentId,
-    ).populate("propertyId");
+    let appointmentDetails;
+    if (lead.appointmentId) {
+      appointmentDetails = (await Appointment.findById(lead.appointmentId)
+        .select("propertyId date bookedTime")
+        .populate("propertyId")) as {
+        propertyId?: IProperty;
+        date: string;
+        bookedTime: { from: string; to: string };
+      };
+    }
+
+    console.log(appointmentDetails);
 
     // Build reminder email
     const reminderType = config.type.replace("_reminder", "").toUpperCase();
     const subject =
       config.type === "meeting_reminder" && config.title
-        ? replaceTemplateVariables(
+        ? await replaceTemplateVariables(
             admin,
-            appointmentDetails,
             config.title,
             lead,
             progress,
+            undefined,
+            appointmentDetails,
           )
         : `${reminderType} Reminder: ${lead.firstName} ${lead.lastName}`;
 
-    const htmlContent = buildReminderEmail(
+    const htmlContent = await buildReminderEmail(
       config,
-      appointmentDetails,
       lead,
       admin,
       progress,
+      appointmentDetails,
     );
-
-    const isDev = process.env.NODE_ENV === "development";
 
     // Send reminder email to agent
     const emailResult = await resend.emails.send({
-      from: isDev
-        ? "Acme <onboarding@resend.dev>"
-        : "Journey Automation <noreply@realtyillustration.com>",
+      from: "Automation <system@realtyillustration.com>",
       to: admin.email,
       subject,
       html: htmlContent,
@@ -155,13 +159,17 @@ export async function executeReminder(
  * Build reminder email HTML
  * Creates a nicely formatted email for the agent
  */
-function buildReminderEmail(
+async function buildReminderEmail(
   config: any,
-  appointmentDetails: IAppointment | null,
   lead: ILead,
   admin: any,
   progress: any,
-): string {
+  appointmentDetails?: {
+    propertyId?: IProperty;
+    date: string;
+    bookedTime: { from: string; to: string };
+  },
+): Promise<string> {
   const reminderType = config.type.replace("_reminder", "").toUpperCase();
 
   return `
@@ -243,7 +251,7 @@ function buildReminderEmail(
       
       <div class="content">
         <div class="message">
-          <strong>Note:</strong> ${replaceTemplateVariables(admin, appointmentDetails, config.message, lead, progress)}
+          <strong>Note:</strong> ${await replaceTemplateVariables(admin, config.message, lead, progress, undefined, appointmentDetails)}
         </div>
 
         <div class="lead-info">

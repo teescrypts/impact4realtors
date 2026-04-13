@@ -426,9 +426,9 @@ const houseTourJourney = {
               <p style="margin: 0 0 16px;">Thank you for requesting a property tour! I'm excited to show you around and help you find the perfect home.</p>
               <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 0 0 16px; border-radius: 4px;">
                 <p style="margin: 0 0 8px; font-weight: 600; color: #1e40af;">Tour Details</p>
-                <p style="margin: 0 0 4px; color: #1e3a8a;">📍 Property location will be confirmed</p>
-                <p style="margin: 0 0 4px; color: #1e3a8a;">🕐 We'll schedule a time that works for you</p>
-                <p style="margin: 0; color: #1e3a8a;">📱 I'll call you shortly to coordinate</p>
+                <p style="margin: 0 0 4px; color: #1e3a8a;">📍 {{propertyAddress}}</p>
+                <p style="margin: 0 0 4px; color: #1e3a8a;">📅 {{appointmentDate}}</p>
+                <p style="margin: 0; color: #1e3a8a;">🕐 {{appointmentTime}}</p>
               </div>
               <p style="margin: 0 0 16px;">To make the most of our time together, I'd love to know:</p>
               <ul style="margin: 0 0 16px; padding-left: 20px;">
