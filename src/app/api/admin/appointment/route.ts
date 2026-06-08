@@ -1,5 +1,6 @@
 import { authMiddleware } from "@/app/lib/_middleware";
 import apiResponse from "@/app/lib/api-response";
+import "@/app/model/property"
 import Appointment, { IAppointment } from "@/app/model/appointment";
 import { NextRequest, NextResponse } from "next/server";
 import { FilterQuery } from "mongoose";
