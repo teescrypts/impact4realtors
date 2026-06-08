@@ -21,6 +21,7 @@ import { IJourney } from "../types/api";
 
 import ArrowBack from "@/app/icons/untitled-ui/duocolor/arrow-back";
 import Delete from "@/app/icons/untitled-ui/duocolor/delete";
+import Close from "@/app/icons/untitled-ui/duocolor/close";
 
 // Add to interface
 interface JourneyHeaderProps {
@@ -112,27 +113,9 @@ export function JourneyHeader({
 
           {/* Right */}
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <IconButton
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              size="small"
-            >
-              <LoadMore />
+            <IconButton onClick={onBack} color="error">
+              <Close />
             </IconButton>
-
-            <Menu
-              anchorEl={anchorEl}
-              open={open}
-              onClose={() => setAnchorEl(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MenuItem onClick={onBack}>
-                <SvgIcon sx={{ marginRight: 8 }}>
-                  <ArrowBack />
-                </SvgIcon>
-                Back
-              </MenuItem>
-            </Menu>
 
             <Button
               variant="contained"

@@ -1,10 +1,16 @@
-import React from "react";
+
 import AutomationPage from "../components/journey/automation-page";
 
-function Page() {
+async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ journey?: string }>;
+}) {
+  const { journey: ijourneyd } = await searchParams;
+
   return (
     <div>
-      <AutomationPage />
+      <AutomationPage ijourneyd={ijourneyd} />
     </div>
   );
 }

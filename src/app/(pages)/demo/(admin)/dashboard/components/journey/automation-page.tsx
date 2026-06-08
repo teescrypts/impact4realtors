@@ -14,10 +14,12 @@ import { useTags } from "../tag/interfaces/hooks/use-tags";
 
 type View = "list" | "canvas";
 
-const AutomationPage = () => {
-  const [currentView, setCurrentView] = useState<View>("list");
+const AutomationPage = ({ ijourneyd }: { ijourneyd?: string }) => {
+  const [currentView, setCurrentView] = useState<View>(
+    ijourneyd ? "canvas" : "list",
+  );
   const [selectedJourneyId, setSelectedJourneyId] = useState<string | null>(
-    null
+    ijourneyd ? ijourneyd : null,
   );
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -32,7 +34,7 @@ const AutomationPage = () => {
   // API hooks
   const { journeys, loading, error, refetch } = useJourneys();
   const mutations = useJourneyMutations();
-  
+
   // ✅ Fetch tags
   const { tags, loading: tagsLoading } = useTags();
 
@@ -46,11 +48,11 @@ const AutomationPage = () => {
   useEffect(() => {
     if (selectedJourney && currentView === "canvas") {
       console.log("Transforming journey for canvas:", selectedJourney);
-      
+
       // Transform API journey to canvas format
       const canvasFormat = apiToCanvas(selectedJourney);
       console.log("Canvas format:", canvasFormat);
-      
+
       // Load into canvas store
       loadJourney(canvasFormat);
     }
@@ -97,7 +99,7 @@ const AutomationPage = () => {
     name: string,
     contactType: ContactType,
     entryAction: IEntryAction,
-    leadIntent: LeadIntent
+    leadIntent: LeadIntent,
   ) => {
     try {
       const newJourney = await mutations.create({
@@ -131,11 +133,11 @@ const AutomationPage = () => {
 
     try {
       console.log("Saving canvas journey:", canvasJourney);
-      
+
       // Transform canvas to API format
       const updates = canvasToApi(canvasJourney, selectedJourney);
       console.log("API format:", updates);
-      
+
       await mutations.update(selectedJourneyId, updates);
       showSnackbar("Journey saved successfully", "success");
       refetch();
@@ -159,7 +161,7 @@ const AutomationPage = () => {
       if (err.message.includes("active progresses")) {
         if (
           confirm(
-            "This journey has active leads. Do you want to force delete and cancel all progresses?"
+            "This journey has active leads. Do you want to force delete and cancel all progresses?",
           )
         ) {
           try {
@@ -172,7 +174,7 @@ const AutomationPage = () => {
           } catch (forceErr: any) {
             showSnackbar(
               forceErr.message || "Failed to delete journey",
-              "error"
+              "error",
             );
           }
         }
@@ -228,8 +230,8 @@ const AutomationPage = () => {
           saving={mutations.loading}
         />
         {/* ✅ Pass tags to canvas */}
-        <JourneyCanvas 
-          journey={selectedJourney} 
+        <JourneyCanvas
+          journey={selectedJourney}
           tags={tags}
           tagsLoading={tagsLoading}
         />

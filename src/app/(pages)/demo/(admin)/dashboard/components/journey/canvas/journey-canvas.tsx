@@ -17,25 +17,31 @@ interface JourneyCanvasProps {
   tagsLoading?: boolean; // ✅ Add loading state
 }
 
-export function JourneyCanvas({ journey, tags, tagsLoading = false }: JourneyCanvasProps) {
+export function JourneyCanvas({
+  journey,
+  tags,
+  tagsLoading = false,
+}: JourneyCanvasProps) {
   const theme = useTheme();
-  
+
   // Get everything from store (canvas structure with "data")
-  const { 
+  const {
     journey: canvasJourney,
-    selectedNodeId, 
-    closeEditPanel, 
-    isEditPanelOpen 
+    selectedNodeId,
+    closeEditPanel,
+    isEditPanelOpen,
   } = useJourneyStore();
 
   // Get node from canvas store (has "data" property)
   const selectedNode = selectedNodeId
-    ? canvasJourney.nodes[selectedNodeId] ?? null
+    ? (canvasJourney.nodes[selectedNodeId] ?? null)
     : null;
 
   // ✅ Filter tags by journey's contactType
-  const relevantTags = journey 
-    ? tags.filter(tag => tag.category === journey.contactType)
+  const relevantTags = journey
+    ? tags.filter(
+        (tag) => tag.category === journey.contactType.toLocaleLowerCase(),
+      )
     : tags;
 
   return (
@@ -77,8 +83,8 @@ export function JourneyCanvas({ journey, tags, tagsLoading = false }: JourneyCan
             pb={10}
           >
             {/* Journey root node - ✅ Pass tags down */}
-            <NodeTree 
-              nodeId={canvasJourney.entryNodeId} 
+            <NodeTree
+              nodeId={canvasJourney.entryNodeId}
               tags={relevantTags}
               tagsLoading={tagsLoading}
             />
@@ -105,8 +111,8 @@ export function JourneyCanvas({ journey, tags, tagsLoading = false }: JourneyCan
             />
 
             {/* Edit Panel - ✅ Pass tags */}
-            <EditPanel 
-              node={selectedNode} 
+            <EditPanel
+              node={selectedNode}
               onClose={closeEditPanel}
               tags={relevantTags}
               tagsLoading={tagsLoading}

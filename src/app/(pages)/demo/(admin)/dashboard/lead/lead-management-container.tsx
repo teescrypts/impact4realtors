@@ -355,7 +355,7 @@ export default function LeadManagementContainer({
    * Handle view journey (navigate to journey canvas)
    */
   const handleViewJourney = (journeyId: string) => {
-    router.push(`/dashboard/automations?journey=${journeyId}`);
+    router.push(`/demo/dashboard/automations?journey=${journeyId}`);
   };
 
   /**

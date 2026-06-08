@@ -52,7 +52,7 @@ export default function AppointmentView({
   appointmentInfo?: {
     appointments: AppointmentResponse[];
     hasMore: boolean;
-    lastCreatedAt: Date;
+    lastCreatedAt: string;
   };
   view: "calendar" | "list";
 }) {
@@ -65,7 +65,7 @@ export default function AppointmentView({
 
   const handleViewChange = (
     _event: React.MouseEvent<HTMLElement>,
-    newView: "calendar" | "list" | null
+    newView: "calendar" | "list" | null,
   ) => {
     if (newView !== null) {
       if (newView === "calendar") {
@@ -227,7 +227,7 @@ export default function AppointmentView({
             <AppointmentManagement
               appointments={appointmentInfo!.appointments}
               hasMore={appointmentInfo!.hasMore}
-              lastCreatedAt={appointmentInfo!.lastCreatedAt}
+              lastCreatedAt={new Date(appointmentInfo!.lastCreatedAt)}
             />
           )}
         </Stack>

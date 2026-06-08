@@ -147,11 +147,14 @@ const MortgageEstimationModal: React.FC<MortgageEstimationModalProps> = ({
             bgcolor: isDark ? "grey.900" : "background.paper",
             boxShadow: `0 24px 64px ${alpha("#000", 0.18)}`,
             overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            maxHeight: "90vh",
           },
         },
       }}
     >
-      <Scrollbar>
+      <Scrollbar sx={{ maxHeight: "90vh" }}>
         {/* ── Header ── */}
         <Box
           sx={{

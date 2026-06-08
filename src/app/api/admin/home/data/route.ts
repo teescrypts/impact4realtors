@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
 
     const startDate = DateTime.utc().minus({ days }).startOf("day").toJSDate();
 
+    const timeZone = "America/New_York";
+    const now = DateTime.now().setZone(timeZone);
+    const startOfDay = now.startOf("day").toUTC().toJSDate();
+    const endOfDay = now.endOf("day").toUTC().toJSDate();
+
     // Fetch data in parallel for better performance
     const [
       totalListings,
@@ -34,8 +39,11 @@ export async function GET(req: NextRequest) {
       Property.countDocuments({ admin: admin._id }),
       Appointment.countDocuments({ status: "upcoming", admin: admin._id }),
       Lead.countDocuments({
-        status: { $in: Object.values("new lead").map((s) => s[0]) },
         admin: admin._id,
+        createdAt: {
+          $gte: startOfDay,
+          $lte: endOfDay,
+        },
       }),
       Lead.aggregate([
         {
@@ -76,13 +84,13 @@ export async function GET(req: NextRequest) {
         totalNewLeads,
         leadChartData: { labels, values },
       },
-      201
+      201,
     );
   } catch (e) {
     return apiResponse(
       e instanceof Error ? e.message : "An unknown error occurred",
       null,
-      500
+      500,
     );
   }
 }

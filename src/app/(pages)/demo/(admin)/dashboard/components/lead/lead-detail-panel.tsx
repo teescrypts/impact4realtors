@@ -471,9 +471,13 @@ export default function LeadDetailPanel({
                             Progress
                           </Typography>
                           <Typography variant="body2" fontWeight={600}>
-                            {(progress.executionHistory.length /
-                              currentJourney.nodes.length) *
-                              100}
+                            {currentJourney.nodes.length > 0
+                              ? Math.round(
+                                  (progress.executionHistory.length /
+                                    currentJourney.nodes.length) *
+                                    100,
+                                )
+                              : 0}
                             %
                           </Typography>
                         </Box>

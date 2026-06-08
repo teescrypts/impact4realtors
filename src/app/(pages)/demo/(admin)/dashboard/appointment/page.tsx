@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Metadata } from "next/types";
 import { cookies } from "next/headers";
 import apiRequest from "@/app/lib/api-request";
@@ -125,12 +125,18 @@ async function Page({
     params
   );
   
-  return (
-    <AppointmentView
-      view="list"
-      appointmentInfo={{ appointments, hasMore, lastCreatedAt }}
-    />
-  );
+ return (
+  <AppointmentView
+    view="list"
+    appointmentInfo={{
+      appointments,
+      hasMore,
+      lastCreatedAt: lastCreatedAt instanceof Date 
+        ? lastCreatedAt.toISOString() 
+        : lastCreatedAt,
+    }}
+  />
+);
 }
 
 export default Page;
