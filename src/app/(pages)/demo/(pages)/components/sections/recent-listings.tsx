@@ -19,6 +19,7 @@ import { propertyType } from "../../listings/page";
 import BookHouseTour from "../book-house-tour";
 import MortgageEstimationModal from "../calc-mortgage";
 import PropertyCard from "./property-card";
+import ScrollReveal from "@/app/component/scroll-reveal";
 
 const ListingsSection = ({
   adminId,
@@ -80,125 +81,131 @@ const ListingsSection = ({
       <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
         <Stack spacing={6}>
           {/* ── Header ── */}
-          <Stack alignItems="center" spacing={2} textAlign="center">
-            <Chip
-              label={`${forSale.length + forRent.length} Properties Available`}
-              size="small"
-              sx={{
-                bgcolor: alpha(primary, 0.08),
-                color: "primary.main",
-                fontWeight: 700,
-                fontSize: "0.7rem",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                border: `1px solid ${alpha(primary, 0.18)}`,
-                borderRadius: 1,
-                height: 26,
-              }}
-            />
+          <ScrollReveal direction="up">
+            <Stack alignItems="center" spacing={2} textAlign="center">
+              <Chip
+                label={`${forSale.length + forRent.length} Properties Available`}
+                size="small"
+                sx={{
+                  bgcolor: alpha(primary, 0.08),
+                  color: "primary.main",
+                  fontWeight: 700,
+                  fontSize: "0.7rem",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  border: `1px solid ${alpha(primary, 0.18)}`,
+                  borderRadius: 1,
+                  height: 26,
+                }}
+              />
 
-            <Box>
-              <Typography
-                variant="h3"
-                fontWeight={900}
-                letterSpacing="-0.03em"
-                lineHeight={1.1}
-                sx={{ fontSize: { xs: "1.85rem", sm: "2.4rem", md: "2.9rem" } }}
-              >
-                Explore our latest
-                <Box component="span" sx={{ color: "primary.main" }}>
-                  {" "}
-                  listings
-                </Box>
-              </Typography>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ mt: 1.5, maxWidth: 520, mx: "auto", lineHeight: 1.7 }}
-              >
-                Whether you&apos;re looking to buy or rent, discover top-rated
-                properties curated just for you.
-              </Typography>
-            </Box>
-
-            {/* ── Filter toggle ── */}
-            <ToggleButtonGroup
-              value={filter}
-              exclusive
-              onChange={(_, val) => val && setFilter(val)}
-              sx={{
-                mt: 1,
-                bgcolor: isDark ? alpha("#fff", 0.05) : alpha("#000", 0.04),
-                borderRadius: 2,
-                p: 0.5,
-                gap: 0.5,
-                border: "none",
-                "& .MuiToggleButtonGroup-grouped": {
-                  border: "none !important",
-                  borderRadius: "10px !important",
-                },
-              }}
-            >
-              {(["For Sale", "For Rent"] as const).map((val) => (
-                <ToggleButton
-                  key={val}
-                  value={val}
-                  disableRipple={false}
+              <Box>
+                <Typography
+                  variant="h3"
+                  fontWeight={900}
+                  letterSpacing="-0.03em"
+                  lineHeight={1.1}
                   sx={{
-                    px: 3.5,
-                    py: 1,
-                    fontWeight: 600,
-                    fontSize: "0.875rem",
-                    textTransform: "none",
-                    color: "text.secondary",
-                    transition: "all 0.2s ease",
-                    "&.Mui-selected": {
-                      bgcolor: filter === val ? "primary.main" : "transparent",
-                      color: "white",
-                      boxShadow: `0 4px 14px ${alpha(primary, 0.3)}`,
-                      "&:hover": { bgcolor: "primary.dark" },
-                    },
-                    "&:hover": {
-                      bgcolor: isDark
-                        ? alpha("#fff", 0.07)
-                        : alpha("#000", 0.05),
-                    },
+                    fontSize: { xs: "1.85rem", sm: "2.4rem", md: "2.9rem" },
                   }}
                 >
-                  {val}
-                  <Box
-                    component="span"
+                  Explore our latest
+                  <Box component="span" sx={{ color: "primary.main" }}>
+                    {" "}
+                    listings
+                  </Box>
+                </Typography>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ mt: 1.5, maxWidth: 520, mx: "auto", lineHeight: 1.7 }}
+                >
+                  Whether you&apos;re looking to buy or rent, discover top-rated
+                  properties curated just for you.
+                </Typography>
+              </Box>
+
+              {/* ── Filter toggle ── */}
+              <ToggleButtonGroup
+                value={filter}
+                exclusive
+                onChange={(_, val) => val && setFilter(val)}
+                sx={{
+                  mt: 1,
+                  bgcolor: isDark ? alpha("#fff", 0.05) : alpha("#000", 0.04),
+                  borderRadius: 2,
+                  p: 0.5,
+                  gap: 0.5,
+                  border: "none",
+                  "& .MuiToggleButtonGroup-grouped": {
+                    border: "none !important",
+                    borderRadius: "10px !important",
+                  },
+                }}
+              >
+                {(["For Sale", "For Rent"] as const).map((val) => (
+                  <ToggleButton
+                    key={val}
+                    value={val}
+                    disableRipple={false}
                     sx={{
-                      ml: 1,
-                      px: 0.9,
-                      py: 0.1,
-                      borderRadius: 1,
-                      fontSize: "0.7rem",
-                      fontWeight: 700,
-                      bgcolor:
-                        filter === val
-                          ? alpha("#fff", 0.25)
-                          : isDark
-                            ? alpha("#fff", 0.1)
-                            : alpha("#000", 0.08),
-                      color: filter === val ? "white" : "text.secondary",
-                      lineHeight: 1.8,
+                      px: 3.5,
+                      py: 1,
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      textTransform: "none",
+                      color: "text.secondary",
                       transition: "all 0.2s ease",
+                      "&.Mui-selected": {
+                        bgcolor:
+                          filter === val ? "primary.main" : "transparent",
+                        color: "white",
+                        boxShadow: `0 4px 14px ${alpha(primary, 0.3)}`,
+                        "&:hover": { bgcolor: "primary.dark" },
+                      },
+                      "&:hover": {
+                        bgcolor: isDark
+                          ? alpha("#fff", 0.07)
+                          : alpha("#000", 0.05),
+                      },
                     }}
                   >
-                    {val === "For Sale" ? forSale.length : forRent.length}
-                  </Box>
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </Stack>
+                    {val}
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: 1,
+                        px: 0.9,
+                        py: 0.1,
+                        borderRadius: 1,
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                        bgcolor:
+                          filter === val
+                            ? alpha("#fff", 0.25)
+                            : isDark
+                              ? alpha("#fff", 0.1)
+                              : alpha("#000", 0.08),
+                        color: filter === val ? "white" : "text.secondary",
+                        lineHeight: 1.8,
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      {val === "For Sale" ? forSale.length : forRent.length}
+                    </Box>
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Stack>
+          </ScrollReveal>
 
           {/* ── Listings Grid ── */}
           {filteredListings.length > 0 ? (
             <Grid2 container spacing={3}>
-              {filteredListings.map((property) => (
+              {filteredListings.map((property, index) => (
                 <PropertyCard
                   key={property._id}
+                  index={index}
                   adminId={adminId}
                   property={property}
                   onOpenBookingModal={(p) => {

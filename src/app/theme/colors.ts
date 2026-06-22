@@ -21,13 +21,18 @@ const withAlphas = (color: Color) => {
 };
 
 // -------------------------------------------------- PRIMARY --------------------------------------------------
+// "blue" is kept as the export/key name for backwards compatibility with the
+// colorPreset config wired up at the call site (createTheme({ colorPreset: "blue" })).
+// The values themselves are now a warm, editorial clay/terracotta — the signature
+// brand accent — rather than literal blue. Renaming the key would require touching
+// the app's theme provider, which isn't in scope here.
 
 export const blue = withAlphas({
-  lightest: "#F5F8FF",
-  light: "#EBEFFF",
-  main: "#2970FF",
-  dark: "#004EEB",
-  darkest: "#00359E",
+  lightest: "#FBF1EA",
+  light: "#F1D3BC",
+  main: "#B5612B",
+  dark: "#8A4720",
+  darkest: "#5C2F16",
   contrastText: "#FFFFFF",
 });
 
@@ -56,6 +61,18 @@ export const purple = withAlphas({
   dark: "#6941C6",
   darkest: "#42307D",
   contrastText: "#FFFFFF",
+});
+
+// Secondary brand accent — a warm brass/gold that pairs with the clay
+// primary. Used for highlight text, CTA contrast moments (e.g. the home
+// valuation button against a dark gradient), and glow accents.
+export const gold = withAlphas({
+  lightest: "#FDF8EC",
+  light: "#F3DFA0",
+  main: "#C99A3C",
+  dark: "#96701F",
+  darkest: "#5E4512",
+  contrastText: "#1A1308",
 });
 
 // -------------------------------------------------- TOKENS --------------------------------------------------
@@ -97,14 +114,14 @@ export const error = withAlphas({
 });
 
 export const neutral = {
-  50: "#F8F9FA",
-  100: "#F3F4F6",
-  200: "#E5E7EB",
-  300: "#D2D6DB",
-  400: "#9DA4AE",
-  500: "#6C737F",
-  600: "#4D5761",
-  700: "#2F3746",
-  800: "#1C2536",
-  900: "#111927",
+  50: "#FAF8F6",
+  100: "#F3EFEB",
+  200: "#E5DED6",
+  300: "#D2C6BA",
+  400: "#A89A8C",
+  500: "#7A6F64",
+  600: "#574E45",
+  700: "#3A332D",
+  800: "#241F1A",
+  900: "#14110F",
 };

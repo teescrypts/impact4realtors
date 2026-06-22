@@ -108,7 +108,7 @@ const HeroSection = ({ adminId }: { adminId: string | undefined }) => {
         sx={{
           position: "absolute",
           inset: 0,
-          backgroundImage: `url('/images/agent-bg-aerial.png')`,
+          backgroundImage: `url('/images/ag-bg.png')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           animation: "slowZoom 30s ease-in-out infinite alternate",

@@ -11,6 +11,7 @@ import {
   Chip,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
+import { motion } from "framer-motion";
 import { ArrowRightIcon } from "@mui/x-date-pickers";
 import CheckCircle from "@/app/icons/untitled-ui/duocolor/checked-circle";
 import Percentage from "@/app/icons/untitled-ui/duocolor/percentage";
@@ -116,104 +117,115 @@ export default function HomeEvaluation({ adminId }: { adminId?: string }) {
       <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
         <Stack spacing={10}>
           {/* ── HERO TEXT + CTA ── */}
-          <Stack alignItems="center" spacing={4} textAlign="center">
-            {/* Eyebrow badge */}
-            <Chip
-              label="Instant Home Valuation"
-              size="small"
-              sx={{
-                bgcolor: alpha(contrastText, 0.12),
-                color: contrastText,
-                fontWeight: 700,
-                fontSize: "0.7rem",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                border: `1px solid ${alpha(contrastText, 0.2)}`,
-                borderRadius: 1,
-                height: 26,
-              }}
-            />
-
-            <Box>
-              <Typography
-                variant="h2"
-                fontWeight={900}
-                lineHeight={1.08}
-                letterSpacing="-0.035em"
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Stack alignItems="center" spacing={4} textAlign="center">
+              {/* Eyebrow badge */}
+              <Chip
+                label="Instant Home Valuation"
+                size="small"
                 sx={{
-                  fontSize: { xs: "2.2rem", sm: "3rem", md: "3.75rem" },
+                  bgcolor: alpha(contrastText, 0.12),
                   color: contrastText,
-                  mb: 2.5,
+                  fontWeight: 700,
+                  fontSize: "0.7rem",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  border: `1px solid ${alpha(contrastText, 0.2)}`,
+                  borderRadius: 1,
+                  height: 26,
                 }}
-              >
-                What&apos;s your home
-                <Box
-                  component="span"
+              />
+
+              <Box>
+                <Typography
+                  variant="h2"
+                  fontWeight={900}
+                  lineHeight={1.08}
+                  letterSpacing="-0.035em"
                   sx={{
-                    display: "block",
-                    color: secondary,
-                    // subtle text shadow for legibility on gradient
-                    textShadow: `0 0 40px ${alpha(secondary, 0.4)}`,
+                    fontSize: { xs: "2.2rem", sm: "3rem", md: "3.75rem" },
+                    color: contrastText,
+                    mb: 2.5,
                   }}
                 >
-                  worth today?
-                </Box>
-              </Typography>
+                  What&apos;s your home
+                  <Box
+                    component="span"
+                    sx={{
+                      display: "block",
+                      color: secondary,
+                      // subtle text shadow for legibility on gradient
+                      textShadow: `0 0 40px ${alpha(secondary, 0.4)}`,
+                    }}
+                  >
+                    worth today?
+                  </Box>
+                </Typography>
 
-              <Typography
-                variant="body1"
-                sx={{
-                  opacity: 0.8,
-                  maxWidth: 520,
-                  mx: "auto",
-                  fontSize: { xs: "1rem", md: "1.1rem" },
-                  lineHeight: 1.7,
-                  color: contrastText,
-                }}
-              >
-                Get a free, no-obligation home value report based on live market
-                data and recent comparable sales in your neighborhood.
-              </Typography>
-            </Box>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    opacity: 0.8,
+                    maxWidth: 520,
+                    mx: "auto",
+                    fontSize: { xs: "1rem", md: "1.1rem" },
+                    lineHeight: 1.7,
+                    color: contrastText,
+                  }}
+                >
+                  Get a free, no-obligation home value report based on live
+                  market data and recent comparable sales in your neighborhood.
+                </Typography>
+              </Box>
 
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={2}
-              alignItems="center"
-            >
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => setOpen(true)}
-                endIcon={<ArrowRightIcon />}
-                sx={{
-                  px: 5,
-                  py: 1.625,
-                  fontSize: "1rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: secondary,
-                  color: theme.palette.secondary.contrastText,
-                  boxShadow: `0 8px 28px ${alpha(secondary, 0.4)}`,
-                  "&:hover": {
-                    bgcolor: theme.palette.secondary.dark,
-                    boxShadow: `0 10px 36px ${alpha(secondary, 0.5)}`,
-                    transform: "translateY(-1px)",
-                  },
-                  transition: "all 0.2s ease",
-                }}
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                alignItems="center"
               >
-                Get My Free Report
-              </Button>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => setOpen(true)}
+                  endIcon={<ArrowRightIcon />}
+                  sx={{
+                    px: 5,
+                    py: 1.625,
+                    fontSize: "1rem",
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    bgcolor: secondary,
+                    color: theme.palette.secondary.contrastText,
+                    boxShadow: `0 8px 28px ${alpha(secondary, 0.4)}`,
+                    "&:hover": {
+                      bgcolor: theme.palette.secondary.dark,
+                      boxShadow: `0 10px 36px ${alpha(secondary, 0.5)}`,
+                      transform: "translateY(-1px)",
+                    },
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  Get My Free Report
+                </Button>
 
-              <Typography
-                variant="caption"
-                sx={{ opacity: 0.55, color: contrastText, fontSize: "0.78rem" }}
-              >
-                No sign-up required · Takes 60 seconds
-              </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    opacity: 0.55,
+                    color: contrastText,
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  No sign-up required · Takes 60 seconds
+                </Typography>
+              </Stack>
             </Stack>
-          </Stack>
+          </motion.div>
 
           {/* ── FEATURE CARDS ── */}
           <Grid2 container spacing={2.5}>
@@ -221,90 +233,102 @@ export default function HomeEvaluation({ adminId }: { adminId?: string }) {
               const Icon = f.icon;
               return (
                 <Grid2 size={{ xs: 12, md: 4 }} key={i}>
-                  <Box
-                    sx={{
-                      p: { xs: 3, md: 3.5 },
-                      height: "100%",
-                      borderRadius: 3.5,
-                      border: `1px solid ${alpha(contrastText, 0.1)}`,
-                      bgcolor: alpha(contrastText, 0.05),
-                      backdropFilter: "blur(12px)",
-                      transition:
-                        "background-color 0.2s ease, transform 0.2s ease",
-                      "&:hover": {
-                        bgcolor: alpha(contrastText, 0.09),
-                        transform: "translateY(-3px)",
-                      },
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 2,
+                  <motion.div
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{
+                      duration: 0.55,
+                      delay: i * 0.12,
+                      ease: [0.22, 1, 0.36, 1],
                     }}
+                    style={{ height: "100%" }}
                   >
-                    {/* Icon container */}
                     <Box
                       sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 2,
-                        bgcolor: alpha(secondary, 0.18),
-                        border: `1px solid ${alpha(secondary, 0.3)}`,
+                        p: { xs: 3, md: 3.5 },
+                        height: "100%",
+                        borderRadius: 3.5,
+                        border: `1px solid ${alpha(contrastText, 0.1)}`,
+                        bgcolor: alpha(contrastText, 0.05),
+                        backdropFilter: "blur(12px)",
+                        transition:
+                          "background-color 0.2s ease, transform 0.2s ease",
+                        "&:hover": {
+                          bgcolor: alpha(contrastText, 0.09),
+                          transform: "translateY(-3px)",
+                        },
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
+                        flexDirection: "column",
+                        gap: 2,
                       }}
                     >
-                      <Icon color="secondary" />
-                    </Box>
-
-                    <Box>
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight={700}
-                        color={contrastText}
-                        gutterBottom
-                        letterSpacing="-0.01em"
-                      >
-                        {f.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
+                      {/* Icon container */}
+                      <Box
                         sx={{
-                          opacity: 0.65,
-                          color: contrastText,
-                          lineHeight: 1.65,
+                          width: 48,
+                          height: 48,
+                          borderRadius: 2,
+                          bgcolor: alpha(secondary, 0.18),
+                          border: `1px solid ${alpha(secondary, 0.3)}`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
                         }}
                       >
-                        {f.desc}
-                      </Typography>
-                    </Box>
+                        <Icon color="secondary" />
+                      </Box>
 
-                    {/* Bottom accent line */}
-                    <Box
-                      sx={{
-                        mt: "auto",
-                        pt: 2,
-                        borderTop: `1px solid ${alpha(contrastText, 0.08)}`,
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
+                      <Box>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight={700}
+                          color={contrastText}
+                          gutterBottom
+                          letterSpacing="-0.01em"
+                        >
+                          {f.title}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            opacity: 0.65,
+                            color: contrastText,
+                            lineHeight: 1.65,
+                          }}
+                        >
+                          {f.desc}
+                        </Typography>
+                      </Box>
+
+                      {/* Bottom accent line */}
+                      <Box
                         sx={{
-                          color: secondary,
-                          fontWeight: 700,
-                          fontSize: "0.72rem",
-                          letterSpacing: "0.05em",
-                          textTransform: "uppercase",
+                          mt: "auto",
+                          pt: 2,
+                          borderTop: `1px solid ${alpha(contrastText, 0.08)}`,
                         }}
                       >
-                        {i === 0
-                          ? "Instant results"
-                          : i === 1
-                            ? "Live MLS data"
-                            : "Real agents"}
-                      </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: secondary,
+                            fontWeight: 700,
+                            fontSize: "0.72rem",
+                            letterSpacing: "0.05em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {i === 0
+                            ? "Instant results"
+                            : i === 1
+                              ? "Live MLS data"
+                              : "Real agents"}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
+                  </motion.div>
                 </Grid2>
               );
             })}

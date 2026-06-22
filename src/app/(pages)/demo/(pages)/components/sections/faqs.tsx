@@ -8,7 +8,10 @@ import {
   AccordionSummary,
   AccordionDetails,
   Container,
+  Stack,
+  Chip,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import ExpendMore from "@/app/icons/untitled-ui/duocolor/expand-more";
 
@@ -37,6 +40,9 @@ const faqs = [
 
 export default function FAQsSection() {
   const [expanded, setExpanded] = useState<number | false>(false);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+  const primary = theme.palette.primary.main;
 
   const handleChange =
     (index: number) => (_: React.SyntheticEvent, isExpanded: boolean) => {
@@ -44,45 +50,159 @@ export default function FAQsSection() {
     };
 
   return (
-    <Container maxWidth="lg" sx={{ my: 6 }}>
+    <Box
+      component="section"
+      sx={{
+        position: "relative",
+        overflow: "hidden",
+        py: { xs: 9, md: 13 },
+        bgcolor: isDark ? "grey.950" : "grey.50",
+      }}
+    >
+      {/* Background orb — matches recent-listings / testimonials */}
       <Box
+        aria-hidden
         sx={{
-          textAlign: "center",
+          position: "absolute",
+          top: "10%",
+          left: "-10%",
+          width: { xs: 240, md: 420 },
+          height: { xs: 240, md: 420 },
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${alpha(primary, 0.07)} 0%, transparent 70%)`,
+          pointerEvents: "none",
+          zIndex: 0,
         }}
-      >
-        <Typography variant="h4" fontWeight="bold" mb={4} color="primary">
-          Frequently Asked Questions
-        </Typography>
+      />
 
-        <Box mx="auto">
+      <Container
+        maxWidth="md"
+        sx={{ position: "relative", zIndex: 1, textAlign: "center" }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Stack alignItems="center" spacing={2} mb={6}>
+            <Chip
+              label="Got Questions?"
+              size="small"
+              sx={{
+                bgcolor: alpha(primary, 0.08),
+                color: "primary.main",
+                fontWeight: 700,
+                fontSize: "0.7rem",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                border: `1px solid ${alpha(primary, 0.18)}`,
+                borderRadius: 1,
+                height: 26,
+              }}
+            />
+            <Typography
+              variant="h3"
+              fontWeight={900}
+              letterSpacing="-0.03em"
+              lineHeight={1.1}
+              sx={{ fontSize: { xs: "1.85rem", sm: "2.4rem", md: "2.6rem" } }}
+            >
+              Frequently asked
+              <Box component="span" sx={{ color: "primary.main" }}>
+                {" "}
+                questions
+              </Box>
+            </Typography>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ maxWidth: 480, lineHeight: 1.7 }}
+            >
+              Everything you need to know about buying, selling, and renting
+              with us.
+            </Typography>
+          </Stack>
+        </motion.div>
+
+        <Stack spacing={2} textAlign="left">
           {faqs.map((faq, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.08,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
               <Accordion
                 expanded={expanded === index}
                 onChange={handleChange(index)}
-                sx={{ mb: 2, boxShadow: 2, borderRadius: 2 }}
+                disableGutters
+                elevation={0}
+                sx={{
+                  borderRadius: 2.5,
+                  overflow: "hidden",
+                  border: "1px solid",
+                  borderColor:
+                    expanded === index
+                      ? alpha(primary, 0.35)
+                      : isDark
+                        ? alpha("#fff", 0.08)
+                        : alpha("#000", 0.08),
+                  bgcolor: isDark ? alpha("#fff", 0.03) : "common.white",
+                  boxShadow:
+                    expanded === index
+                      ? `0 8px 24px ${alpha(primary, 0.12)}`
+                      : "none",
+                  transition: "border-color 0.25s ease, box-shadow 0.25s ease",
+                  "&:before": { display: "none" },
+                }}
               >
                 <AccordionSummary
-                  expandIcon={<ExpendMore />}
-                  sx={{ fontWeight: "bold" }}
+                  expandIcon={
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        bgcolor: alpha(primary, 0.08),
+                        color: "primary.main",
+                      }}
+                    >
+                      <ExpendMore />
+                    </Box>
+                  }
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    "& .MuiAccordionSummary-content": { my: 1 },
+                  }}
                 >
-                  {faq.question}
+                  <Typography fontWeight={700} sx={{ fontSize: "1rem" }}>
+                    {faq.question}
+                  </Typography>
                 </AccordionSummary>
-                <AccordionDetails>
-                  <Typography variant="body2" color="text.secondary">
+                <AccordionDetails sx={{ px: 3, pb: 3, pt: 0 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ lineHeight: 1.7 }}
+                  >
                     {faq.answer}
                   </Typography>
                 </AccordionDetails>
               </Accordion>
             </motion.div>
           ))}
-        </Box>
-      </Box>
-    </Container>
+        </Stack>
+      </Container>
+    </Box>
   );
 }

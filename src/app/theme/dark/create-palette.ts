@@ -1,5 +1,5 @@
 import { alpha } from "@mui/system/colorManipulator";
-import { error, info, neutral, success, warning } from "../colors";
+import { error, gold, info, neutral, success, warning } from "../colors";
 import { getPrimary } from "../utils";
 import { PaletteOptions } from "@mui/material";
 
@@ -53,19 +53,20 @@ export const createPalette = (config: Config): PaletteOptions => {
       selected: alpha(neutral[100], 0.12),
     },
     background: {
-      default: contrast === "high" ? "#0B0F19" : "#0E1320",
+      default: contrast === "high" ? "#0E0C0A" : "#161310",
       paper: neutral[900],
     },
-    divider: "#2D3748",
+    divider: "#3A332D",
     error,
     info,
     mode: "dark",
     neutral,
     primary: getPrimary(colorPreset),
+    secondary: gold,
     success,
     text: {
-      primary: "#EDF2F7",
-      secondary: "#A0AEC0",
+      primary: "#F5F1EC",
+      secondary: "#A89A8C",
       disabled: "rgba(255, 255, 255, 0.48)",
     },
     warning,

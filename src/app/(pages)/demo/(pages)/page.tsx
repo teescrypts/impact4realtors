@@ -10,6 +10,7 @@ import AboutUs from "./components/about";
 import HomeEvaluationSection from "./components/sections/home-evaluation";
 import { BuyerLeadCaptureSection } from "./components/sections/buyer-lead-capture";
 import SellSection from "./components/sections/sell-section";
+import FeaturedSpotlight from "./components/featured-spotlight";
 
 async function Page({
   searchParams,
@@ -34,7 +35,11 @@ async function Page({
       <AboutUs adminId={adminId} />
       <HomeEvaluationSection adminId={adminId} />
       <ListingsSection adminId={adminId} forRent={forRent} forSale={forSale} />
-      <BuyerLeadCaptureSection adminId={adminId}/>
+      <FeaturedSpotlight
+        property={forSale[0]} // pick whichever listing you want to highlight
+        adminId={adminId}
+      />
+      <BuyerLeadCaptureSection adminId={adminId} />
       <SellSection adminId={adminId} />
       <LatestBlogs adminId={adminId} blogs={blogs} />
       <TestimonialsSection />
