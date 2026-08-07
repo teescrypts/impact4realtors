@@ -160,6 +160,16 @@ export async function moveToNextNode(
   // If edge label specified (for conditions), filter by label
   if (edgeLabel) {
     edges = edges.filter((edge: { label: string }) => edge.label === edgeLabel);
+
+    // A branch the builder left unwired is a normal end of the journey, not
+    // an error — without this the journey would throw and fail after retries.
+    if (edges.length === 0) {
+      console.log(
+        `Node ${currentNode.id} has no "${edgeLabel}" branch, completing journey`,
+      );
+      await progress.complete();
+      return;
+    }
   }
 
   // Take the first matching edge
@@ -262,31 +272,54 @@ export async function handleExecutionError(
  * @param node - Journey node
  * @returns true if valid, false otherwise
  */
-export function validateNodeConfig(node: IJourneyNode): boolean {
+/**
+ * Explain why a node's config is unusable.
+ *
+ * @returns null when the config is valid, otherwise the specific reason.
+ *
+ * Executors record this on the progress record, so a misconfigured node says
+ * what is actually wrong with it instead of just "invalid configuration" -
+ * which is indistinguishable from a send failure when you are reading the
+ * journey tab of a lead.
+ */
+export function getNodeConfigError(node: IJourneyNode): string | null {
   const config = node.config;
 
   switch (config.type) {
     case "send_email":
-      return !!(config.subject && config.emailContent);
+      if (!config.subject) return "no subject";
+      if (!config.emailBlocks?.length && !config.emailContent)
+        return "no content (neither emailBlocks nor emailContent is set)";
+      return null;
 
     case "delay":
-      return !!(config.duration && config.unit);
+      if (!config.duration) return "no duration";
+      if (!config.unit) return "no unit";
+      return null;
 
     case "trigger":
-      return !!config.waitForTag;
+      return config.waitForTag ? null : "no waitForTag";
 
     case "condition":
-      return !!config.checkType;
+      if (!config.checkType) return "no checkType";
+      if (config.waitFor && !(config.waitFor.duration > 0))
+        return "waitFor.duration must be greater than zero";
+      if (config.waitFor && !config.waitFor.unit) return "waitFor has no unit";
+      return null;
 
     case "meeting_reminder":
     case "sms_reminder":
     case "call_reminder":
-      return !!config.message;
+      return config.message ? null : "no message";
 
     case "entry":
-      return true;
+      return null;
 
     default:
-      return false;
+      return `unknown node type "${(config as { type: string }).type}"`;
   }
+}
+
+export function validateNodeConfig(node: IJourneyNode): boolean {
+  return getNodeConfigError(node) === null;
 }

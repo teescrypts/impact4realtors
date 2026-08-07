@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 export interface ITag extends Document {
   _id: string;
@@ -67,22 +68,21 @@ const TagSchema = new Schema<ITag>(
 TagSchema.index({ admin: 1, category: 1, order: 1 });
 TagSchema.index({ isSystem: 1, category: 1 });
 
-// Unique constraint: Tag name must be unique per admin per category
+/**
+ * Unique constraint: a tag name is unique per category, per owner.
+ *
+ * `agent` is part of the key because agents under the same broker share an
+ * `admin` id — without it, the second agent of a brokerage could not seed
+ * their own tags. Tags with no agent index as null, which still stops one
+ * admin holding two tags of the same name.
+ *
+ * NOTE: this deliberately does NOT special-case `isSystem`. System tags are
+ * seeded per admin, not shared globally, so a constraint spanning admins
+ * would let the first admin seed and block everyone after them.
+ */
 TagSchema.index(
-  { name: 1, category: 1, admin: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { admin: { $ne: null } },
-  },
-);
-
-// System tags (admin: null) must have unique names per category
-TagSchema.index(
-  { name: 1, category: 1, isSystem: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { isSystem: true },
-  },
+  { name: 1, category: 1, admin: 1, agent: 1 },
+  { unique: true },
 );
 
 // Virtual for checking if tag can be modified
@@ -141,6 +141,8 @@ TagSchema.pre("findOneAndUpdate", async function (next) {
 
   next();
 });
+
+clearModelInDev("Tag");
 
 const Tag: Model<ITag> =
   mongoose.models.Tag || mongoose.model<ITag>("Tag", TagSchema);

@@ -69,8 +69,9 @@ export default function Blogs({
                         <Image
                           src={blog.cover!.url!}
                           alt={blog.title!}
-                          layout="fill"
-                          objectFit="cover"
+                          fill
+                          sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
+                          style={{ objectFit: "cover" }}
                         />
                       </Box>
                       <CardContent>

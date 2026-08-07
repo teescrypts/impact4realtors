@@ -1,14 +1,31 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // ======================
 //  TYPE DEFINITIONS
 // ======================
 
-export type ProgressStatus = "active" | "completed" | "paused" | "failed";
+/**
+ * `cancelled` is a terminal state, set when an agent stops the automation for
+ * a lead - typically because they have made contact themselves and no longer
+ * want the drip running.
+ *
+ * It is deliberately terminal rather than resumable. Delays are implemented as
+ * scheduled emails that call back when they fire, and a stopped-then-restarted
+ * journey would need those timers re-armed and de-duplicated. Re-tagging the
+ * lead starts a fresh journey, which covers the same need without touching the
+ * timer path.
+ */
+export type ProgressStatus =
+  | "active"
+  | "completed"
+  | "paused"
+  | "failed"
+  | "cancelled";
 
 export type ExecutionStatus = "success" | "failed" | "skipped" | "pending";
 
-export type WaitingType = "delay" | "trigger";
+export type WaitingType = "delay" | "trigger" | "email_event";
 
 // Execution Record for tracking node execution
 export interface IExecutionRecord {
@@ -30,12 +47,17 @@ export interface IExecutionRecord {
   };
 }
 
-// Waiting State for delays and triggers
+// Waiting State for delays, triggers and email-event conditions
 export interface IWaitingFor {
   type: WaitingType;
-  resumeAt?: Date; // For delays - when to resume
+  resumeAt?: Date; // For delays - when to resume. For email_event - the deadline
   waitingForTag?: string; // For triggers - which tag we're waiting for
   scheduledEmailId?: string; // Resend scheduled email ID for resume trigger
+
+  // For email_event - the email whose open/click we're watching, and the
+  // condition node that will branch once it resolves either way.
+  watchEmailId?: string;
+  conditionNodeId?: string;
 }
 
 // ======================
@@ -126,6 +148,12 @@ export interface ILeadJourneyProgressModel extends Model<ILeadJourneyProgress> {
     tagName: string,
   ): Promise<ILeadJourneyProgressPopulated[]>;
   findReadyToResume(): Promise<ILeadJourneyProgressPopulated[]>;
+  findWaitingForEmail(
+    emailId: string,
+  ): Promise<ILeadJourneyProgressPopulated | null>;
+  claimEmailWait(
+    progressId: string,
+  ): Promise<ILeadJourneyProgressPopulated | null>;
 }
 
 // ======================
@@ -159,12 +187,14 @@ const WaitingForSchema = new Schema<IWaitingFor>(
   {
     type: {
       type: String,
-      enum: ["delay", "trigger"],
+      enum: ["delay", "trigger", "email_event"],
       required: true,
     },
     resumeAt: { type: Date },
     waitingForTag: { type: String },
     scheduledEmailId: { type: String },
+    watchEmailId: { type: String },
+    conditionNodeId: { type: String },
   },
   { _id: false },
 );
@@ -208,7 +238,7 @@ const LeadJourneyProgressSchema = new Schema<
 
     status: {
       type: String,
-      enum: ["active", "completed", "paused", "failed"],
+      enum: ["active", "completed", "paused", "failed", "cancelled"],
       required: true,
       default: "active",
       index: true,
@@ -281,6 +311,7 @@ LeadJourneyProgressSchema.index({
   "waitingFor.resumeAt": 1,
 });
 LeadJourneyProgressSchema.index({ "waitingFor.waitingForTag": 1, status: 1 });
+LeadJourneyProgressSchema.index({ "waitingFor.watchEmailId": 1, status: 1 });
 
 // Compound index for finding active progresses waiting for specific tags
 LeadJourneyProgressSchema.index({
@@ -414,6 +445,38 @@ LeadJourneyProgressSchema.statics.findWaitingForTag = function (
   }).populate("journey");
 };
 
+// Find the progress parked on a specific email's open/click
+LeadJourneyProgressSchema.statics.findWaitingForEmail = function (
+  emailId: string,
+) {
+  return this.findOne({
+    status: "active",
+    "waitingFor.type": "email_event",
+    "waitingFor.watchEmailId": emailId,
+  }).populate(["journey", "lead"]);
+};
+
+/**
+ * Atomically take ownership of an email_event wait.
+ *
+ * An open event and the timeout timer can land at the same moment; whichever
+ * call clears `waitingFor` first wins and resolves the condition. The loser
+ * gets null back and must do nothing.
+ */
+LeadJourneyProgressSchema.statics.claimEmailWait = function (
+  progressId: string,
+) {
+  return this.findOneAndUpdate(
+    {
+      _id: progressId,
+      status: "active",
+      "waitingFor.type": "email_event",
+    },
+    { $unset: { waitingFor: "" } },
+    { new: true },
+  ).populate(["journey", "lead"]);
+};
+
 // Find progresses ready to resume (delay expired)
 LeadJourneyProgressSchema.statics.findReadyToResume = function () {
   return this.find({
@@ -426,6 +489,8 @@ LeadJourneyProgressSchema.statics.findReadyToResume = function () {
 // ======================
 //  SAFE MODEL EXPORT
 // ======================
+clearModelInDev("LeadJourneyProgress");
+
 const LeadJourneyProgress =
   (mongoose.models.LeadJourneyProgress as ILeadJourneyProgressModel) ||
   mongoose.model<ILeadJourneyProgress, ILeadJourneyProgressModel>(

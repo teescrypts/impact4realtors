@@ -1,3 +1,5 @@
+import { createBlock, EmailBlock } from "@/app/lib/email/blocks";
+
 export type NodeType =
   | "entry"
   | "condition"
@@ -31,6 +33,69 @@ export interface EntryData {
 export interface ConditionData {
   checkType: ConditionCheckType; // Changed from conditionType
   description?: string;
+  /** How long to wait for an open before taking the "No" path. */
+  waitFor?: {
+    duration: number;
+    unit: DelayUnit;
+  };
+}
+
+export interface WaitWindow {
+  duration: number;
+  unit: DelayUnit;
+}
+
+/** Applied when a condition node has no wait window saved. */
+export const DEFAULT_CONDITION_WAIT: WaitWindow = {
+  duration: 2,
+  unit: "days",
+};
+
+/**
+ * The choices offered for "how long do we wait for an open".
+ *
+ * Deliberately a fixed list rather than a free-text number: the wait is
+ * implemented as a scheduled email, and Resend will not schedule further than
+ * 30 days out. Nothing here can exceed that.
+ */
+export const WAIT_OPTIONS: { label: string; value: WaitWindow }[] = [
+  { label: "1 hour", value: { duration: 1, unit: "hours" } },
+  { label: "3 hours", value: { duration: 3, unit: "hours" } },
+  { label: "6 hours", value: { duration: 6, unit: "hours" } },
+  { label: "12 hours", value: { duration: 12, unit: "hours" } },
+  { label: "1 day", value: { duration: 1, unit: "days" } },
+  { label: "2 days", value: { duration: 2, unit: "days" } },
+  { label: "3 days", value: { duration: 3, unit: "days" } },
+  { label: "5 days", value: { duration: 5, unit: "days" } },
+  { label: "1 week", value: { duration: 7, unit: "days" } },
+  { label: "2 weeks", value: { duration: 14, unit: "days" } },
+  { label: "3 weeks", value: { duration: 21, unit: "days" } },
+  { label: "30 days", value: { duration: 30, unit: "days" } },
+];
+
+/** Total minutes for a wait window — used to compare windows written different ways. */
+export function waitToMinutes(wait: WaitWindow): number {
+  switch (wait.unit) {
+    case "minutes":
+      return wait.duration;
+    case "hours":
+      return wait.duration * 60;
+    case "days":
+      return wait.duration * 60 * 24;
+  }
+}
+
+/**
+ * Human label for a wait window. Matches on elapsed time, so a window saved
+ * as "48 hours" still reads as "2 days".
+ */
+export function formatWait(wait: WaitWindow): string {
+  const minutes = waitToMinutes(wait);
+  const preset = WAIT_OPTIONS.find(
+    (option) => waitToMinutes(option.value) === minutes,
+  );
+
+  return preset ? preset.label : `${wait.duration} ${wait.unit}`;
 }
 
 export interface DelayData {
@@ -48,6 +113,8 @@ export interface TriggerData {
 export interface SendEmailData {
   subject: string;
   emailContent: string; // Changed from body
+  /** Structured content. When present, emailContent is regenerated from it. */
+  emailBlocks?: EmailBlock[];
   fromName?: string;
 }
 
@@ -172,6 +239,7 @@ export function createConditionNode(): JourneyNode {
     data: {
       checkType: "email_opened",
       description: "Did they open the previous email?",
+      waitFor: { ...DEFAULT_CONDITION_WAIT },
     } as ConditionData,
     branches: [
       {
@@ -231,6 +299,11 @@ export function createSendEmailNode(): JourneyNode {
     data: {
       subject: "",
       emailContent: "",
+      // New emails start as blocks so the agent never meets raw HTML.
+      emailBlocks: [
+        createBlock("heading"),
+        createBlock("paragraph"),
+      ],
       fromName: "",
     } as SendEmailData,
     branches: [

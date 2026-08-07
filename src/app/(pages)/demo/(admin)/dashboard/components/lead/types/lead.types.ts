@@ -78,7 +78,12 @@ export interface Tag {
 //  JOURNEY TYPES
 // ======================
 
-export type JourneyStatus = "active" | "completed" | "paused" | "failed";
+export type JourneyStatus =
+  | "active"
+  | "completed"
+  | "paused"
+  | "failed"
+  | "cancelled";
 
 export type NodeType =
   | "entry"

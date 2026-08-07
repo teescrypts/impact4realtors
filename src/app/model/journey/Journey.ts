@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { EmailBlock } from "@/app/lib/email/blocks";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // ======================
 //  TYPE DEFINITIONS
@@ -44,6 +46,15 @@ export type NodeConfig =
       type: "condition";
       checkType: "email_opened" | "tag_changed";
       description?: string;
+      /**
+       * How long to wait for the email to be opened before taking the "no"
+       * branch. Omitted on journeys saved before this was configurable — the
+       * engine falls back to DEFAULT_OPEN_WINDOW.
+       */
+      waitFor?: {
+        duration: number;
+        unit: "minutes" | "hours" | "days";
+      };
     }
   | {
       type: "delay";
@@ -51,15 +62,21 @@ export type NodeConfig =
       unit: "minutes" | "hours" | "days";
     }
   | {
+      type: "send_email";
+      subject: string;
+      /**
+       * Rendered HTML. Written from `emailBlocks` on save when blocks exist;
+       * for older journeys it is the only content there is.
+       */
+      emailContent: string;
+      /** Structured content — the source of truth when present. */
+      emailBlocks?: EmailBlock[];
+      fromName?: string;
+    }
+  | {
       type: "trigger";
       waitForTag: string;
       description?: string;
-    }
-  | {
-      type: "send_email";
-      subject: string;
-      emailContent: string; // HTML content
-      fromName?: string;
     }
   | {
       type: "meeting_reminder";
@@ -424,6 +441,8 @@ JourneySchema.statics.findDuplicateEntryPoint = async function (
 // ======================
 //  SAFE MODEL EXPORT
 // ======================
+clearModelInDev("Journey");
+
 const Journey =
   (mongoose.models.Journey as IJourneyModel) ||
   mongoose.model<IJourney, IJourneyModel>("Journey", JourneySchema);

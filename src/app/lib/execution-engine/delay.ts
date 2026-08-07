@@ -7,14 +7,11 @@
 
 import {
   IJourneyNode,
-  ScheduledAction,
   LeadJourneyProgress,
+  ScheduledAction,
 } from "@/app/model/journey";
-import { Resend } from "resend";
 import { validateNodeConfig, getNextNode, handleExecutionError } from ".";
-import Admin from "@/app/model/admin";
-
-const resend = new Resend(process.env.RESEND_API_KEY!);
+import { addDuration, scheduleJourneyResume } from "./scheduler";
 
 /**
  * Execute delay node
@@ -42,18 +39,7 @@ export async function executeDelay(
     console.log(`Delaying for ${config.duration} ${config.unit}`);
 
     // Calculate resume time
-    const resumeAt = new Date();
-    switch (config.unit) {
-      case "minutes":
-        resumeAt.setMinutes(resumeAt.getMinutes() + config.duration);
-        break;
-      case "hours":
-        resumeAt.setHours(resumeAt.getHours() + config.duration);
-        break;
-      case "days":
-        resumeAt.setDate(resumeAt.getDate() + config.duration);
-        break;
-    }
+    const resumeAt = addDuration(new Date(), config.duration, config.unit);
 
     console.log(`Will resume at: ${resumeAt.toISOString()}`);
 
@@ -67,68 +53,19 @@ export async function executeDelay(
       return;
     }
 
-    const admin = await Admin.findById(progress.admin).select("email").lean();
-
-    if (!admin) return;
-
-    const resumePayload = {
-      progressId: progress._id.toString(),
-      nextNodeId: nextNode.id,
-    };
-
-    const scheduledEmail = await resend.emails.send({
-      from: "system@realtyillustration.com", // Update domain
-      to: admin.email, // Your webhook endpoint email
-      subject: "Resume Journey",
-      html: `<p>Resume journey</p><pre>${JSON.stringify(resumePayload, null, 2)}</pre>`,
-      scheduledAt: resumeAt.toISOString(),
-      tags: [
-        {
-          name: "progressId",
-          value: progress._id.toString(),
-        },
-        {
-          name: "nextNodeId",
-          value: nextNode.id,
-        },
-      ],
-    });
-
-    if (scheduledEmail.error) {
-      throw new Error(
-        `Failed to schedule resume: ${scheduledEmail.error.message}`,
-      );
-    }
-
-    console.log(`Scheduled resume email: ${scheduledEmail.data?.id}`);
-
-    // Create scheduled action record
-    await ScheduledAction.create({
-      leadJourneyProgress: progress._id,
-      journey: progress.journey._id,
-      lead: progress.lead._id,
-      admin: progress.admin,
-      ...(progress?.agent && { agent: progress.agent }),
+    const { scheduledEmailId, scheduledFor } = await scheduleJourneyResume({
+      progress,
       nodeId: node.id,
-      actionType: "resume_journey",
-      scheduledFor: resumeAt,
-      resendScheduledEmailId: scheduledEmail
-        ? scheduledEmail.data?.id
-        : `dev-${resumePayload.nextNodeId}`,
-      status: "pending",
-      payload: {
-        type: "resume_journey",
-        data: resumePayload,
-      },
+      resumeAt,
+      kind: "delay",
+      nextNodeId: nextNode.id,
     });
 
     // Set waiting state
     progress.setWaiting({
       type: "delay",
-      resumeAt: resumeAt,
-      scheduledEmailId: scheduledEmail
-        ? scheduledEmail.data?.id
-        : `dev-${resumePayload.nextNodeId}`,
+      resumeAt: scheduledFor,
+      scheduledEmailId,
     });
 
     // Record execution
@@ -194,6 +131,7 @@ export async function resumeFromDelay(
       nodeId:
         progress.executionHistory[progress.executionHistory.length - 1]?.nodeId,
       actionType: "resume_journey",
+      status: "pending",
     });
 
     if (action) {

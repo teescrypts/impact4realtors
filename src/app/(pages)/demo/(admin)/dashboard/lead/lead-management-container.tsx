@@ -16,8 +16,7 @@ import { Box, Container, Typography, Alert, Snackbar } from "@mui/material";
 import {
   createLead,
   bulkDeleteLeads,
-  pauseLeadJourney,
-  resumeLeadJourney,
+  stopLeadJourney,
   updateLeadStatus,
   deleteLead,
 } from "@/app/actions/lead-actions";
@@ -302,52 +301,36 @@ export default function LeadManagementContainer({
   };
 
   /**
-   * Handle pause journey
+   * Handle stopping a lead's automation
    */
-  const handlePauseJourney = async (leadId: string) => {
+  const handleStopJourney = async (leadId: string) => {
     const lead = leads.find((l) => l._id === leadId);
-    if (!lead || !lead.journeyProgress) return;
 
-    try {
-      const result = await pauseLeadJourney(leadId, lead.category);
-
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-
-      showSnackbar(result.message || "Journey paused successfully", "success");
-
-      // Refresh to get updated journey status
-      startTransition(() => {
-        router.refresh();
-      });
-    } catch (error: any) {
-      showSnackbar(error.message || "Failed to pause journey", "error");
+    // Only `category` is needed, for cache revalidation. Deliberately does NOT
+    // check lead.journeyProgress: that field is only ever populated in mock
+    // data, so guarding on it swallowed every real click silently. The panel
+    // has already confirmed there is a running automation before offering the
+    // button, and the route re-checks server-side anyway.
+    if (!lead) {
+      showSnackbar("Could not find that lead — try refreshing", "error");
+      return;
     }
-  };
-
-  /**
-   * Handle resume journey
-   */
-  const handleResumeJourney = async (leadId: string) => {
-    const lead = leads.find((l) => l._id === leadId);
-    if (!lead || !lead.journeyProgress) return;
 
     try {
-      const result = await resumeLeadJourney(leadId, lead.category);
+      const result = await stopLeadJourney(leadId, lead.category);
 
       if (!result.success) {
         throw new Error(result.error);
       }
 
-      showSnackbar(result.message || "Journey resumed successfully", "success");
+      showSnackbar(result.message || "Automation stopped", "success");
 
       // Refresh to get updated journey status
       startTransition(() => {
         router.refresh();
       });
     } catch (error: any) {
-      showSnackbar(error.message || "Failed to resume journey", "error");
+      showSnackbar(error.message || "Failed to stop automation", "error");
     }
   };
 
@@ -467,8 +450,7 @@ export default function LeadManagementContainer({
           onCall={handleCallLead}
           onDelete={handleDeleteLead}
           onViewJourney={handleViewJourney}
-          onPauseJourney={handlePauseJourney}
-          onResumeJourney={handleResumeJourney}
+          onStopJourney={handleStopJourney}
         />
 
         {/* Add Lead Dialog */}

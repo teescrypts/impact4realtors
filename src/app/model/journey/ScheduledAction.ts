@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // ======================
 //  TYPE DEFINITIONS
@@ -437,6 +438,8 @@ ScheduledActionSchema.pre("save", function (next) {
 // ======================
 //  SAFE MODEL EXPORT
 // ======================
+clearModelInDev("ScheduledAction");
+
 const ScheduledAction =
   (mongoose.models.ScheduledAction as IScheduledActionModel) ||
   mongoose.model<IScheduledAction, IScheduledActionModel>(

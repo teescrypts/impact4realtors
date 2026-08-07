@@ -274,6 +274,8 @@ export default function LeadTable({
                               "✅ Completed"}
                             {lead.journeyProgress?.status === "failed" &&
                               "❌ Failed"}
+                            {lead.journeyProgress?.status === "cancelled" &&
+                              "⏹️ Stopped"}
                           </Typography>
                         </Box>
                       </Tooltip>

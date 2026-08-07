@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // Define the Image document interface
 export interface IImage extends Document {
@@ -35,6 +36,8 @@ const ImageSchema = new Schema<IImage>(
 );
 
 // Define the Image model
+clearModelInDev("Image");
+
 const Image: Model<IImage> =
   mongoose.models.Image || mongoose.model<IImage>("Image", ImageSchema);
 

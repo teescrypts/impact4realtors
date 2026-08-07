@@ -12,6 +12,7 @@
  * - Proper error handling with specific status codes
  */
 
+import { resumeFromConditionTimeout } from "@/app/lib/execution-engine/condition";
 import { resumeFromDelay } from "@/app/lib/execution-engine/delay";
 import { handleResendWebhook } from "@/app/lib/execution-engine/send-email";
 import { NextRequest, NextResponse } from "next/server";
@@ -34,6 +35,9 @@ interface ResendWebhookData {
   tags?: {
     progressId?: string;
     nextNodeId?: string;
+    /** Which executor should handle this timer: "delay" | "condition_timeout" */
+    timerKind?: string;
+    nodeId?: string;
     [key: string]: any;
   };
   [key: string]: any;
@@ -72,8 +76,19 @@ async function verifyWebhook(
     throw new Error("MISSING_HEADERS");
   }
 
-  // Validate webhook secret exists
-  const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
+  // Validate webhook secret exists.
+  // TODO: drop the misspelled fallback once every environment has been
+  // renamed to RESEND_WEBHOOK_SECRET. It exists only so deploys that still
+  // carry the old name keep verifying instead of silently 500ing.
+  const webhookSecret =
+    process.env.RESEND_WEBHOOK_SECRET ?? process.env.RESEND_WEBHOOK_SECERET;
+
+  if (process.env.RESEND_WEBHOOK_SECRET === undefined && webhookSecret) {
+    console.warn(
+      'RESEND_WEBHOOK_SECERET is misspelled — rename it to RESEND_WEBHOOK_SECRET.',
+    );
+  }
+
   if (!webhookSecret) {
     throw new Error("MISSING_SECRET");
   }
@@ -94,18 +109,42 @@ async function verifyWebhook(
 }
 
 /**
- * Handle delayed journey resumption
+ * Handle a journey timer firing.
+ *
+ * Timers are Resend scheduled emails tagged by the scheduler. `timerKind`
+ * decides which executor takes over; it is absent on timers scheduled before
+ * condition timeouts existed, which were always delays.
  */
-async function handleJourneyResumption(
-  progressId: string,
-  nextNodeId: string,
-): Promise<boolean> {
+async function handleJourneyTimer(tags: {
+  progressId?: string;
+  nextNodeId?: string;
+  timerKind?: string;
+  nodeId?: string;
+}): Promise<void> {
+  const { progressId, nextNodeId, timerKind, nodeId } = tags;
+
+  if (!progressId) return;
+
   try {
+    if (timerKind === "condition_timeout") {
+      if (!nodeId) {
+        console.error("Condition timeout timer missing nodeId");
+        return;
+      }
+      await resumeFromConditionTimeout(progressId, nodeId);
+      console.log(`✅ Condition timed out: ${progressId} → ${nodeId}`);
+      return;
+    }
+
+    if (!nextNodeId) {
+      console.error("Delay timer missing nextNodeId");
+      return;
+    }
+
     await resumeFromDelay(progressId, nextNodeId);
     console.log(`✅ Journey resumed: ${progressId} → ${nextNodeId}`);
-    return true;
   } catch (error) {
-    console.error("❌ Failed to resume journey:", error);
+    console.error("❌ Failed to handle journey timer:", error);
     throw error;
   }
 }
@@ -157,10 +196,16 @@ export async function POST(req: NextRequest) {
 
     console.log(`📨 Verified webhook: ${event.type}`);
 
-    // 3. Check if this is a scheduled journey resumption (highest priority)
+    // 3. Check if this is a journey timer firing (highest priority).
+    //    Resend emits several events per email (sent/delivered/opened); only
+    //    act on the first delivery signal so one timer fires once.
     const { tags, email_id } = event.data;
-    if (tags?.progressId && tags?.nextNodeId) {
-      await handleJourneyResumption(tags.progressId, tags.nextNodeId);
+    if (tags?.progressId && (tags?.nextNodeId || tags?.nodeId)) {
+      if (event.type !== "email.sent") {
+        return NextResponse.json({ received: true, type: "timer_duplicate" });
+      }
+
+      await handleJourneyTimer(tags);
       return NextResponse.json({ received: true, type: "journey_resumed" });
     }
 
@@ -204,13 +249,18 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   const hasApiKey = !!process.env.RESEND_API_KEY;
   const hasSecret = !!process.env.RESEND_WEBHOOK_SECRET;
+  const hasMisspelledSecret = !!process.env.RESEND_WEBHOOK_SECERET;
 
   return NextResponse.json({
     status: "ok",
     message: "Resend webhook endpoint is active",
     config: {
       apiKey: hasApiKey ? "configured" : "missing",
-      webhookSecret: hasSecret ? "configured" : "missing",
+      webhookSecret: hasSecret
+        ? "configured"
+        : hasMisspelledSecret
+          ? "configured (rename RESEND_WEBHOOK_SECERET → RESEND_WEBHOOK_SECRET)"
+          : "missing",
     },
   });
 }

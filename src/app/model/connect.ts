@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 export type ConnectType = "seller" | "homeValuation";
 
@@ -77,6 +78,8 @@ homeValuationFields.forEach((field) => {
     return true;
   }, `${field} is required for home valuation.`);
 });
+
+clearModelInDev("Connect");
 
 const Connect =
   mongoose.models.Connect || mongoose.model<IConnect>("Connect", ConnectSchema);

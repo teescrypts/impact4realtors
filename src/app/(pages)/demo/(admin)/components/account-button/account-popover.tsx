@@ -105,12 +105,11 @@ function AccountPopover({
                     <Users03 />
                   </SvgIcon>
                 </ListItemIcon>
+                {/* Styled via slotProps rather than a nested Typography,
+                    which would put a <p> inside ListItemText's own <span>. */}
                 <ListItemText
-                  primary={
-                    <Typography variant="body2" fontWeight={500}>
-                      Account
-                    </Typography>
-                  }
+                  primary="Account"
+                  slotProps={{ primary: { variant: "body2", fontWeight: 500 } }}
                 />
               </ListItemButton>
             </Box>

@@ -10,7 +10,7 @@ import {
   ScheduledAction,
 } from "@/app/model/journey";
 import { Resend } from "resend";
-import { validateNodeConfig, moveToNextNode, handleExecutionError } from ".";
+import { getNodeConfigError, moveToNextNode, handleExecutionError } from ".";
 import { ObjectId } from "mongoose";
 import replaceTemplateVariables from "@/app/utils/replace-template";
 import Admin from "@/app/model/admin";
@@ -18,6 +18,8 @@ import Appointment from "@/app/model/appointment";
 import HomeValuationRequest from "@/app/model/home-valuation-request";
 import { capitalizeFirst } from "@/app/utils/capitalize-first-letter";
 import { IProperty } from "@/app/model/property";
+import { EmailBlock } from "@/app/lib/email/blocks";
+import { renderEmail } from "@/app/lib/email/render";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
@@ -34,14 +36,16 @@ export async function executeSendEmail(
 ): Promise<void> {
   try {
     // Validate node configuration
-    if (!validateNodeConfig(node)) {
-      throw new Error("Invalid send_email node configuration");
+    const configError = getNodeConfigError(node);
+    if (configError) {
+      throw new Error(`Invalid send_email node configuration: ${configError}`);
     }
 
     const config = node.config as {
       type: "send_email";
       subject: string;
       emailContent: string;
+      emailBlocks?: EmailBlock[];
       fromName?: string;
     };
 
@@ -66,6 +70,21 @@ export async function executeSendEmail(
 
     if (!agentDetails) return;
 
+    // Blocks are the source of truth when present; the layout is composed here
+    // so a design change applies to every email without touching journeys.
+    const contentHtml =
+      config.emailBlocks && config.emailBlocks.length > 0
+        ? renderEmail(config.emailBlocks, {
+            agentName: `${agentDetails.fname} ${agentDetails.lname}`,
+            agentEmail: agentDetails.email,
+            agentPhone: agentDetails.emailBranding?.phone,
+            companyName: agentDetails.emailBranding?.companyName,
+            logoUrl: agentDetails.emailBranding?.logoUrl,
+            brandColor: agentDetails.emailBranding?.brandColor,
+            footerNote: agentDetails.emailBranding?.footerNote,
+          })
+        : config.emailContent;
+
     // ✅ REPLACE TEMPLATE VARIABLES
     const replacedSubject = await replaceTemplateVariables(
       agentDetails,
@@ -78,7 +97,7 @@ export async function executeSendEmail(
 
     const replacedContent = await replaceTemplateVariables(
       agentDetails,
-      config.emailContent,
+      contentHtml,
       lead,
       progress,
       valuation ? valuation : undefined,
@@ -201,8 +220,16 @@ export async function handleResendWebhook(
         };
       }
 
+      progress.markModified("executionHistory");
       await progress.save();
       console.log(`Updated email ${emailId} status: ${event}`);
+    }
+
+    // A condition node may be parked waiting on this email. Engagement
+    // resolves it straight away instead of sitting out the whole window.
+    if (event === "opened" || event === "clicked") {
+      const { resumeFromEmailEvent } = await import("./condition");
+      await resumeFromEmailEvent(emailId);
     }
   } catch (error) {
     console.error("Error handling Resend webhook:", error);

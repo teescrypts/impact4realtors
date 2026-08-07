@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, Document } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // ======================
 //  LEAD CATEGORY
@@ -148,6 +149,8 @@ const leadSchema = new Schema<ILead>(
 // ======================
 //  SAFE MODEL EXPORT
 // ======================
+clearModelInDev("Lead");
+
 const Lead = mongoose.models.Lead || model<ILead>("Lead", leadSchema);
 
 export default Lead;

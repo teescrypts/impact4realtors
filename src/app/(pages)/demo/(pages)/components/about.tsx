@@ -401,6 +401,7 @@ const AboutUs = ({ adminId }: { adminId?: string }) => {
                     src="/images/agent.jpeg"
                     alt="Realtor helping family"
                     fill
+                    sizes="(max-width: 900px) 100vw, 50vw"
                     style={{ objectFit: "cover" }}
                     priority
                   />

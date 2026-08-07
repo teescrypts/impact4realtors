@@ -5,6 +5,7 @@
  * Much simpler transformations!
  */
 
+import { renderEmail, TEMPLATE_BRAND } from "@/app/lib/email/render";
 import { IJourney, IJourneyNode, IJourneyEdge, NodeConfig } from "../types/api";
 import {
   Journey as CanvasJourney,
@@ -14,6 +15,7 @@ import {
   generateBranchId,
   EntryData,
   ConditionData,
+  DEFAULT_CONDITION_WAIT,
   DelayData,
   TriggerData,
   SendEmailData,
@@ -122,6 +124,9 @@ function configToData(config: NodeConfig): NodeData {
       return {
         checkType: config.checkType,
         description: config.description,
+        // Journeys saved before the wait window existed surface the default
+        // so the editor shows what the engine will actually do.
+        waitFor: config.waitFor ?? { ...DEFAULT_CONDITION_WAIT },
       } as ConditionData;
 
     case "delay":
@@ -143,6 +148,7 @@ function configToData(config: NodeConfig): NodeData {
       return {
         subject: config.subject,
         emailContent: config.emailContent,
+        emailBlocks: config.emailBlocks,
         fromName: config.fromName,
       } as SendEmailData;
 
@@ -186,6 +192,7 @@ function dataToConfig(data: NodeData, type: string): NodeConfig {
         type: "condition",
         checkType: conditionData.checkType,
         description: conditionData.description,
+        waitFor: conditionData.waitFor ?? { ...DEFAULT_CONDITION_WAIT },
       };
     }
 
@@ -211,11 +218,18 @@ function dataToConfig(data: NodeData, type: string): NodeConfig {
 
     case "send_email": {
       const emailData = data as SendEmailData;
-      // ✅ Direct mapping!
+      const hasBlocks = !!emailData.emailBlocks?.length;
+
       return {
         type: "send_email",
         subject: emailData.subject,
-        emailContent: emailData.emailContent,
+        // Keep a rendered copy alongside the blocks. Branding is filled in
+        // properly at send time; this copy exists so anything reading
+        // emailContent directly still sees current content.
+        emailContent: hasBlocks
+          ? renderEmail(emailData.emailBlocks!, TEMPLATE_BRAND)
+          : emailData.emailContent,
+        emailBlocks: emailData.emailBlocks,
         fromName: emailData.fromName,
       };
     }

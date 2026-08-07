@@ -293,14 +293,16 @@ export async function bulkDeleteLeads(
 // ============================================
 
 /**
- * Pause a lead's journey
+ * Stop the automation running for a lead.
+ *
+ * Terminal - there is no resume. Re-tagging the lead starts a fresh journey.
  */
-export async function pauseLeadJourney(leadId: string, category: LeadCategory) {
+export async function stopLeadJourney(leadId: string, category: LeadCategory) {
   try {
     const token = await getAuthToken();
 
     const result = await apiRequest<{ data: any }>(
-      `admin/lead/${leadId}/journey/pause`,
+      `admin/lead/${leadId}/journey/stop`,
       {
         method: "POST",
         token,
@@ -315,50 +317,13 @@ export async function pauseLeadJourney(leadId: string, category: LeadCategory) {
     return {
       success: true,
       data: result.data,
-      message: "Journey paused successfully",
+      message: "Automation stopped",
     };
   } catch (error: any) {
-    console.error("Error pausing journey:", error);
+    console.error("Error stopping journey:", error);
     return {
       success: false,
-      error: error.message || "Failed to pause journey",
-    };
-  }
-}
-
-/**
- * Resume a lead's journey
- */
-export async function resumeLeadJourney(
-  leadId: string,
-  category: LeadCategory,
-) {
-  try {
-    const token = await getAuthToken();
-
-    const result = await apiRequest<{ data: any }>(
-      `admin/lead/${leadId}/journey/resume`,
-      {
-        method: "POST",
-        token,
-      },
-    );
-
-    // Revalidate caches
-    nextUpdateTag(CACHE_TAGS.allLeads);
-    nextUpdateTag(CACHE_TAGS.leads(category));
-    revalidatePath("/dashboard/lead");
-
-    return {
-      success: true,
-      data: result.data,
-      message: "Journey resumed successfully",
-    };
-  } catch (error: any) {
-    console.error("Error resuming journey:", error);
-    return {
-      success: false,
-      error: error.message || "Failed to resume journey",
+      error: error.message || "Failed to stop automation",
     };
   }
 }

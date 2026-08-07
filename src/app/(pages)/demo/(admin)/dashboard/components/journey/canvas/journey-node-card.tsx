@@ -10,7 +10,8 @@ import {
   entryActionLabels,
   isConditionData,
   ConditionData,
-  conditionCheckLabels,  // ✅ UPDATED: Changed from conditionLabels
+  DEFAULT_CONDITION_WAIT,
+  formatWait,
   isDelayData,
   DelayData,
   isTriggerData,
@@ -89,9 +90,10 @@ export function JourneyNodeCard({
 
     if (isConditionData(node.data)) {
       const data = node.data as ConditionData;
+      const wait = data.waitFor ?? DEFAULT_CONDITION_WAIT;
       return {
         title: "Email Opened?",  // ✅ UPDATED: Simplified title
-        subtitle: conditionCheckLabels[data.checkType] || "Check email engagement",  // ✅ UPDATED: Use checkType
+        subtitle: `Gives them ${formatWait(wait)} to open it`,
       };
     }
 

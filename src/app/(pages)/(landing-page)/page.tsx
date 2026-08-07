@@ -1,14 +1,17 @@
-
+import BookDemoCta from "./components/book-demo-cta";
+import FeatureWeb from "./components/homee-sections/feature-web";
 import HomeHeroSection from "./components/homee-sections/home-hero";
-import FeaturesSection from "./components/features-section";
-import RealEstateLanding from "./components/homee-sections/hero-section";
+import HomePricing from "./components/homee-sections/home-pricing";
+import WhyUs from "./components/homee-sections/why-us";
 
 function Page() {
   return (
     <div>
       <HomeHeroSection />
-      <RealEstateLanding />
-      <FeaturesSection />
+      <WhyUs />
+      <FeatureWeb />
+      <HomePricing />
+      <BookDemoCta />
     </div>
   );
 }

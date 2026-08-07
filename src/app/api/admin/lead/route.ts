@@ -4,6 +4,8 @@ import Lead, { ILead } from "@/app/model/lead";
 import { NextRequest, NextResponse } from "next/server";
 import { FilterQuery } from "mongoose";
 import { handleTagAssignment } from "@/app/lib/execution-engine/entry-handler";
+import { sweepOverdueJourneys } from "@/app/lib/execution-engine/sweeper";
+import { attachJourneyProgress } from "@/app/lib/journey/attach-progress";
 import { capitalizeFirst } from "@/app/utils/capitalize-first-letter";
 
 const ITEMS_PER_PAGE = 500;
@@ -17,6 +19,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const isAgent = admin.agent?.isAgent === true;
+
+  // Opportunistic safety net for journeys whose delay timer never arrived.
+  // Throttled internally and never throws - see sweeper.ts.
+  void sweepOverdueJourneys();
 
   try {
     const searchParams = req.nextUrl.searchParams;
@@ -48,10 +54,14 @@ export async function GET(req: NextRequest) {
     const hasMore =
       leads.length === ITEMS_PER_PAGE && leads.length < leadsCount;
 
+    // Populates currentJourney / journeyProgress / nextScheduledAction, which
+    // the list columns read but nothing previously filled in.
+    const leadsWithJourney = await attachJourneyProgress(leads);
+
     return apiResponse(
       "Success",
       {
-        leads,
+        leads: leadsWithJourney,
         hasMore,
         lastCreatedAt: leads.at(-1)?.createdAt || null,
       },

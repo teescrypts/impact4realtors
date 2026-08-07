@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import validator from "validator";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 interface IAgentForm extends Document {
   admin: Schema.Types.ObjectId;
@@ -25,6 +26,8 @@ const AgentFormSchema = new Schema<IAgentForm>(
   },
   { timestamps: true }
 );
+
+clearModelInDev("AgentForm");
 
 const AgentForm =
   mongoose.models.AgentForm ||

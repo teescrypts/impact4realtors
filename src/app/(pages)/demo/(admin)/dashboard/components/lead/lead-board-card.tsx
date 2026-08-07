@@ -227,6 +227,7 @@ export default function LeadBoardCard({
                 {lead.journeyProgress.status === "paused" && "⏸️ Paused"}
                 {lead.journeyProgress.status === "completed" && "✅ Done"}
                 {lead.journeyProgress.status === "failed" && "❌ Failed"}
+                {lead.journeyProgress.status === "cancelled" && "⏹️ Stopped"}
               </Typography>
             </Stack>
           </Box>

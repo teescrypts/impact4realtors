@@ -105,6 +105,13 @@ const renderContent = (notification: NotificationResType) => {
             </Typography>
           </Stack>
         }
+        // ListItemText wraps primary in a <span> and secondary in a <p> by
+        // default. Both hold block elements here, which is invalid HTML and
+        // breaks hydration - render them as divs instead.
+        slotProps={{
+          primary: { component: "div" },
+          secondary: { component: "div" },
+        }}
         sx={{
           my: 0,
           opacity: isUnread ? 1 : 0.7,

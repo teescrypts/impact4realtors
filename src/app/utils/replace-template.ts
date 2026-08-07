@@ -63,7 +63,10 @@ export default async function replaceTemplateVariables(
   const agentVars = {
     agentName: `${agentDetails.fname} ${agentDetails.lname}`,
     agentEmail: agentDetails.email,
-    agentPhone: "(555)-123-1234",
+    // Falls back to an empty string rather than a placeholder number: an empty
+    // line reads better than a fake one that a lead might actually dial.
+    agentPhone: agentDetails.emailBranding?.phone || "",
+    companyName: agentDetails.emailBranding?.companyName || "",
   };
 
   // Journey variables

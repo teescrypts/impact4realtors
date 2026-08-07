@@ -1,9 +1,11 @@
 /**
  * Backend API Types
- * 
+ *
  * These types match the backend API responses exactly.
  * Use these when working with API data.
  */
+
+import { EmailBlock } from "@/app/lib/email/blocks";
 
 // ======================
 //  LEAD INTENT
@@ -58,6 +60,10 @@ export type NodeConfig =
       type: "condition";
       checkType: "email_opened" | "tag_changed";
       description?: string;
+      waitFor?: {
+        duration: number;
+        unit: "minutes" | "hours" | "days";
+      };
     }
   | {
       type: "delay";
@@ -72,7 +78,10 @@ export type NodeConfig =
   | {
       type: "send_email";
       subject: string;
+      /** Rendered HTML — regenerated from `emailBlocks` whenever blocks exist. */
       emailContent: string;
+      /** Structured content; the source of truth when present. */
+      emailBlocks?: EmailBlock[];
       fromName?: string;
     }
   | {

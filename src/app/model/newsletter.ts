@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, Document } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // Define the Newsletter interface
 export interface INewsletter extends Document {
@@ -28,6 +29,8 @@ const newsletterSchema = new Schema<INewsletter>(
 );
 
 // Prevent OverwriteModelError
+clearModelInDev("Newsletter");
+
 const Newsletter =
   mongoose.models.Newsletter ||
   model<INewsletter>("Newsletter", newsletterSchema);

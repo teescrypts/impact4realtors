@@ -90,9 +90,25 @@ export async function seedSystemTags(
       ...((isAgent || isBroker) && { agent: userId }),
     }));
 
-    // Insert all system tags
+    // Insert all system tags.
+    //
+    // ordered: false so one clash cannot abandon the rest of the batch - a
+    // half-seeded admin is worse than a skipped duplicate.
     const allSystemTags = [...buyerTags, ...sellerTags];
-    const result = await Tag.insertMany(allSystemTags);
+
+    let result: unknown[] = [];
+    try {
+      result = await Tag.insertMany(allSystemTags, { ordered: false });
+    } catch (error: any) {
+      // 11000 = duplicate key. The tag already exists, which is the desired
+      // end state, so treat it as success and let anything else surface.
+      if (error?.code !== 11000 && error?.writeErrors === undefined) throw error;
+
+      result = error.insertedDocs ?? [];
+      console.log(
+        `Some system tags already existed and were skipped (${result.length} newly inserted)`,
+      );
+    }
 
     console.log(`✅ Successfully seeded ${result.length} system tags`);
     console.log(`   - ${buyerTags.length} buyer tags`);

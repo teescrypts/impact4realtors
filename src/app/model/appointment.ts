@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, models, Document } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // Define Appointment Types
 const APPOINTMENT_TYPES = ["call", "house_touring"] as const;
@@ -135,6 +136,8 @@ appointmentSchema.pre("save", function (next) {
 });
 
 // Prevent OverwriteModelError
+clearModelInDev("Appointment");
+
 const Appointment =
   models.Appointment || model<IAppointment>("Appointment", appointmentSchema);
 

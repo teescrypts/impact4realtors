@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 interface ILicensedState {
   country: string;
@@ -47,6 +48,8 @@ const AgentSchema = new Schema<IAgent>(
   },
   { timestamps: true }
 );
+
+clearModelInDev("Agent");
 
 const Agent =
   mongoose.models.Agent || mongoose.model<IAgent>("Agent", AgentSchema);

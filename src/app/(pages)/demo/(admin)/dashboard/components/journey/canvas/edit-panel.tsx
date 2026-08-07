@@ -20,6 +20,10 @@ import Zap from "@/app/icons/untitled-ui/duocolor/zap";
 import { useJourneyStore } from "./journey-store";
 import {
   ConditionData,
+  DEFAULT_CONDITION_WAIT,
+  WAIT_OPTIONS,
+  waitToMinutes,
+  formatWait,
   DelayData,
   TriggerData,
   SendEmailData,
@@ -37,7 +41,7 @@ import Call from "@/app/icons/untitled-ui/duocolor/call";
 import Delete from "@/app/icons/untitled-ui/duocolor/delete";
 import Close from "@/app/icons/untitled-ui/duocolor/close";
 import { ITag } from "../../tag/types/tag";
-import { QuillEditor } from "@/app/component/quil-editor";
+import { EmailContentEditor } from "./email-content-editor";
 
 interface EditPanelProps {
   node: any;
@@ -249,6 +253,26 @@ function ConditionNodeEditor({
   data: ConditionData;
   onUpdate: (data: ConditionData) => void;
 }) {
+  // Nodes saved before the wait window was configurable have no `waitFor`;
+  // show the default the engine will actually apply.
+  const waitFor = data.waitFor ?? DEFAULT_CONDITION_WAIT;
+  const waitMinutes = waitToMinutes(waitFor);
+
+  // A window saved outside the preset list (or written in different units)
+  // still needs something selected, so offer it alongside the presets.
+  const options = WAIT_OPTIONS.some(
+    (option) => waitToMinutes(option.value) === waitMinutes,
+  )
+    ? WAIT_OPTIONS
+    : [{ label: formatWait(waitFor), value: waitFor }, ...WAIT_OPTIONS];
+
+  const selectWait = (minutes: number) => {
+    const chosen = options.find(
+      (option) => waitToMinutes(option.value) === minutes,
+    );
+    if (chosen) onUpdate({ ...data, waitFor: { ...chosen.value } });
+  };
+
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 2.5, bgcolor: "background.default", borderRadius: 2 }}>
@@ -274,7 +298,8 @@ function ConditionNodeEditor({
               YES
             </Box>
             <Typography variant="body2" color="text.secondary">
-              Previous email was opened → follow &quot;Yes&quot; path
+              They open your email → they carry on down the &quot;Yes&quot;
+              path
             </Typography>
           </Stack>
 
@@ -295,10 +320,53 @@ function ConditionNodeEditor({
               NO
             </Box>
             <Typography variant="body2" color="text.secondary">
-              Email was NOT opened → follow &quot;No&quot; path
+              They don&apos;t open it in time → they carry on down the
+              &quot;No&quot; path
             </Typography>
           </Stack>
         </Stack>
+      </Paper>
+
+      {/* How long to give the lead before treating it as "not opened" */}
+      <TextField
+        select
+        label="How long should we give them?"
+        value={waitMinutes}
+        onChange={(e) => selectWait(Number(e.target.value))}
+        SelectProps={{ native: true }}
+        helperText="Most agents give it a couple of days."
+        fullWidth
+      >
+        {options.map((option) => (
+          <option
+            key={option.label}
+            value={waitToMinutes(option.value)}
+          >
+            {option.label}
+          </option>
+        ))}
+      </TextField>
+
+      <Paper
+        variant="outlined"
+        sx={{ p: 2.5, bgcolor: "info.50", borderColor: "info.main" }}
+      >
+        <Typography variant="body2">
+          We&apos;ll wait <strong>{formatWait(waitFor)}</strong> for them to
+          open it. If they open it sooner, they move on straight away — no need
+          to wait out the full time.
+        </Typography>
+      </Paper>
+
+      <Paper
+        variant="outlined"
+        sx={{ p: 2.5, bgcolor: "warning.50", borderColor: "warning.main" }}
+      >
+        <Typography variant="body2">
+          Worth knowing: some email apps don&apos;t tell us when a message is
+          opened. A few people may take the &quot;No&quot; path even though
+          they read your email, so it&apos;s best to keep that path friendly.
+        </Typography>
       </Paper>
 
       <TextField
@@ -545,33 +613,20 @@ function SendEmailNodeEditor({
         required
       />
 
-      <Box>
-        <QuillEditor
-          value={data.emailContent}
-          onChange={(value: string) => onUpdate({ ...data, emailContent: value })}
-          placeholder={`Hi {{firstName}},\n\nI wanted to reach out about...`}
-          sx={{ height: 350 }}
-        />
-        <input defaultValue={data.emailContent} hidden name="content" />
-      </Box>
-
-      {/* <TextField
-        label="Email Content"
+      <EmailContentEditor
         value={data.emailContent}
-        onChange={(e) => onUpdate({ ...data, emailContent: e.target.value })}
-        placeholder="Hi {{firstName}},
-
-I wanted to reach out about..."
-        multiline
-        minRows={8}
-        fullWidth
-        required
-      /> */}
+        blocks={data.emailBlocks}
+        onChange={(value: string) =>
+          onUpdate({ ...data, emailContent: value })
+        }
+        onBlocksChange={(emailBlocks) => onUpdate({ ...data, emailBlocks })}
+      />
 
       <Paper variant="outlined" sx={{ p: 2, bgcolor: "success.50" }}>
         <Typography variant="caption" color="text.secondary">
           💡 You can use placeholders like {"{{firstName}}"}, {"{{lastName}}"},{" "}
-          {"{{email}}"} that will be replaced with lead data.
+          {"{{email}}"} that will be replaced with lead data. The preview fills
+          them in with sample details so you can see how it reads.
         </Typography>
       </Paper>
     </Stack>

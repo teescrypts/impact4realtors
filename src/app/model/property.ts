@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 export interface IProperty extends Document {
   admin: mongoose.Types.ObjectId;
@@ -74,6 +75,8 @@ const PropertySchema = new Schema<IProperty>(
   },
   { timestamps: true }
 );
+
+clearModelInDev("Property");
 
 const Property =
   mongoose.models.Property ||

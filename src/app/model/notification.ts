@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, Document } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // Define Notification Types
 export const NOTIFICATION_TYPES = [
@@ -53,6 +54,8 @@ const notificationSchema = new Schema<INotification>(
 );
 
 // Prevent OverwriteModelError
+clearModelInDev("Notification");
+
 const Notification =
   mongoose.models.Notification ||
   model<INotification>("Notification", notificationSchema);

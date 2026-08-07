@@ -72,8 +72,9 @@ function SingleBlogPage({
             <Image
               src={blog.cover.url}
               alt={blog.title!}
-              layout="fill"
-              objectFit="cover"
+              fill
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              style={{ objectFit: "cover" }}
               priority // Improve performance for above-the-fold images
             />
           )}

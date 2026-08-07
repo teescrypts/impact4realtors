@@ -1,10 +1,10 @@
 "use client";
 
 import CustomTheme from "@/app/component/custom-theme";
-import { Box, Container, Stack, Typography } from "@mui/material";
-import Image from "next/image";
+import { Box } from "@mui/material";
 import React, { ReactNode } from "react";
 import Footer from "./footer";
+import LandingNavbar from "./landing-navbar";
 
 function PagesLayout({ children }: { children: ReactNode }) {
   return (
@@ -16,27 +16,8 @@ function PagesLayout({ children }: { children: ReactNode }) {
           minHeight: "100vh",
         }}
       >
-        {/* Navbar with Logo and Name */}
-        <Box sx={{ py: 2 }}>
-          <Container maxWidth="lg">
-            <Stack justifyContent={"space-between"} direction={"row"}>
-              <Image
-                src="/images/logo.png" // Replace with your logo path
-                alt="Company Logo"
-                width={40}
-                height={40}
-              />
-              <Typography
-                variant="h6"
-                component="div"
-                color="textPrimary"
-                sx={{ ml: 2, fontWeight: 700 }}
-              >
-                RealtyIllustrations
-              </Typography>
-            </Stack>
-          </Container>
-        </Box>
+        {/* Navbar with logo, features dropdown, pricing and about */}
+        <LandingNavbar />
 
         {/* Main Content */}
         <Box component="main" sx={{ flexGrow: 1 }}>

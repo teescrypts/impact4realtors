@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Model, models, model } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 interface ITimeSlot {
   from: string;
@@ -40,6 +41,8 @@ const openingHoursSchema = new Schema<IOpeningHour>({
     default: "available",
   },
 });
+
+clearModelInDev("OpeningHour");
 
 const OpeningHour: Model<IOpeningHour> =
   models.OpeningHour || model<IOpeningHour>("OpeningHour", openingHoursSchema);

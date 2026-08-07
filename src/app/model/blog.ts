@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 interface IBlogPost extends Document {
   admin: Schema.Types.ObjectId;
@@ -69,6 +70,8 @@ const BlogPostSchema = new Schema<IBlogPost>(
   },
   { timestamps: true }
 );
+
+clearModelInDev("BlogPost");
 
 const BlogPost =
   mongoose.models.BlogPost ||

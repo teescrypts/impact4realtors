@@ -21,34 +21,36 @@ import {
   Button,
   Tabs,
   Tab,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Paper,
   Alert,
+  SvgIcon,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { format, formatDistanceToNow } from "date-fns";
-import { ClockIcon } from "@mui/x-date-pickers";
 import { getTagColor } from "./data/tag-data";
 import { Lead } from "./types/lead.types";
-import Settings from "@/app/icons/untitled-ui/duocolor/settings";
-import EventBusy from "@/app/icons/untitled-ui/duocolor/event-busy";
-import CheckDone01 from "@/app/icons/untitled-ui/duocolor/check-done-01";
-import Pause from "@/app/icons/untitled-ui/duocolor/pause";
+import Stop from "@/app/icons/untitled-ui/duocolor/stop";
 import Close from "@/app/icons/untitled-ui/duocolor/close";
 
 import Delete from "@/app/icons/untitled-ui/duocolor/delete";
-import Play from "@/app/icons/untitled-ui/duocolor/play";
 import {
   IExecutionRecord,
   IWaitingFor,
   ProgressStatus,
 } from "@/app/model/journey/LeadJourneyProgress";
-import { IJourney, IJourneyNode } from "../journey/types/api";
+import { IJourney } from "../journey/types/api";
 import { fetchLeadProgress } from "@/app/actions/server-actions";
 import Automation from "@/app/icons/untitled-ui/duocolor/automation";
 import { IScheduledAction } from "@/app/model/journey/ScheduledAction";
+import {
+  ActivityFeed,
+  buildJourneyPath,
+  JourneyTrack,
+  nodeIcon,
+} from "./journey-progress";
 
 export interface Progress {
   lead: string;
@@ -93,8 +95,7 @@ interface LeadDetailPanelProps {
   onCall?: (leadId: string) => void;
   onDelete?: (leadId: string) => void;
   onViewJourney?: (journeyId: string) => void;
-  onPauseJourney?: (leadId: string) => void;
-  onResumeJourney?: (leadId: string) => void;
+  onStopJourney?: (leadId: string) => void;
 }
 
 export default function LeadDetailPanel({
@@ -106,53 +107,72 @@ export default function LeadDetailPanel({
   onCall,
   onDelete,
   onViewJourney,
-  onPauseJourney,
-  onResumeJourney,
+  onStopJourney,
 }: LeadDetailPanelProps) {
   console.log(onEdit, onEmail, onCall);
   const [activeTab, setActiveTab] = useState(0);
-  const [loadingProgress, setLoadingProgress] = useState(false);
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [currentJourney, setCurrentJourney] = useState<IJourney | null>(null);
-  const [currentNode, setCurrentNode] = useState<IJourneyNode | null>(null);
-  const [nextScheduledAction, setNextScheduledAction] =
+  const [loadedProgress, setLoadedProgress] = useState<Progress | null>(null);
+  const [loadedJourney, setLoadedJourney] = useState<IJourney | null>(null);
+  const [loadedNextAction, setLoadedNextAction] =
     useState<IScheduledAction | null>(null);
   // const [errorMsg, setErroMsg] = useState("");
-  const [fetched, setFetched] = useState(false);
+  // Which lead the loaded data belongs to. A boolean "fetched" flag never
+  // reset when the drawer was reused for a different lead, which left the
+  // previous lead's automation on screen.
+  const [fetchedFor, setFetchedFor] = useState<string | null>(null);
+  const [confirmStopOpen, setConfirmStopOpen] = useState(false);
+
+  const leadId = lead?._id ?? null;
+  const isDataTab = activeTab === 1 || activeTab === 2;
+
+  // Derived rather than cleared in an effect: data that belongs to a different
+  // lead simply does not count, so nothing stale can render even for a frame.
+  const isStale = fetchedFor !== leadId;
+  const progress = isStale ? null : loadedProgress;
+  const currentJourney = isStale ? null : loadedJourney;
+  const nextScheduledAction = isStale ? null : loadedNextAction;
+  const loadingProgress = isStale && isDataTab;
 
   useEffect(() => {
-    if (!fetched && lead) {
-      if (activeTab === 1 || activeTab === 2) {
-        setLoadingProgress(true);
-        fetchLeadProgress(lead._id).then((res) => {
-          if (res.error) {
-            // setErroMsg(res.error);
-            setLoadingProgress(false);
-          }
+    if (!leadId || !isDataTab || fetchedFor === leadId) return;
 
-          if (res.message) {
-            const progress = res.message.progress;
-            const journey = res.message.progress?.journey;
-            const nextScheduledAction = res.message.nextScheduledAction;
+    let cancelled = false;
 
-            setProgress(progress);
-            setCurrentJourney(journey ? journey : null);
-            setNextScheduledAction(nextScheduledAction);
+    fetchLeadProgress(leadId).then((res) => {
+      // A slower request for a previously viewed lead must not land on this one.
+      if (cancelled) return;
 
-            const currentNode = journey
-              ? journey.nodes.find(
-                  (node) => node.id === progress!.currentNodeId,
-                )
-              : null;
-
-            setCurrentNode(currentNode ? currentNode : null);
-            setLoadingProgress(false);
-            setFetched(true);
-          }
-        });
+      if (res.message) {
+        setLoadedProgress(res.message.progress);
+        setLoadedJourney(res.message.progress?.journey ?? null);
+        setLoadedNextAction(res.message.nextScheduledAction);
       }
-    }
-  }, [activeTab, lead, fetched]);
+
+      // Marked on failure too, so a failing lookup is not retried on every
+      // tab switch.
+      setFetchedFor(leadId);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDataTab, leadId, fetchedFor]);
+
+  // The ordered path this lead is actually on, with each step's state.
+  // Empty until the journey and progress have both loaded.
+  const journeySteps =
+    progress && currentJourney
+      ? buildJourneyPath(currentJourney, progress)
+      : [];
+
+  const completedSteps = journeySteps.filter(
+    (step) => step.state === "done",
+  ).length;
+
+  const percentComplete =
+    journeySteps.length > 0
+      ? Math.round((completedSteps / journeySteps.length) * 100)
+      : 0;
 
   if (!lead) return null;
 
@@ -160,30 +180,6 @@ export default function LeadDetailPanel({
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
-  const getNodeTypeIcon = (nodeType: string) => {
-    switch (nodeType) {
-      case "send_email":
-        // return <SendIcon fontSize="small" />;
-        return <Settings />;
-      case "call_reminder":
-        // return <CallActionIcon fontSize="small" />;
-        return <Settings />;
-      case "meeting_reminder":
-        return <EventBusy fontSize="small" />;
-      case "sms_reminder":
-        // return <SmsIcon fontSize="small" />;
-        return <Settings />;
-      case "delay":
-        return <ClockIcon fontSize="small" />;
-      case "condition":
-        return <CheckDone01 fontSize="small" />;
-      case "trigger":
-        return <Pause fontSize="small" />;
-      default:
-        // return <ScheduleIcon fontSize="small" />;
-        return <Settings />;
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -195,6 +191,9 @@ export default function LeadDetailPanel({
         return "info";
       case "failed":
         return "error";
+      case "cancelled":
+        // Stopping is a deliberate choice, not a problem - keep it neutral.
+        return "default";
       default:
         return "default";
     }
@@ -428,17 +427,18 @@ export default function LeadDetailPanel({
 
           {/* Tab 2: Journey */}
           {activeTab === 1 && (
-            <Stack spacing={3}>
+            <Stack spacing={2.5}>
               {loadingProgress && <Typography>Loading...</Typography>}
               {!loadingProgress && progress && currentJourney ? (
                 <>
-                  {/* Journey Header */}
+                  {/* Summary */}
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Stack spacing={2}>
                       <Box
                         display="flex"
                         justifyContent="space-between"
                         alignItems="start"
+                        gap={1}
                       >
                         <Box>
                           <Typography variant="subtitle1" fontWeight={600}>
@@ -446,8 +446,8 @@ export default function LeadDetailPanel({
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             {currentJourney.isBuiltIn
-                              ? "Built-in Journey"
-                              : "Custom Journey"}
+                              ? "Built-in automation"
+                              : "Custom automation"}
                           </Typography>
                         </Box>
                         <Chip
@@ -458,150 +458,129 @@ export default function LeadDetailPanel({
                         />
                       </Box>
 
-                      <Divider />
-
-                      {/* Progress */}
+                      {/* Progress counts completed steps on this lead's path,
+                          not history entries - retries used to inflate it. */}
                       <Box>
                         <Box
                           display="flex"
                           justifyContent="space-between"
-                          mb={1}
+                          mb={0.75}
                         >
                           <Typography variant="body2" fontWeight={500}>
-                            Progress
+                            {completedSteps} of {journeySteps.length} steps done
                           </Typography>
                           <Typography variant="body2" fontWeight={600}>
-                            {currentJourney.nodes.length > 0
-                              ? Math.round(
-                                  (progress.executionHistory.length /
-                                    currentJourney.nodes.length) *
-                                    100,
-                                )
-                              : 0}
-                            %
+                            {percentComplete}%
                           </Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
-                          value={
-                            (progress.executionHistory.length /
-                              currentJourney.nodes.length) *
-                            100
+                          value={percentComplete}
+                          color={
+                            progress.status === "failed" ? "error" : "primary"
                           }
                           sx={{ height: 8, borderRadius: 1 }}
                         />
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          mt={0.5}
-                        >
-                          {progress.executionHistory.length} of{" "}
-                          {currentJourney.nodes.length} steps completed
-                        </Typography>
                       </Box>
 
-                      {/* Timeline */}
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Started
-                        </Typography>
-                        <Typography variant="body2">
-                          {format(new Date(progress.startedAt), "MMM d, yyyy")}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          (
-                          {formatDistanceToNow(new Date(progress.startedAt), {
-                            addSuffix: true,
-                          })}
-                          )
-                        </Typography>
-                      </Box>
+                      <Divider />
 
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Last Activity
-                        </Typography>
-                        <Typography variant="body2">
-                          {formatDistanceToNow(
-                            new Date(progress.lastActivityAt),
-                            { addSuffix: true },
-                          )}
-                        </Typography>
-                      </Box>
+                      <Stack direction="row" spacing={3}>
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                          >
+                            Started
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {format(new Date(progress.startedAt), "MMM d")}
+                          </Typography>
+                          <Typography variant="caption" color="text.disabled">
+                            {formatDistanceToNow(new Date(progress.startedAt), {
+                              addSuffix: true,
+                            })}
+                          </Typography>
+                        </Box>
+
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                          >
+                            Last activity
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {format(
+                              new Date(progress.lastActivityAt),
+                              "MMM d, h:mm a",
+                            )}
+                          </Typography>
+                          <Typography variant="caption" color="text.disabled">
+                            {formatDistanceToNow(
+                              new Date(progress.lastActivityAt),
+                              { addSuffix: true },
+                            )}
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      {progress.status === "failed" && (
+                        <Alert severity="error" sx={{ py: 0.5 }}>
+                          This automation stopped after{" "}
+                          {progress.retryCount || progress.maxRetries} failed
+                          attempts. The step below shows why.
+                        </Alert>
+                      )}
+
+                      {progress.status === "cancelled" && (
+                        <Alert severity="info" sx={{ py: 0.5 }}>
+                          You stopped this automation. Change this lead&apos;s
+                          tag to start them on a new one.
+                        </Alert>
+                      )}
 
                       {/* Actions */}
                       <Stack direction="row" spacing={1}>
+                        {(progress.status === "active" ||
+                          progress.status === "paused") &&
+                          onStopJourney && (
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              color="error"
+                              startIcon={<Stop />}
+                              onClick={() => setConfirmStopOpen(true)}
+                            >
+                              Stop automation
+                            </Button>
+                          )}
                         {onViewJourney && (
                           <Button
-                            variant="outlined"
                             size="small"
                             startIcon={<Automation />}
                             onClick={() => onViewJourney(currentJourney!._id)}
                           >
-                            View Journey Canvas
-                          </Button>
-                        )}
-                        {progress.status === "active" && onPauseJourney && (
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            color="warning"
-                            startIcon={<Pause />}
-                            onClick={() => onPauseJourney(lead._id)}
-                          >
-                            Pause
-                          </Button>
-                        )}
-                        {progress.status === "paused" && onResumeJourney && (
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            color="success"
-                            startIcon={<Play />}
-                            onClick={() => onResumeJourney(lead._id)}
-                          >
-                            Resume
+                            Open canvas
                           </Button>
                         )}
                       </Stack>
                     </Stack>
                   </Paper>
 
-                  {/* Current Step */}
-                  {currentNode && (
-                    <Paper
-                      variant="outlined"
-                      sx={{
-                        p: 2,
-                        bgcolor: "primary.light",
-                        borderColor: "primary.main",
-                      }}
+                  {/* The path itself */}
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight={600}
+                      sx={{ mb: 2 }}
                     >
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Box
-                          sx={{
-                            bgcolor: "primary.main",
-                            color: "white",
-                            p: 1,
-                            borderRadius: 1,
-                          }}
-                        >
-                          {getNodeTypeIcon(currentNode.type)}
-                        </Box>
-                        <Box flex={1}>
-                          <Typography variant="subtitle2" fontWeight={600}>
-                            Current Step
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{ textTransform: "capitalize" }}
-                          >
-                            {currentNode.type.replace(/_/g, " ")}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </Paper>
-                  )}
+                      Automation steps
+                    </Typography>
+                    <JourneyTrack steps={journeySteps} progress={progress} />
+                  </Paper>
 
                   {/* Next Scheduled Action */}
                   {nextScheduledAction && (
@@ -611,23 +590,19 @@ export default function LeadDetailPanel({
                         fontWeight={600}
                         gutterBottom
                       >
-                        Next Scheduled Action
+                        Next scheduled action
                       </Typography>
-                      <Stack spacing={1.5}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          {getNodeTypeIcon(nextScheduledAction.actionType)}
-                          <Typography variant="body2" fontWeight={500}>
-                            {nextScheduledAction.actionType.replace(/_/g, " ")}
-                          </Typography>
-                        </Box>
-                        {/* <Typography variant="body2" color="text.secondary">
-                          {nextScheduledAction.description}
-                        </Typography> */}
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={1.5}
+                        sx={{ mt: 1 }}
+                      >
+                        <SvgIcon sx={{ fontSize: 18, color: "primary.main" }}>
+                          {nodeIcon(nextScheduledAction.actionType)}
+                        </SvgIcon>
                         <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Scheduled for
-                          </Typography>
-                          <Typography variant="body2">
+                          <Typography variant="body2" fontWeight={500}>
                             {format(
                               new Date(nextScheduledAction.scheduledFor),
                               "MMM d, yyyy 'at' h:mm a",
@@ -663,44 +638,69 @@ export default function LeadDetailPanel({
           {/* Tab 3: Activity */}
           {activeTab === 2 && (
             <Stack spacing={2}>
-              {progress ? (
+              {loadingProgress && <Typography>Loading...</Typography>}
+              {!loadingProgress &&
+              progress &&
+              progress.executionHistory?.length ? (
                 <>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    Journey Activity
-                  </Typography>
-                  <List>
-                    {Array.from({
-                      length: progress.executionHistory.length,
-                    }).map((_, index) => (
-                      <ListItem
-                        key={index}
-                        sx={{
-                          py: 1.5,
-                          borderBottom: 1,
-                          borderColor: "divider",
-                        }}
-                      >
-                        <ListItemIcon>
-                          <CheckDone01 color="success" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`Step ${index + 1} completed`}
-                          secondary="Action executed successfully"
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      Automation activity
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Everything this automation has done, most recent first.
+                    </Typography>
+                  </Box>
+                  <ActivityFeed steps={journeySteps} progress={progress} />
                 </>
               ) : (
-                <Alert severity="info">
-                  No activity history available. Activity will appear once this
-                  lead enters a journey.
-                </Alert>
+                !loadingProgress && (
+                  <Alert severity="info">
+                    No activity history available. Activity will appear once this
+                    lead enters a journey.
+                  </Alert>
+                )
               )}
             </Stack>
           )}
         </Box>
       </Box>
+
+      {/* Stopping cannot be undone, so it is confirmed rather than instant. */}
+      <Dialog
+        open={confirmStopOpen}
+        onClose={() => setConfirmStopOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Stop this automation?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {lead.firstName} will stop receiving the remaining automated emails
+            and reminders in this sequence.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+            This can&apos;t be undone. To put them back on an automation later,
+            change their tag.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmStopOpen(false)}>Keep running</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              setConfirmStopOpen(false);
+              onStopJourney?.(lead._id);
+              // Clear the marker so the journey tab refetches and shows the
+              // stopped state rather than the automation still running.
+              setFetchedFor(null);
+            }}
+          >
+            Stop automation
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Drawer>
   );
 }

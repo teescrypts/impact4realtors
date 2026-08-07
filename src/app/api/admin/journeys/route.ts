@@ -8,6 +8,7 @@ import {
 import { ObjectId } from "mongoose";
 import { seedBuiltInJourneys } from "@/app/utils/seed-builtin-journeys";
 import { seedSystemTags } from "@/app/utils/seed-system-tags";
+import { sweepOverdueJourneys } from "@/app/lib/execution-engine/sweeper";
 import { capitalizeFirst } from "@/app/utils/capitalize-first-letter";
 
 /**
@@ -31,18 +32,31 @@ export async function GET(req: NextRequest) {
     const isAgent = admin.agent.isAgent;
     const adminId = admin._id as ObjectId;
 
-    await seedSystemTags(
-      isAgent,
-      admin.isBroker,
-      admin._id as string,
-      admin.agent?.admin as string | undefined,
-    );
+    // Seeding is best-effort. It runs on every load for demo accounts, and a
+    // failure here should not take down the automations page - existing
+    // journeys are still perfectly readable without it.
+    try {
+      await seedSystemTags(
+        isAgent,
+        admin.isBroker,
+        admin._id as string,
+        admin.agent?.admin as string | undefined,
+      );
 
-    await seedBuiltInJourneys(
-      isAgent ? admin.agent.admin!.toString() : adminId.toString(),
-      isAgent,
-      adminId.toString(),
-    );
+      await seedBuiltInJourneys(
+        isAgent ? admin.agent.admin!.toString() : adminId.toString(),
+        isAgent,
+        adminId.toString(),
+      );
+    } catch (seedError) {
+      console.error("Seeding failed while loading journeys:", seedError);
+    }
+
+    // Opportunistic safety net. With no cron in this project, a timer email
+    // that never arrives would leave a journey parked forever; this catches
+    // those whenever an admin opens the dashboard. Throttled internally, and
+    // never throws, so it cannot affect this response.
+    void sweepOverdueJourneys();
 
     // Parse query params
     const { searchParams } = new URL(req.url);

@@ -1,14 +1,13 @@
 "use client";
 
-import { Box, Button, Container, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Container, Typography, useTheme } from "@mui/material";
 import { motion, useCycle } from "framer-motion";
 import Image from "next/image";
-import { useRouter } from "nextjs-toploader/app";
 import { useEffect } from "react";
+import CtaButtons from "../cta-buttons";
 
 export default function HomeHero() {
   const [current, cycle] = useCycle("first", "second");
-  const router = useRouter();
   const theme = useTheme()
 
   useEffect(() => {
@@ -16,9 +15,22 @@ export default function HomeHero() {
     return () => clearInterval(interval);
   }, [cycle]);
 
+  // Intrinsic dimensions are passed explicitly rather than using `fill`: the
+  // theme provider renders nothing until it mounts, so images can start
+  // loading before Emotion has applied the parent's height.
   const images = [
-    { src: "/images/image-1.jpg", alt: "Dashboard Design" },
-    { src: "/images/image-2.png", alt: "Homepage Design" },
+    {
+      src: "/images/image-1.jpg",
+      alt: "Dashboard Design",
+      width: 5600,
+      height: 3849,
+    },
+    {
+      src: "/images/image-2.png",
+      alt: "Homepage Design",
+      width: 1423,
+      height: 954,
+    },
   ];
 
   return (
@@ -195,56 +207,7 @@ export default function HomeHero() {
               </Typography>
 
               {/* CTAs */}
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  onClick={() =>
-                    router.push(
-                      "https://calendly.com/impactillustration1/30min",
-                    )
-                  }
-                  sx={{
-                    fontWeight: 700,
-                    borderRadius: "10px",
-                    px: 4,
-                    py: 1.6,
-                    textTransform: "none",
-                    fontSize: "1rem",
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                    "&:hover": {
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                    },
-                  }}
-                >
-                  Book a demo →
-                </Button>
-
-                {/* <Button
-                  variant="outlined"
-                  color="primary"
-                  size="large"
-                  sx={{
-                    fontWeight: 600,
-                    borderRadius: "10px",
-                    px: 4,
-                    py: 1.6,
-                    textTransform: "none",
-                    fontSize: "1rem",
-                    borderWidth: "1.5px",
-                    transition: "transform 0.2s ease",
-                    "&:hover": {
-                      transform: "translateY(-2px)",
-                      borderWidth: "1.5px",
-                    },
-                  }}
-                >
-                  See features
-                </Button> */}
-              </Stack>
+              <CtaButtons />
 
               {/* Trust signal */}
               <Box
@@ -347,8 +310,14 @@ export default function HomeHero() {
                   <Image
                     src={img.src}
                     alt={img.alt}
-                    layout="fill"
-                    objectFit="cover"
+                    width={img.width}
+                    height={img.height}
+                    sizes="(max-width: 900px) 100vw, 520px"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
                     priority
                   />
                 </motion.div>

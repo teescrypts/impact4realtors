@@ -2,6 +2,7 @@ import { Schema, model, models, Document, Model, Types } from "mongoose";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { clearModelInDev } from "@/app/lib/register-model";
 
 // Define an interface for Admin document
 export interface IAdmin extends Document {
@@ -20,6 +21,17 @@ export interface IAdmin extends Document {
     refreshToken: string;
     tokenExpiry: Date | undefined;
     calendarSyncEnabled: boolean;
+  };
+  /**
+   * Branding applied to every automated email. Set once here rather than
+   * per-email, so all templates stay consistent and can be restyled at once.
+   */
+  emailBranding?: {
+    companyName?: string;
+    phone?: string;
+    logoUrl?: string;
+    brandColor?: string;
+    footerNote?: string;
   };
   generateAuthToken(): Promise<string>;
   verifyCredentials(password: string): Promise<boolean>;
@@ -80,6 +92,13 @@ const adminSchema = new Schema<IAdmin>(
       tokenExpiry: { type: Date },
       calendarSyncEnabled: { type: Boolean, default: false },
     },
+    emailBranding: {
+      companyName: { type: String, trim: true },
+      phone: { type: String, trim: true },
+      logoUrl: { type: String, trim: true },
+      brandColor: { type: String, trim: true },
+      footerNote: { type: String, trim: true },
+    },
   },
   { timestamps: true }
 );
@@ -133,6 +152,8 @@ adminSchema.pre("save", async function (next) {
 });
 
 // Prevent OverwriteModelError
+clearModelInDev("Admin");
+
 const Admin =
   (models.Admin as IAdminModel) ||
   model<IAdmin, IAdminModel>("Admin", adminSchema);

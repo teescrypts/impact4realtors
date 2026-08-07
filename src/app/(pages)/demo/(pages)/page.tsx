@@ -29,16 +29,19 @@ async function Page({
   const forRent = response.data.forRent;
   const blogs = response.data.publishedBlogs;
 
+  // A newly seeded admin can have no listings at all, so this may be
+  // undefined - the spotlight is skipped rather than rendered empty.
+  const spotlightProperty = forSale?.[0] ?? forRent?.[0];
+
   return (
     <Fragment>
       <HeroSection adminId={adminId} />
       <AboutUs adminId={adminId} />
       <HomeEvaluationSection adminId={adminId} />
       <ListingsSection adminId={adminId} forRent={forRent} forSale={forSale} />
-      <FeaturedSpotlight
-        property={forSale[0]} // pick whichever listing you want to highlight
-        adminId={adminId}
-      />
+      {spotlightProperty && (
+        <FeaturedSpotlight property={spotlightProperty} adminId={adminId} />
+      )}
       <BuyerLeadCaptureSection adminId={adminId} />
       <SellSection adminId={adminId} />
       <LatestBlogs adminId={adminId} blogs={blogs} />
